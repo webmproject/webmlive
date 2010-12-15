@@ -37,7 +37,7 @@ unsigned LivePoster::ThreadProc(void* pv)
   
   struct curl_httppost* formpost = NULL;
   struct curl_httppost* lastptr = NULL;
-  struct curl_slist* headerlist=NULL;
+  struct curl_slist* headerlist = NULL;
   static const char buf[] = "Expect:";
   
   curl_ = curl_easy_init();
@@ -103,7 +103,7 @@ unsigned LivePoster::ThreadProc(void* pv)
 #ifdef _DEBUG        
         ofstream ofs;
 #endif         
-        ofstream ofs_1;
+        ofstream ofs_multipart;
 
         if (size_file_ == 0) 
         {
@@ -120,7 +120,7 @@ unsigned LivePoster::ThreadProc(void* pv)
 #endif                   
         }
         
-        ofs_1.open("multipart.webm", ios_base::binary | ios_base::out);
+        ofs_multipart.open("multipart.webm", ios_base::binary | ios_base::out);
 
         char* const buffer = new char[size_diff];
         ifs.read(buffer, size_diff);
@@ -166,7 +166,7 @@ unsigned LivePoster::ThreadProc(void* pv)
                 break;
               }
               
-              if ((*(buffer + i + 8) == 99)    // 0x63
+              if ((*(buffer + i + 8) == 99)     // 0x63
                 && (*(buffer + i + 9) == -94))  // 0xA2
               {
 #ifdef _DEBUG
@@ -206,42 +206,11 @@ unsigned LivePoster::ThreadProc(void* pv)
 #ifdef _DEBUG          
           ofs.write(buffer, size_diff);
 #endif                   
-          ofs_1.write(buffer, size_diff);
-          ofs_1.close();
+          ofs_multipart.write(buffer, size_diff);
+          ofs_multipart.close();
         
           if (curl_)
           {
-            //if (init_ == false) 
-            //{
-            //  curl_formadd(&formpost,
-            //   &lastptr,
-            //   CURLFORM_COPYNAME, "first",
-            //   CURLFORM_COPYCONTENTS, "yes",
-            //   CURLFORM_END); 
-
-            //  curl_formadd(&formpost,
-            //   &lastptr,
-            //   CURLFORM_COPYNAME, "send_webm_stream",
-            //   CURLFORM_FILE, "multipart.webm",
-            //   CURLFORM_END);
-            //  
-            //  curl_easy_setopt(curl_, CURLOPT_URL, "http://127.0.0.1:8080");
-            //  //curl_easy_setopt(curl_, CURLOPT_POSTFIELDS, "first=yes&project=curl");
-            //  res_ = curl_easy_setopt(curl_, CURLOPT_HTTPPOST, formpost); 
-            //  res_ = curl_easy_perform(curl_);
-            //  curl_formfree(formpost);
-            //  //curl_formfree(lastptr);
-            //  init_ = true;
-            //}
-            //else 
-            //{
-              //curl_formfree(formpost);
-              //curl_formadd(&formpost,
-              // &lastptr,
-              // CURLFORM_COPYNAME, "first",
-              // CURLFORM_COPYCONTENTS, "no",
-              // CURLFORM_END); 
-
             curl_formadd(&formpost,
              &lastptr,
              CURLFORM_COPYNAME, "send_webm_stream",
