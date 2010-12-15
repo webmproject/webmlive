@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cassert>
 #include <sstream>
+#include <numeric>
 
 #include "livehttpposter.hpp"
 
@@ -14,9 +15,15 @@ namespace live_webm_streamer {
 long LivePoster::size_file_ = 0;
 bool LivePoster::init_ = false;
 bool LivePoster::codec_private_checked_ = false;
+double LivePoster::max_bps_ = 0.0;
+double LivePoster::min_bps_ = 0.0;
+double LivePoster::cur_bps_ = 0.0;
+
 wchar_t* LivePoster::ip_address_= NULL;
 wchar_t* LivePoster::port_ = NULL;
 wchar_t* LivePoster::webm_file_ = NULL;
+
+deque<double> LivePoster::dq_;
 
 LivePoster::LivePoster(void) 
 {
@@ -125,25 +132,10 @@ unsigned LivePoster::ThreadProc(void* pv)
         char* const buffer = new char[size_diff];
         ifs.read(buffer, size_diff);
         ifs.close();
-        
-
-//          for (int i = 0; i < size_diff - 3; ++i)
-//          {
-//            if ((*(buffer + i ) == -20)     // 0xEC - Void Element
-//             && (*(buffer + i + 1) == 95)   // 0x5F
-//             && (*(buffer + i + 2) == 61))  // 0x3D
-//            {
-//#ifdef _DEBUG
-//              cout << endl << " Found Void element in Codec Private." << endl;
-//#endif           
-//              post_ready = true;
-//              codec_private_checked_ = false;
-//              break;
-//            }
-//          }
        
         if (!codec_private_checked_) 
         {
+          //TODO(hwasoo): consider A_VORBIS is the last part of the buffer.
           for (int i = 0; i < size_diff - 10; ++i)
           {
             if ((*(buffer + i ) == 65)      // A
@@ -239,21 +231,59 @@ unsigned LivePoster::ThreadProc(void* pv)
             
             res_ = curl_easy_setopt(curl_, CURLOPT_URL, str);
             
-            cout << "file size " << size_diff << endl;
+            cout << "  multipart size(uploading): " << size_diff << " Byte(s)" << endl;
             res_ = curl_easy_setopt(curl_, CURLOPT_HTTPPOST, formpost); 
-           
+            
+            cout.width(10);
+            cout.precision(4);
+            
+            if (cur_bps_ != 0.0)
+              cout << "  estimated second(s) : " << (size_diff / 1000) / cur_bps_ << endl;
+
             __int64 ctr1 = 0, ctr2 = 0, freq = 0;
             QueryPerformanceCounter((LARGE_INTEGER*)&ctr1);
            
             res_ = curl_easy_perform(curl_);
-            QueryPerformanceCounter((LARGE_INTEGER*)&ctr2);    
-	          QueryPerformanceFrequency((LARGE_INTEGER*)&freq);            
-	          double span = (ctr2 - ctr1)* 1.0 /freq;
-  	        
-	          cout << "  " << size_diff / span << " BPS" << endl;
-  	        
-            if (res_ == CURLE_COULDNT_CONNECT)
-              cout << " Failed to connect() to host or proxy " << endl;
+            
+            if (res_  == CURLE_OK)
+            { 
+              QueryPerformanceCounter((LARGE_INTEGER*)&ctr2);    
+	            QueryPerformanceFrequency((LARGE_INTEGER*)&freq);            
+	            const double span = (ctr2 - ctr1)* 1.0 /freq;
+	            cout << "  real upload second(s) : " << span << endl;
+
+              cur_bps_ = (double)(((double)size_diff / span) / 1000.0);
+              
+              if (!init_)
+              {
+                init_ = true;
+                min_bps_ = cur_bps_;  
+              }
+              
+              if (cur_bps_ > max_bps_)
+                max_bps_ = cur_bps_;
+                
+              if (cur_bps_ < min_bps_)
+                min_bps_ = cur_bps_;
+
+	            cout << "  " << cur_bps_ << " KBps  <--- current speed" << endl;
+	            dq_.push_back(cur_bps_);
+	            
+	            if (dq_.size() > 100)
+	              dq_.pop_front();
+	           
+	            const double avg_bps = (accumulate(dq_.begin(), dq_.end(), 0.0)) / dq_.size();
+	              
+	            cout << "  Max(KBps) : " << max_bps_ << "   Avg(KBps) : " << avg_bps << "   Min(KBps) : " << min_bps_ << endl << endl;
+    	        
+              if (res_ == CURLE_COULDNT_CONNECT)
+                cout << " Failed to connect() to host or proxy " << endl;
+            }
+            else 
+            {
+              //TODO(hwasoo): need to exit out this thread
+              ;
+            }
           }
         }
         

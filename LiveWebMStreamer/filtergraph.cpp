@@ -436,9 +436,9 @@ HRESULT FilterGraph::Run()
   LivePoster::port_ = port_num_;
   LivePoster::webm_file_ = out_webm_file_;
     
-  //const HANDLE thread_handle = (HANDLE)_beginthreadex(NULL, 0, LivePoster::ThreadProc, (void*)ha, 0, &thread_id);
-  //const BOOL ret = CloseHandle(thread_handle);
-  //assert(ret);
+  const HANDLE thread_handle = (HANDLE)_beginthreadex(NULL, 0, LivePoster::ThreadProc, (void*)ha, 0, &thread_id);
+  const BOOL ret = CloseHandle(thread_handle);
+  assert(ret);
     
   __int64 ctr1 = 0, ctr2 = 0, freq = 0;
   QueryPerformanceCounter((LARGE_INTEGER*)&ctr1);
@@ -460,9 +460,9 @@ HRESULT FilterGraph::Run()
    	
    	if (span > 0.05) // Every 50 milliseconds.
    	{
-      //SetEvent(handle_post);
+      SetEvent(handle_post);
       ctr1 = ctr2;
-      cout << ".";  //shows that the graph is still running
+      //cout << ".";  //shows that the graph is still running
     }
   }
 

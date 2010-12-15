@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <curl\curl.h>
+#include <deque>
 
 using namespace std;
 
@@ -23,6 +24,10 @@ private:
   static long size_file_;   
   static bool init_;
   static bool codec_private_checked_;
+  static double max_bps_;
+  static double min_bps_;
+  static double cur_bps_;
+  static deque<double> dq_;
 };
 
 }
