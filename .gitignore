@@ -1,0 +1,9 @@
+*.ncb
+*.exe
+*.suo
+*.ilk
+*.pdb
+*.webm
+*.user
+Debug/
+Release/
