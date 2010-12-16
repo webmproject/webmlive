@@ -11,12 +11,6 @@ using namespace std;
 
 namespace live_webm_streamer {
 
-struct Parameters_
-{
-  HANDLE h;
-  ifstream ifs;
-};
-  
 FilterGraph::FilterGraph():
   graph_builder_(NULL),
   media_event_(NULL),
@@ -33,6 +27,10 @@ FilterGraph::FilterGraph():
 }
 
 FilterGraph::~FilterGraph()
+{
+}
+
+IHttpPost::~IHttpPost()
 {
 }
 
@@ -99,7 +97,8 @@ HRESULT FilterGraph::SetUp()
   CHECK_HR(graph_builder_->AddFilter(vp8_encoder_, L"VP8 Encoder"));
   CHECK_HR(graph_builder_->AddFilter(vorbis_encoder_, L"Vorbis Encoder"));
   CHECK_HR(vp8_encoder_->QueryInterface(IID_IVP8Encoder, reinterpret_cast<void**>(&vp8_interface)));
-  CHECK_HR(vp8_interface->SetDeadline(1));
+  CHECK_HR(vp8_interface->SetDeadline(kDeadlineRealtime)); 
+  CHECK_HR(vp8_interface->SetTargetBitrate(100)); //Kbps
   CHECK_HR(yuv12_.CoCreateInstance(CLSID_YUV12));
   CHECK_HR(graph_builder_->AddFilter(yuv12_, L"YV12"));
   CHECK_HR(capture_graph_builder2_->RenderStream(&PIN_CATEGORY_CAPTURE, NULL, source, NULL, yuv12_));
@@ -114,7 +113,6 @@ HRESULT FilterGraph::SetUp()
   CHECK_HR(graph_builder_->AddFilter(file_writer_, L"File Writer"));
   CHECK_HR(file_writer_->QueryInterface(IID_IFileSinkFilter2, reinterpret_cast<void**>(&file_sink_filter2_)));
   CHECK_HR(file_sink_filter2_->SetMode(AM_FILE_OVERWRITE));
-  //CHECK_HR(file_sink_filter2_->SetFileName(L"test.webm", NULL));
   CHECK_HR(file_sink_filter2_->SetFileName(out_webm_file_, NULL));
   CHECK_HR(capture_graph_builder2_->RenderStream(NULL, NULL, webm_mux_, NULL, file_writer_));
 
@@ -428,10 +426,11 @@ HRESULT FilterGraph::Run()
   cout << "  Graph is running. Press Ctrl+C to terminate immediately." << endl;
   CHECK_HR(media_control_->Run());
   
-  const HANDLE handle_post = CreateEvent(NULL, FALSE, FALSE, NULL); // auto-reset nonsignaled event
+  //const HANDLE handle_post = CreateEvent(NULL, FALSE, FALSE, NULL); // auto-reset nonsignaled event
+  const HANDLE handle_post = static_cast<const HANDLE>(CreateEvent_());
   const HANDLE ha[] = {g_handle_quit, handle_post};
   unsigned int thread_id;
-   
+  
   LivePoster::ip_address_ = server_ip_;
   LivePoster::port_ = port_num_;
   LivePoster::webm_file_ = out_webm_file_;
@@ -469,6 +468,26 @@ HRESULT FilterGraph::Run()
   CHECK_HR(monitor_running_graph.Stop());
 
   return S_OK;
+}
+
+
+void* FilterGraph::CreateEvent_()
+{
+  const HANDLE handle_post = CreateEvent(NULL, FALSE, FALSE, NULL); // auto-reset nonsignaled event
+  return handle_post;
+}
+
+
+int FilterGraph::SetEvent_()
+{
+  return 0;
+}
+
+void* FilterGraph::CreateThread_()
+{
+  //const HANDLE thread_handle = (HANDLE)_beginthreadex(NULL, 0, LivePoster::ThreadProc, (void*)ha, 0, &thread_id);
+  //return thread_handle;  
+  return NULL;
 }
 
 } // end of live_webm_streamer namespace

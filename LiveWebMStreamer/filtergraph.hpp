@@ -9,6 +9,7 @@
 #include "livehttpposter.hpp"
 #include "runningobjecttable.hpp"
 #include "cmdline.hpp"
+#include "Ihttppost.h"
 
 using namespace std;
 
@@ -49,7 +50,7 @@ const CLSID CLSID_VorbisEncoder =
 }\
 
 
-class FilterGraph
+class FilterGraph : public IHttpPost
 {
 private:
 	FilterGraph(const FilterGraph&);
@@ -57,7 +58,7 @@ private:
 
 public:
 	FilterGraph();	
-	~FilterGraph();   
+	virtual ~FilterGraph();   
 
   bool Parse(int argc, wchar_t* argv[]);
 	HRESULT SetUp();
@@ -69,6 +70,11 @@ public:
 	HRESULT FindFilterInCategory(IBaseFilter** src, const IID& cls, std::wstring& filter_name, int device_num);
 	HRESULT SetVideoCaptureFormat(IBaseFilter* source);
 	HRESULT ConvertGuidToString(const GUID& sub_type, char* four_cc) const;
+	
+	//virtual funtions
+	virtual void* CreateEvent_();
+  virtual int SetEvent_();
+  virtual void* CreateThread_();
 
 private:
 	CComPtr<IGraphBuilder> graph_builder_;

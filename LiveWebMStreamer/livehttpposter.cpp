@@ -238,19 +238,19 @@ unsigned LivePoster::ThreadProc(void* pv)
             cout.precision(4);
             
             if (cur_bps_ != 0.0)
-              cout << "  estimated second(s) : " << (size_diff / 1000) / cur_bps_ << endl;
+              cout << "  estimated upload time in second : " << (size_diff / 1000) / cur_bps_ << endl;
 
             __int64 ctr1 = 0, ctr2 = 0, freq = 0;
             QueryPerformanceCounter((LARGE_INTEGER*)&ctr1);
            
             res_ = curl_easy_perform(curl_);
             
-            if (res_  == CURLE_OK)
+            if (res_ == CURLE_OK)
             { 
               QueryPerformanceCounter((LARGE_INTEGER*)&ctr2);    
 	            QueryPerformanceFrequency((LARGE_INTEGER*)&freq);            
 	            const double span = (ctr2 - ctr1)* 1.0 /freq;
-	            cout << "  real upload second(s) : " << span << endl;
+	            cout << "  real upload time in second : " << span << endl;
 
               cur_bps_ = (double)(((double)size_diff / span) / 1000.0);
               

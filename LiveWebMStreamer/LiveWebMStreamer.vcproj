@@ -210,11 +210,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\livehttpposter.hpp"
+				RelativePath=".\IHttpPost.h"
 				>
 			</File>
 			<File
-				RelativePath=".\livewebmstreamer.hpp"
+				RelativePath=".\livehttpposter.hpp"
 				>
 			</File>
 			<File
