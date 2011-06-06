@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..\common;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include;$(ProjectDir)"
-				PreprocessorDefinitions="WIN32;_DEBUG"
+				PreprocessorDefinitions="WIN32;_DEBUG;BOOST_NO_EXCEPTIONS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
@@ -120,7 +120,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..\common;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include"
-				PreprocessorDefinitions="WIN32;NDEBUG"
+				PreprocessorDefinitions="WIN32;NDEBUG;BOOST_NO_EXCEPTIONS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"

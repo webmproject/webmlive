@@ -1,7 +1,7 @@
 // webmtestshell_2008.cpp : Defines the entry point for the console application.
 //
 
-#include "http_client_main.h"
+#include "http_client_base.h"
 
 #include <conio.h>
 #include <stdio.h>
@@ -10,14 +10,16 @@
 #include <iostream>
 #include <string>
 
+#include "debug_util.h"
+
 #pragma warning(push)
 #pragma warning(disable:4512)
-#include "boost/algorithm/string.hpp"
 #include "boost/program_options.hpp"
 #pragma warning(pop)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+  using std::cerr;
   using std::cout;
 
   // abbreviate boost::program_options to preserve sanity!
@@ -38,28 +40,38 @@ int _tmain(int argc, _TCHAR* argv[])
 
   // user asked for help
   if (var_map.count("help")) {
-    cout << opts_desc << "\n";
+    cerr << opts_desc << "\n";
     return EXIT_FAILURE;
   }
 
   // validate params
   // TODO(tomfinegan): can probably make program options enforce this for me...
   if (!var_map.count("file") || !var_map.count("url")) {
-    cout << "file and url params are required!\n";
-    cout << opts_desc << "\n";
+    cerr << "file and url params are required!\n";
+    cerr << opts_desc << "\n";
     return EXIT_FAILURE;
-  } else {
-    cout << "file: " << var_map["file"].as<std::string>() << "\n";
-    cout << "url: " << var_map["url"].as<std::string>() << "\n";
   }
+
+  DBGLOG("file: " << var_map["file"].as<std::string>().c_str() << "\n");
+  DBGLOG("url: " << var_map["url"].as<std::string>().c_str() << "\n");
 
   // hooray, we survived arg parsing... let's do something
 
-  printf("press a key to exit...\n");
+  cout << "press a key to exit...\n";
 
   while(!_kbhit()) {
     Sleep(1);
   }
 
   return EXIT_SUCCESS;
+}
+
+
+// We build with BOOST_NO_EXCEPTIONS defined; boost will call this function
+// instead of throwing.  We must stop execution here.
+void boost::throw_exception(const std::exception& e)
+{
+  using std::cerr;
+  cerr << "Fatal error: " << e.what() << "\n";
+  exit(EXIT_FAILURE);
 }
