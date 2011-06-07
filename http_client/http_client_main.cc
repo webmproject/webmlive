@@ -10,12 +10,15 @@
 #include <iostream>
 #include <string>
 
-#include "debug_util.h"
 
 #pragma warning(push)
 #pragma warning(disable:4512)
 #include "boost/program_options.hpp"
 #pragma warning(pop)
+#include "boost/thread/thread.hpp"
+
+#include "debug_util.h"
+#include "http_uploader.h"
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -52,8 +55,20 @@ int _tmain(int argc, _TCHAR* argv[])
     return EXIT_FAILURE;
   }
 
-  DBGLOG("file: " << var_map["file"].as<std::string>().c_str() << "\n");
-  DBGLOG("url: " << var_map["url"].as<std::string>().c_str() << "\n");
+  DBGLOG("file: " << var_map["file"].as<std::string>().c_str());
+  DBGLOG("url: " << var_map["url"].as<std::string>().c_str());
+
+  HttpUploaderSettings settings;
+  settings.local_file = var_map["file"].as<std::string>();
+  settings.target_url = var_map["url"].as<std::string>();
+
+  HttpUploader uploader;
+  if (uploader.Init(&settings) != 0) {
+    cerr << "uploader init failed.\n";
+    return EXIT_FAILURE;
+  }
+
+  uploader.Go();
 
   // hooray, we survived arg parsing... let's do something
 
@@ -62,6 +77,8 @@ int _tmain(int argc, _TCHAR* argv[])
   while(!_kbhit()) {
     Sleep(1);
   }
+
+  uploader.Stop();
 
   return EXIT_SUCCESS;
 }

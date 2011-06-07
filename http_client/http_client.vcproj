@@ -186,6 +186,10 @@
 				RelativePath=".\http_client_main.cc"
 				>
 			</File>
+			<File
+				RelativePath=".\http_uploader.cc"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -193,7 +197,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\http_client_main.h"
+				RelativePath=".\debug_util.h"
+				>
+			</File>
+			<File
+				RelativePath=".\http_client_base.h"
+				>
+			</File>
+			<File
+				RelativePath=".\http_uploader.h"
 				>
 			</File>
 		</Filter>
