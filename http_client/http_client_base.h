@@ -10,7 +10,11 @@
 #pragma once
 
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501 // WinXP
+#  define _WIN32_WINNT 0x0501 // WinXP
+#endif
+
+#if !defined ERROR_SUCCESS
+#  define ERROR_SUCCESS 0L
 #endif
 
 #include "Windows.h"
