@@ -140,7 +140,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=""
+				AdditionalDependencies="curllib.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\win\x86\release;$(ProjectDir)..\third_party\curl\win\x86\release"
 				GenerateDebugInformation="true"

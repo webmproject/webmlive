@@ -7,11 +7,40 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "http_client_base.h"
 
+#define CURL_STATICLIB
+#include "curl/curl.h"
+#include "curl/types.h"
+#include "curl/easy.h"
+
 #include "debug_util.h"
 #include "http_uploader.h"
 
-class HttpUploaderImpl {
+// curl error checking/logging macros
+#define chkcurl(X, Y) \
+do { \
+    if((X=(Y)) != CURLE_OK) { \
+        DBGLOG(#Y << " failed, error:\n  " << curl_easy_strerror(X) << "\n"); \
+    } \
+} while (0)
+
+#define chkcurlform(X, Y) \
+do { \
+    if((X=(Y)) != CURL_FORMADD_OK) { \
+      DBGLOG(#Y << " failed, val=" << X << "\n"); \
+    } \
+} while (0)
+
+class CurlHttpUploader {
+public:
+  CurlHttpUploader();
+  ~CurlHttpUploader();
+  int Init(HttpUploaderSettings*);
+  int Final();
+private:
+  CURL* ptr_curl_;
 };
+
+typedef CurlHttpUploader HttpUploaderImpl;
 
 HttpUploader::HttpUploader():
   stop_(false)
@@ -59,3 +88,34 @@ void HttpUploader::UploadThread()
   DBGLOG("thread done");
 }
 
+CurlHttpUploader::CurlHttpUploader() :
+  ptr_curl_(NULL)
+{
+}
+
+CurlHttpUploader::~CurlHttpUploader()
+{
+  Final();
+}
+
+int CurlHttpUploader::Init(HttpUploaderSettings*)
+{
+  Final();
+  ptr_curl_ = curl_easy_init();
+  if (!ptr_curl_)
+  {
+    DBGLOG("curl_easy_init failed!");
+    return E_FAIL;
+  }
+  return ERROR_SUCCESS;
+}
+
+int CurlHttpUploader::Final()
+{
+  if (ptr_curl_)
+  {
+    curl_easy_cleanup(ptr_curl_);
+    ptr_curl_ = NULL;
+  }
+  return ERROR_SUCCESS;
+}
