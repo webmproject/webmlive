@@ -63,9 +63,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies=""
+				AdditionalDependencies="curllib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\x86\debug"
+				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\win\x86\debug;$(ProjectDir)..\third_party\curl\win\x86\debug;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
@@ -142,7 +142,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies=""
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\x86\release"
+				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\win\x86\release;$(ProjectDir)..\third_party\curl\win\x86\release"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
