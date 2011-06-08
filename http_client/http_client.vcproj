@@ -92,6 +92,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy third party DLLs to OutDir"
+				CommandLine="IF NOT EXIST &quot;$(OutDir)\curllib.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\$(ConfigurationName)\curllib.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\libeay32.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libeay32.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\openldap.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\openldap.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\ssleay32.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\ssleay32.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -171,6 +173,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy third party DLLs to OutDir"
+				CommandLine="IF NOT EXIST &quot;$(OutDir)\curllib.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\$(ConfigurationName)\curllib.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\libeay32.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libeay32.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\openldap.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\openldap.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\ssleay32.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\ssleay32.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
