@@ -30,17 +30,16 @@ do { \
     } \
 } while (0)
 
-class CurlHttpUploader {
+class HttpUploaderImpl {
 public:
-  CurlHttpUploader();
-  ~CurlHttpUploader();
+  HttpUploaderImpl();
+  ~HttpUploaderImpl();
   int Init(HttpUploaderSettings*);
   int Final();
 private:
   CURL* ptr_curl_;
+  DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
-
-typedef CurlHttpUploader HttpUploaderImpl;
 
 HttpUploader::HttpUploader():
   stop_(false)
@@ -60,7 +59,13 @@ int HttpUploader::Init(HttpUploaderSettings* ptr_settings)
   }
   settings_.local_file = ptr_settings->local_file;
   settings_.target_url = ptr_settings->target_url;
-  return S_OK;
+  ptr_uploader_.reset(new (std::nothrow) HttpUploaderImpl());
+  if (!ptr_uploader_)
+  {
+    DBGLOG("ERROR: can't construct HttpUploaderImpl.");
+    return E_OUTOFMEMORY;
+  }
+  return ptr_uploader_->Init(&settings_);
 }
 
 void HttpUploader::Go()
@@ -88,17 +93,19 @@ void HttpUploader::UploadThread()
   DBGLOG("thread done");
 }
 
-CurlHttpUploader::CurlHttpUploader() :
+HttpUploaderImpl::HttpUploaderImpl() :
   ptr_curl_(NULL)
 {
+  DBGLOG("");
 }
 
-CurlHttpUploader::~CurlHttpUploader()
+HttpUploaderImpl::~HttpUploaderImpl()
 {
   Final();
+  DBGLOG("");
 }
 
-int CurlHttpUploader::Init(HttpUploaderSettings*)
+int HttpUploaderImpl::Init(HttpUploaderSettings*)
 {
   Final();
   ptr_curl_ = curl_easy_init();
@@ -110,12 +117,13 @@ int CurlHttpUploader::Init(HttpUploaderSettings*)
   return ERROR_SUCCESS;
 }
 
-int CurlHttpUploader::Final()
+int HttpUploaderImpl::Final()
 {
   if (ptr_curl_)
   {
     curl_easy_cleanup(ptr_curl_);
     ptr_curl_ = NULL;
   }
+  DBGLOG("");
   return ERROR_SUCCESS;
 }

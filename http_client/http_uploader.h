@@ -22,26 +22,22 @@ struct HttpUploaderSettings {
   std::string target_url;
 };
 
+class HttpUploaderImpl;
+
 class HttpUploader {
 public:
   HttpUploader();
   ~HttpUploader();
   int Init(HttpUploaderSettings* ptr_settings);
-  void operator()();
-
   void Go();
   void Stop();
 
 private:
   void UploadThread();
-
   volatile bool stop_;
-
-  class HttpUploaderImpl;
   HttpUploaderSettings settings_;
-  boost::scoped_ptr<HttpUploaderImpl*> ptr_uploader_;
+  boost::scoped_ptr<HttpUploaderImpl> ptr_uploader_;
   boost::shared_ptr<boost::thread> upload_thread_;
-
   DISALLOW_COPY_AND_ASSIGN(HttpUploader);
 };
 
