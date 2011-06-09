@@ -35,8 +35,13 @@ public:
   HttpUploaderImpl();
   ~HttpUploaderImpl();
   int Init(HttpUploaderSettings*);
-  int Final();
 private:
+  int Final();
+  static int ProgressCallback(void* ptr_this,
+                              double, double, // we ignore download progress
+                              double upload_total, double upload_current);
+  static size_t ReadCallback(char *buffer, size_t size, size_t nitems,
+                             void *ptr_this);
   CURL* ptr_curl_;
   DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
@@ -107,13 +112,58 @@ HttpUploaderImpl::~HttpUploaderImpl()
 
 int HttpUploaderImpl::Init(HttpUploaderSettings*)
 {
-  Final();
+  // init libcurl
   ptr_curl_ = curl_easy_init();
   if (!ptr_curl_)
   {
     DBGLOG("curl_easy_init failed!");
     return E_FAIL;
   }
+  CURLcode curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_NOPROGRESS, FALSE);
+  if (curl_ret != CURLE_OK) {
+    DBGLOG("ERROR: curl progress enable failed. curl_ret=" << curl_ret <<
+      ":" << curl_easy_strerror(curl_ret));
+    return E_FAIL;
+  }
+  // set the progress callback function pointer
+  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_PROGRESSFUNCTION,
+                              ProgressCallback);
+  if (curl_ret != CURLE_OK) {
+    DBGLOG("ERROR: curl progress callback setup failed." << curl_ret <<
+           ":" << curl_easy_strerror(curl_ret));
+    return E_FAIL;
+  }
+  // set progress callback data pointer
+  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_PROGRESSDATA,
+                              reinterpret_cast<void*>(this));
+  if (curl_ret != CURLE_OK) {
+    DBGLOG("ERROR: curl progress callback data setup failed." << curl_ret <<
+           ":" << curl_easy_strerror(curl_ret));
+    return E_FAIL;
+  }
+  // enable upload mode
+  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_UPLOAD, TRUE);
+  if (curl_ret != CURLE_OK) {
+    DBGLOG("ERROR: curl upload enable failed." << curl_ret <<
+           ":" << curl_easy_strerror(curl_ret));
+    return E_FAIL;
+  }
+  // set read callback function pointer
+  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_READFUNCTION, ReadCallback);
+  if (curl_ret != CURLE_OK) {
+    DBGLOG("ERROR: curl read callback setup failed." << curl_ret <<
+           ":" << curl_easy_strerror(curl_ret));
+    return E_FAIL;
+  }
+  // set read callback data pointer
+  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_READDATA,
+                              reinterpret_cast<void*>(this));
+  if (curl_ret != CURLE_OK) {
+    DBGLOG("ERROR: curl read callback data setup failed." << curl_ret <<
+           ":" << curl_easy_strerror(curl_ret));
+    return E_FAIL;
+  }
+  // set our progress callback
   return ERROR_SUCCESS;
 }
 
@@ -126,4 +176,28 @@ int HttpUploaderImpl::Final()
   }
   DBGLOG("");
   return ERROR_SUCCESS;
+}
+
+int HttpUploaderImpl::ProgressCallback(void* ptr_this,
+                                       double,
+                                       double, // we ignore download progress
+                                       double upload_total,
+                                       double upload_current)
+{
+  DBGLOG("total=" << int(upload_total) << " current=" << int(upload_current));
+  HttpUploaderImpl* ptr_uploader_ =
+    reinterpret_cast<HttpUploaderImpl*>(ptr_this);
+  ptr_uploader_;
+  return 0;
+}
+
+size_t HttpUploaderImpl::ReadCallback(char *buffer, size_t size, size_t nitems,
+                                      void *ptr_this)
+{
+  DBGLOG("size=" << size << " nitems=" << nitems);
+  buffer;
+  HttpUploaderImpl* ptr_uploader_ =
+    reinterpret_cast<HttpUploaderImpl*>(ptr_this);
+  ptr_uploader_;
+  return 0;
 }
