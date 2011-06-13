@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libcurl.lib"
+				AdditionalDependencies="libcurl.lib shlwapi.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\win\x86\debug;$(ProjectDir)..\third_party\curl\win\x86;"
 				GenerateDebugInformation="true"
@@ -142,7 +142,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libcurl.lib"
+				AdditionalDependencies="libcurl.lib shlwapi.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\win\x86\release;$(ProjectDir)..\third_party\curl\win\x86"
 				GenerateDebugInformation="true"
@@ -187,6 +187,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\file_reader_win.cc"
+				>
+			</File>
+			<File
 				RelativePath=".\http_client_main.cc"
 				>
 			</File>
@@ -202,6 +206,10 @@
 			>
 			<File
 				RelativePath=".\debug_util.h"
+				>
+			</File>
+			<File
+				RelativePath=".\file_reader.h"
 				>
 			</File>
 			<File
