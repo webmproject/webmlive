@@ -58,11 +58,11 @@ int _tmain(int argc, _TCHAR* argv[])
   DBGLOG("file: " << var_map["file"].as<std::string>().c_str());
   DBGLOG("url: " << var_map["url"].as<std::string>().c_str());
 
-  HttpUploaderSettings settings;
+  WebmLive::HttpUploaderSettings settings;
   settings.local_file = var_map["file"].as<std::string>();
   settings.target_url = var_map["url"].as<std::string>();
 
-  HttpUploader uploader;
+  WebmLive::HttpUploader uploader;
   if (uploader.Init(&settings) != 0) {
     cerr << "uploader init failed.\n";
     return EXIT_FAILURE;

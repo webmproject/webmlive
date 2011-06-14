@@ -16,19 +16,14 @@
 #include "http_uploader.h"
 
 // curl error checking/logging macros
-#define chkcurl(X, Y) \
-do { \
-    if((X=(Y)) != CURLE_OK) { \
-        DBGLOG(#Y << " failed, error:\n  " << curl_easy_strerror(X) << "\n"); \
-    } \
-} while (0)
-
 #define chkcurlform(X, Y) \
 do { \
     if((X=(Y)) != CURL_FORMADD_OK) { \
       DBGLOG(#Y << " failed, val=" << X << "\n"); \
     } \
 } while (0)
+
+namespace WebmLive {
 
 class HttpUploaderImpl {
 public:
@@ -201,3 +196,5 @@ size_t HttpUploaderImpl::ReadCallback(char *buffer, size_t size, size_t nitems,
   ptr_uploader_;
   return 0;
 }
+
+} // WebmLive

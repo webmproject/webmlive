@@ -17,6 +17,8 @@
 
 #include <string>
 
+namespace WebmLive {
+
 struct HttpUploaderSettings {
   std::string local_file;
   std::string target_url;
@@ -40,5 +42,7 @@ private:
   boost::shared_ptr<boost::thread> upload_thread_;
   DISALLOW_COPY_AND_ASSIGN(HttpUploader);
 };
+
+} // WebmLive
 
 #endif // WEBMLIVE_HTTP_UPLOADER_H
