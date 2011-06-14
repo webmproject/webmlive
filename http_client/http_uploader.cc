@@ -33,6 +33,7 @@ public:
   int Init(HttpUploaderSettings*);
 private:
   int Final();
+  int FormUploadInit();
   static int ProgressCallback(void* ptr_this,
                               double, double, // we ignore download progress
                               double upload_total, double upload_current);
@@ -54,16 +55,16 @@ HttpUploader::~HttpUploader()
 
 int HttpUploader::Init(HttpUploaderSettings* ptr_settings)
 {
-  if (!ptr_settings)
-  {
+  if (!ptr_settings) {
     DBGLOG("ERROR: null ptr_settings");
     return E_INVALIDARG;
   }
   settings_.local_file = ptr_settings->local_file;
   settings_.target_url = ptr_settings->target_url;
+  settings_.form_variables = ptr_settings->form_variables;
+  settings_.headers = ptr_settings->headers;
   ptr_uploader_.reset(new (std::nothrow) HttpUploaderImpl());
-  if (!ptr_uploader_)
-  {
+  if (!ptr_uploader_) {
     DBGLOG("ERROR: can't construct HttpUploaderImpl.");
     return E_OUTOFMEMORY;
   }
@@ -107,7 +108,7 @@ HttpUploaderImpl::~HttpUploaderImpl()
   DBGLOG("");
 }
 
-int HttpUploaderImpl::Init(HttpUploaderSettings*)
+int HttpUploaderImpl::Init(HttpUploaderSettings* settings)
 {
   file_.reset(new (std::nothrow) FileReader());
   if (!file_) {
@@ -170,19 +171,22 @@ int HttpUploaderImpl::Init(HttpUploaderSettings*)
            ":" << curl_easy_strerror(curl_ret));
     return E_FAIL;
   }
-  // set our progress callback
-  return ERROR_SUCCESS;
+  return FormUploadInit();
 }
 
 int HttpUploaderImpl::Final()
 {
-  if (ptr_curl_)
-  {
+  if (ptr_curl_) {
     curl_easy_cleanup(ptr_curl_);
     ptr_curl_ = NULL;
   }
   DBGLOG("");
   return ERROR_SUCCESS;
+}
+
+int HttpUploaderImpl::FormUploadInit()
+{
+  return 0;
 }
 
 int HttpUploaderImpl::ProgressCallback(void* ptr_this,

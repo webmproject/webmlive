@@ -15,6 +15,7 @@
 #include "boost/thread/thread.hpp"
 #include "chromium/base/basictypes.h"
 
+#include <map>
 #include <string>
 
 namespace WebmLive {
@@ -22,6 +23,9 @@ namespace WebmLive {
 struct HttpUploaderSettings {
   std::string local_file;
   std::string target_url;
+  typedef std::map<std::string, std::string> StringMap;
+  StringMap form_variables;
+  StringMap headers;
 };
 
 class HttpUploaderImpl;

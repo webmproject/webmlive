@@ -13,7 +13,7 @@
 
 #include <iostream>
 #include <string>
-
+#include <vector>
 
 #pragma warning(push)
 #pragma warning(disable:4512)
@@ -23,6 +23,29 @@
 
 #include "debug_util.h"
 #include "http_uploader.h"
+
+int store_string_map_entries(const std::vector<std::string>& unparsed_entries,
+                             std::map<std::string, std::string>& out_map)
+{
+  using std::string;
+  using std::vector;
+  vector<string>::const_iterator entry_iter = unparsed_entries.begin();
+  while (entry_iter != unparsed_entries.end()) {
+    // TODO(tomfinegan): support empty headers?
+    const string& entry = *entry_iter;
+    size_t sep = entry.find(":");
+    if (sep == string::npos) {
+      // bad header (missing separator, no value)
+      // TODO(tomfinegan): allow empty entries?
+      DBGLOG("ERROR: cannot parse entry, should be name:value, got="
+             << entry.c_str());
+      return ERROR_BAD_FORMAT;
+    }
+    out_map[entry.substr(0, sep).c_str()] = entry.substr(sep+1);
+    ++entry_iter;
+  }
+  return ERROR_SUCCESS;
+}
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -38,7 +61,13 @@ int _tmain(int argc, _TCHAR* argv[])
   opts_desc.add_options()
     ("help", "Show this help message.")
     ("file", po::value<std::string>(), "Path to local WebM file.")
-    ("url", po::value<std::string>(), "Destination for HTTP Post.");
+    ("url", po::value<std::string>(), "Destination for HTTP Post.")
+    ("header",
+     po::value<std::vector<std::string>>()->composing(),
+     "HTTP header, must be specified as name:value.")
+    ("var",
+     po::value<std::vector<std::string>>()->composing(),
+     "Form variable, must be specified as name:value.");
 
   // parse and store the command line options
   po::variables_map var_map;
@@ -65,6 +94,26 @@ int _tmain(int argc, _TCHAR* argv[])
   WebmLive::HttpUploaderSettings settings;
   settings.local_file = var_map["file"].as<std::string>();
   settings.target_url = var_map["url"].as<std::string>();
+
+  if (var_map.count("header")) {
+    using std::string;
+    using std::vector;
+    const vector<string>& headers = var_map["header"].as<vector<string>>();
+    if (store_string_map_entries(headers, settings.headers)) {
+      DBGLOG("header parsing failed!");
+      return EXIT_FAILURE;
+    }
+  }
+
+  if (var_map.count("var")) {
+    using std::string;
+    using std::vector;
+    const vector<string>& form_vars = var_map["var"].as<vector<string>>();
+    if (store_string_map_entries(form_vars, settings.form_variables)) {
+      DBGLOG("form variable parsing failed!");
+      return EXIT_FAILURE;
+    }
+  }
 
   WebmLive::HttpUploader uploader;
   if (uploader.Init(&settings) != 0) {
