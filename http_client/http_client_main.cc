@@ -62,6 +62,8 @@ int _tmain(int argc, _TCHAR* argv[])
     ("help", "Show this help message.")
     ("file", po::value<std::string>(), "Path to local WebM file.")
     ("url", po::value<std::string>(), "Destination for HTTP Post.")
+    // use of |composing| tells program_options to collect multiple --header
+    // instances into a single vector of strings
     ("header",
      po::value<std::vector<std::string>>()->composing(),
      "HTTP header, must be specified as name:value.")
