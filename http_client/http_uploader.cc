@@ -13,6 +13,7 @@
 #include "curl/easy.h"
 
 #include "debug_util.h"
+#include "file_reader.h"
 #include "http_uploader.h"
 
 // curl error checking/logging macros
@@ -37,6 +38,7 @@ private:
                               double upload_total, double upload_current);
   static size_t ReadCallback(char *buffer, size_t size, size_t nitems,
                              void *ptr_this);
+  boost::scoped_ptr<FileReader> file_;
   CURL* ptr_curl_;
   DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
@@ -107,6 +109,16 @@ HttpUploaderImpl::~HttpUploaderImpl()
 
 int HttpUploaderImpl::Init(HttpUploaderSettings*)
 {
+  file_.reset(new (std::nothrow) FileReader());
+  if (!file_) {
+    DBGLOG("ERROR: can't construct FileReader.");
+    return E_OUTOFMEMORY;
+  }
+  int err = file_->Init(settings->local_file);
+  if (err) {
+    DBGLOG("ERROR: FileReader Init failed err=" << err);
+    return err;
+  }
   // init libcurl
   ptr_curl_ = curl_easy_init();
   if (!ptr_curl_)
