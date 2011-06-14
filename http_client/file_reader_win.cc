@@ -84,6 +84,7 @@ int FileReader::Read(size_t num_bytes, void* ptr_buffer, size_t* ptr_num_read)
     DBGLOG("shortfall! requested=" << num_bytes << " read=" << num_read);
     status = ERROR_HANDLE_EOF;
   }
+  bytes_read_ += num_read;
   return status;
 }
 
