@@ -63,9 +63,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libcurl.lib shlwapi.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\win\x86\debug;$(ProjectDir)..\third_party\curl\win\x86;"
+				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\win\x86\debug"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
@@ -93,7 +92,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy third party DLLs to OutDir"
-				CommandLine="IF NOT EXIST &quot;$(OutDir)\libcurl.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libcurl.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\zlib1.dll&quot; copy &quot;$(ProjectDir)..\third_party\zlib\win\x86\zlib1.dll&quot; &quot;$(OutDir)&quot;"
+				CommandLine="IF NOT EXIST &quot;$(OutDir)\libcurl.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libcurl.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\zlib1.dll&quot; copy &quot;$(ProjectDir)..\third_party\zlib\win\x86\zlib1.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -142,9 +141,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libcurl.lib shlwapi.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\win\x86\release;$(ProjectDir)..\third_party\curl\win\x86"
+				AdditionalLibraryDirectories="$(ProjectDir)..\third_party\boost\win\x86\release"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -186,6 +184,10 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\build_config_win.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\file_reader_win.cc"
 				>
