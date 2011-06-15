@@ -26,14 +26,19 @@ do { \
 
 namespace WebmLive {
 
+static const char* kContentType = "video/webm";
+static const char* kFormName = "webm_file";
+static const int kUnknownFileSize = -1;
+
 class HttpUploaderImpl {
 public:
   HttpUploaderImpl();
   ~HttpUploaderImpl();
-  int Init(HttpUploaderSettings*);
+  int Init(HttpUploaderSettings* ptr_settings);
 private:
   int Final();
-  int FormUploadInit();
+  int SetupForm(const HttpUploaderSettings* const);
+  int SetHeaders(HttpUploaderSettings* ptr_settings);
   static int ProgressCallback(void* ptr_this,
                               double, double, // we ignore download progress
                               double upload_total, double upload_current);
@@ -171,7 +176,13 @@ int HttpUploaderImpl::Init(HttpUploaderSettings* settings)
            ":" << curl_easy_strerror(curl_ret));
     return E_FAIL;
   }
-  return FormUploadInit();
+  // pass user form variables to libcurl
+  err = SetupForm(settings);
+  if (err) {
+    DBGLOG("ERROR: unable to set form variables, err=" << err);
+    return err;
+  }
+  return ERROR_SUCCESS;
 }
 
 int HttpUploaderImpl::Final()
@@ -184,9 +195,40 @@ int HttpUploaderImpl::Final()
   return ERROR_SUCCESS;
 }
 
-int HttpUploaderImpl::FormUploadInit()
+int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
 {
-  return 0;
+  CURLFORMcode err;
+  typedef std::map<std::string, std::string> StringMap;
+  StringMap::const_iterator var_iter = p->form_variables.begin();
+  curl_httppost* ptr_form_items = NULL;
+  curl_httppost* ptr_last_form_item = NULL;
+  // add user form variables
+  for (; var_iter != p->form_variables.end(); ++var_iter) {
+    err = curl_formadd(&ptr_form_items, &ptr_last_form_item,
+                       CURLFORM_COPYNAME, var_iter->first.c_str(),
+                       CURLFORM_COPYCONTENTS, var_iter->second.c_str(),
+                       CURLFORM_END);
+    if (err != CURL_FORMADD_OK) {
+      DBGLOG("ERROR: curl_formadd failed err=" << err);
+      return E_FAIL;
+    }
+  }
+  // add file data
+  err = curl_formadd(&ptr_form_items, &ptr_last_form_item,
+                     CURLFORM_COPYNAME, kFormName,
+                     // note that |CURLFORM_STREAM| relies on the callback
+                     // set in the call to curl_easy_setopt with
+                     // |CURLOPT_READFUNCTION| specified
+                     CURLFORM_STREAM, reinterpret_cast<void*>(this),
+                     CURLFORM_FILENAME, p->local_file.c_str(),
+                     CURLFORM_CONTENTSLENGTH, kUnknownFileSize,
+                     CURLFORM_CONTENTTYPE, kContentType,
+                     CURLFORM_END);
+  if (err != CURL_FORMADD_OK) {
+    DBGLOG("ERROR: curl_formadd CURLFORM_FILE failed err=" << err);
+    return E_FAIL;
+  }
+  return ERROR_SUCCESS;
 }
 
 int HttpUploaderImpl::ProgressCallback(void* ptr_this,
@@ -206,11 +248,21 @@ size_t HttpUploaderImpl::ReadCallback(char *buffer, size_t size, size_t nitems,
                                       void *ptr_this)
 {
   DBGLOG("size=" << size << " nitems=" << nitems);
-  buffer;
   HttpUploaderImpl* ptr_uploader_ =
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
-  ptr_uploader_;
-  return 0;
+  uint64 available = ptr_uploader_->file_->GetBytesAvailable();
+  size_t requested = size * nitems;
+  if (requested > available && available > 0) {
+    requested = static_cast<size_t>(available);
+  }
+  size_t bytes_read = 0;
+  if (available > 0) {
+    int err = ptr_uploader_->file_->Read(requested, buffer, &bytes_read);
+    if (err) {
+      DBGLOG("FileReader out of data!");
+    }
+  }
+  return bytes_read;
 }
 
 } // WebmLive
