@@ -16,13 +16,11 @@
 #include "file_reader.h"
 #include "http_uploader.h"
 
-// curl error checking/logging macros
-#define chkcurlform(X, Y) \
-do { \
-    if((X=(Y)) != CURL_FORMADD_OK) { \
-      DBGLOG(#Y << " failed, val=" << X << "\n"); \
-    } \
-} while (0)
+#define LOG_CURL_ERR(CURL_ERR, MSG_STR) \
+  DBGLOG("ERROR: " << MSG_STR << " err=" << CURL_ERR << ":" << \
+         curl_easy_strerror(CURL_ERR))
+#define LOG_CURLFORM_ERR(CURL_ERR, MSG_STR) \
+  DBGLOG("ERROR: " << MSG_STR << " err=" << CURL_ERR)
 
 namespace WebmLive {
 
@@ -38,8 +36,9 @@ public:
   int Upload();
 private:
   int Final();
+  CURLcode SetCurlCallbacks();
   int SetupForm(const HttpUploaderSettings* const ptr_settings);
-  int SetHeaders(const HttpUploaderSettings* const ptr_settings);
+  CURLcode SetHeaders(const HttpUploaderSettings* const ptr_settings);
   static int ProgressCallback(void* ptr_this,
                               double, double, // we ignore download progress
                               double upload_total, double upload_current);
@@ -143,78 +142,29 @@ int HttpUploaderImpl::Init(HttpUploaderSettings* settings)
   CURLcode curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_URL,
                                        settings->target_url.c_str());
   if (curl_ret != CURLE_OK) {
-    DBGLOG("ERROR: could not pass URL to curl. curl_ret=" << curl_ret <<
-      ":" << curl_easy_strerror(curl_ret));
+    LOG_CURL_ERR(curl_ret, "could not pass URL to curl.");
     return E_FAIL;
   }
   // enable progress reports
   curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_NOPROGRESS, FALSE);
   if (curl_ret != CURLE_OK) {
-    DBGLOG("ERROR: curl progress enable failed. curl_ret=" << curl_ret <<
-      ":" << curl_easy_strerror(curl_ret));
+    LOG_CURL_ERR(curl_ret, "curl progress enable failed.");
     return E_FAIL;
   }
-  // set the progress callback function pointer
-  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_PROGRESSFUNCTION,
-                              ProgressCallback);
+  // set callbacks
+  curl_ret = SetCurlCallbacks();
   if (curl_ret != CURLE_OK) {
-    DBGLOG("ERROR: curl progress callback setup failed." << curl_ret <<
-           ":" << curl_easy_strerror(curl_ret));
-    return E_FAIL;
-  }
-  // set progress callback data pointer
-  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_PROGRESSDATA,
-                              reinterpret_cast<void*>(this));
-  if (curl_ret != CURLE_OK) {
-    DBGLOG("ERROR: curl progress callback data setup failed." << curl_ret <<
-           ":" << curl_easy_strerror(curl_ret));
-    return E_FAIL;
-  }
-  // enable upload mode
-  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_UPLOAD, TRUE);
-  if (curl_ret != CURLE_OK) {
-    DBGLOG("ERROR: curl upload enable failed." << curl_ret <<
-           ":" << curl_easy_strerror(curl_ret));
-    return E_FAIL;
-  }
-  // set read callback function pointer
-  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_READFUNCTION, ReadCallback);
-  if (curl_ret != CURLE_OK) {
-    DBGLOG("ERROR: curl read callback setup failed." << curl_ret <<
-           ":" << curl_easy_strerror(curl_ret));
-    return E_FAIL;
-  }
-  // set read callback data pointer
-  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_READDATA,
-                              reinterpret_cast<void*>(this));
-  if (curl_ret != CURLE_OK) {
-    DBGLOG("ERROR: curl read callback data setup failed." << curl_ret <<
-           ":" << curl_easy_strerror(curl_ret));
-    return E_FAIL;
-  }
-  // set read callback function pointer
-  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_WRITEFUNCTION, WriteCallback);
-  if (curl_ret != CURLE_OK) {
-    DBGLOG("ERROR: curl write callback setup failed." << curl_ret <<
-           ":" << curl_easy_strerror(curl_ret));
-    return E_FAIL;
-  }
-  // set write callback data pointer
-  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_WRITEDATA,
-                              reinterpret_cast<void*>(this));
-  if (curl_ret != CURLE_OK) {
-    DBGLOG("ERROR: curl write callback data setup failed." << curl_ret <<
-           ":" << curl_easy_strerror(curl_ret));
+    LOG_CURL_ERR(curl_ret, "curl callback setup failed.");
     return E_FAIL;
   }
   err = SetupForm(settings);
   if (err) {
-    DBGLOG("ERROR: unable to set form variables, err=" << err);
+    LOG_CURL_ERR(curl_ret, "unable to set form variables.");
     return err;
   }
   err = SetHeaders(settings);
   if (err) {
-    DBGLOG("ERROR: unable to set headers, err=" << err);
+    LOG_CURL_ERR(curl_ret, "unable to set headers.");
     return err;
   }
   return ERROR_SUCCESS;
@@ -225,7 +175,7 @@ int HttpUploaderImpl::Upload()
 {
   CURLcode err = curl_easy_perform(ptr_curl_);
   if (err != CURLE_OK) {
-    DBGLOG("ERROR: curl_easy_perform failed err=" << err);
+    LOG_CURL_ERR(err, "curl_easy_perform failed.");
   } else {
     int resp_code = 0;
     curl_easy_getinfo(ptr_curl_, CURLINFO_RESPONSE_CODE, &resp_code);
@@ -243,6 +193,51 @@ int HttpUploaderImpl::Final()
   }
   DBGLOG("");
   return ERROR_SUCCESS;
+}
+
+CURLcode HttpUploaderImpl::SetCurlCallbacks()
+{
+  // set the progress callback function pointer
+  CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_PROGRESSFUNCTION,
+                                  ProgressCallback);
+  if (err != CURLE_OK) {
+    LOG_CURL_ERR(err, "curl progress callback setup failed.");
+    return err;
+  }
+  // set progress callback data pointer
+  err = curl_easy_setopt(ptr_curl_, CURLOPT_PROGRESSDATA,
+                         reinterpret_cast<void*>(this));
+  if (err != CURLE_OK) {
+    LOG_CURL_ERR(err, "curl progress callback data setup failed.");
+    return err;
+  }
+  // set read callback function pointer
+  err = curl_easy_setopt(ptr_curl_, CURLOPT_READFUNCTION, ReadCallback);
+  if (err != CURLE_OK) {
+    LOG_CURL_ERR(err, "curl read callback setup failed.");
+    return err;
+  }
+  // set read callback data pointer
+  err = curl_easy_setopt(ptr_curl_, CURLOPT_READDATA,
+                         reinterpret_cast<void*>(this));
+  if (err != CURLE_OK) {
+    LOG_CURL_ERR(err, "curl read callback data setup failed.");
+    return err;
+  }
+  // set write callback function pointer
+  err = curl_easy_setopt(ptr_curl_, CURLOPT_WRITEFUNCTION, WriteCallback);
+  if (err != CURLE_OK) {
+    LOG_CURL_ERR(err, "curl write callback setup failed.");
+    return err;
+  }
+  // set write callback data pointer
+  err = curl_easy_setopt(ptr_curl_, CURLOPT_WRITEDATA,
+                         reinterpret_cast<void*>(this));
+  if (err != CURLE_OK) {
+    LOG_CURL_ERR(err, "curl write callback data setup failed.");
+    return err;
+  }
+  return err;
 }
 
 // Set necessary curl options for form file upload, and add the user form
@@ -263,7 +258,7 @@ int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
                        CURLFORM_COPYCONTENTS, var_iter->second.c_str(),
                        CURLFORM_END);
     if (err != CURL_FORMADD_OK) {
-      DBGLOG("ERROR: curl_formadd failed err=" << err);
+      LOG_CURLFORM_ERR(err, "curl_formadd failed.");
       return E_FAIL;
     }
   }
@@ -279,13 +274,13 @@ int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
                      CURLFORM_CONTENTTYPE, kContentType,
                      CURLFORM_END);
   if (err != CURL_FORMADD_OK) {
-    DBGLOG("ERROR: curl_formadd CURLFORM_FILE failed err=" << err);
+    LOG_CURLFORM_ERR(err, "curl_formadd CURLFORM_FILE failed.");
     return E_FAIL;
   }
   CURLcode err_setopt = curl_easy_setopt(ptr_curl_, CURLOPT_HTTPPOST,
                                          ptr_form_items);
-  if (err != CURLE_OK) {
-    DBGLOG("ERROR: setopt CURLOPT_HTTPPOST failed err=" << err_setopt);
+  if (err_setopt != CURLE_OK) {
+    LOG_CURL_ERR(err_setopt, "setopt CURLOPT_HTTPPOST failed.");
     return E_FAIL;
   }
   return ERROR_SUCCESS;
@@ -293,7 +288,7 @@ int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
 
 // Disable HTTP 100 responses (send empty Expect header), and pass user HTTP
 // headers into lib curl.
-int HttpUploaderImpl::SetHeaders(const HttpUploaderSettings* const p)
+CURLcode HttpUploaderImpl::SetHeaders(const HttpUploaderSettings* const p)
 {
 
   curl_slist* header_list = NULL;
@@ -312,10 +307,9 @@ int HttpUploaderImpl::SetHeaders(const HttpUploaderSettings* const p)
   CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_HTTPHEADER,
                                       header_list);
   if (err != CURLE_OK) {
-    DBGLOG("ERROR: setopt CURLOPT_HTTPHEADER failed err=" << err);
-    return E_FAIL;
+    LOG_CURL_ERR(err, "setopt CURLOPT_HTTPHEADER failed err=");
   }
-  return ERROR_SUCCESS;
+  return err;
 }
 
 // Handle libcurl progress updates
@@ -343,6 +337,7 @@ size_t HttpUploaderImpl::ReadCallback(char* buffer, size_t size, size_t nitems,
   size_t requested = size * nitems;
   if (requested > available && available > 0) {
     requested = static_cast<size_t>(available);
+    DBGLOG("requested set to FileReader available byte count");
   }
   size_t bytes_read = 0;
   if (available > 0) {
@@ -350,6 +345,8 @@ size_t HttpUploaderImpl::ReadCallback(char* buffer, size_t size, size_t nitems,
     if (err) {
       DBGLOG("FileReader out of data!");
     }
+  } else {
+    DBGLOG("no data available");
   }
   return bytes_read;
 }
