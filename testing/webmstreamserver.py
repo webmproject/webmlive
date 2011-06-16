@@ -1,18 +1,14 @@
 #!/usr/bin/python2.4
-#
-# Copyright 2010 Google Inc. All Rights Reserved.
-
-"""This shows webm stream using http post request.
-
-A detailed description of webmstreamserver.
-"""
-
-__author__ = 'hwasoolee@google.com (Hwasoo Lee)'
-
+# Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+# Use of this source code is governed by a BSD-style license
+# that can be found in the LICENSE file in the root of the source
+# tree. An additional intellectual property rights grant can be found
+# in the file PATENTS.  All contributing project authors may
+# be found in the AUTHORS file in the root of the source tree.
 import cgi
 import os.path
 
-FILENAME = 'test.webm'
+FILENAME = '/d/src/webmdshow/webmlive/test.webm'
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
@@ -23,13 +19,14 @@ class WebMStreamServer(BaseHTTPRequestHandler):
       print ctype
       print pdict
       query = cgi.parse_multipart(self.rfile, pdict)
-      upfilecontent = query.get('send_webm_stream')
-      self.send_response(301)
-      self.end_headers()
+      upfilecontent = query.get('webm_file')
       self.wfile.write('Post Ok!')
+      self.filecount+=1
       self.file = file(FILENAME, 'ab')
       self.file.write(upfilecontent[0])
       self.file.close()
+      self.send_response(301)
+      self.end_headers()
     except:
       pass
 
@@ -37,10 +34,10 @@ class WebMStreamServer(BaseHTTPRequestHandler):
 def main():
   # TODO(hwasoo) : to consider if there is a new connection.  
   try:
-    server = HTTPServer(('', 8080), WebMStreamServer)
+    server = HTTPServer(('', 8000), WebMStreamServer)
     print 'started streaming server...'
-    if (os.path.exists(FILENAME)):
-        os.remove(FILENAME)
+    if os.path.exists(FILENAME):
+      os.remove(FILENAME)
     server.serve_forever()
   except KeyboardInterrupt:
     print '  shutting down server...'
