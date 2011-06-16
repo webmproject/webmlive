@@ -15,7 +15,7 @@
 // Note: since boost (at least appears to) link libs in this way, we still
 // must specfify a path to boost libs in the vcproj file linker settings.
 
-#pragma comment(lib, "../third_party/curl/win/x86/libcurl.lib")
+#pragma comment(lib, "../third_party/curl/win/x86/libcurldll.a")
 
 // Windows API libraries
 #pragma comment(lib, "shlwapi.lib")
