@@ -8,7 +8,7 @@
 import cgi
 import os.path
 
-FILENAME = '/d/src/webmdshow/webmlive/test.webm'
+FILENAME = 'test.webm'
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
@@ -20,12 +20,11 @@ class WebMStreamServer(BaseHTTPRequestHandler):
       print pdict
       query = cgi.parse_multipart(self.rfile, pdict)
       upfilecontent = query.get('webm_file')
-      self.wfile.write('Post Ok!')
-      self.filecount+=1
       self.file = file(FILENAME, 'ab')
       self.file.write(upfilecontent[0])
       self.file.close()
       self.send_response(301)
+      self.wfile.write('Post Ok!')
       self.end_headers()
     except:
       pass
@@ -37,6 +36,7 @@ def main():
     server = HTTPServer(('', 8000), WebMStreamServer)
     print 'started streaming server...'
     if os.path.exists(FILENAME):
+      print "removed " + FILENAME
       os.remove(FILENAME)
     server.serve_forever()
   except KeyboardInterrupt:
