@@ -10,10 +10,13 @@
 
 #pragma once
 
+#include "boost/scoped_ptr.hpp"
 #include "chromium/base/basictypes.h"
 #include <string>
 
 namespace WebmLive {
+
+class FileReaderImpl;
 
 class FileReader {
 public:
@@ -24,9 +27,9 @@ public:
   int64 GetBytesAvailable() const;
   int Read(size_t num_bytes, void* ptr_buffer, size_t* ptr_num_read);
 private:
-  FILE* ptr_file_;
-  int64 bytes_read_;
+  boost::scoped_ptr<FileReaderImpl> ptr_reader_;
   std::wstring file_name_;
+  DISALLOW_COPY_AND_ASSIGN(FileReader);
 };
 
 } // WebmLive
