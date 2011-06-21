@@ -7,11 +7,11 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "http_client_base.h"
 
-#define CURL_STATICLIB
+#include <time.h>
+
 #include "curl/curl.h"
 #include "curl/types.h"
 #include "curl/easy.h"
-
 #include "debug_util.h"
 #include "file_reader.h"
 #include "http_uploader.h"
@@ -34,6 +34,8 @@ public:
   ~HttpUploaderImpl();
   int Init(HttpUploaderSettings* ptr_settings);
   int Upload();
+  void ResetStats();
+  int GetStats(HttpUploaderStats* ptr_stats);
 private:
   int Final();
   CURLcode SetCurlCallbacks();
@@ -46,8 +48,11 @@ private:
                              void* ptr_this);
   static size_t WriteCallback(char* buffer, size_t size, size_t nitems,
                               void* ptr_this);
+  boost::mutex mutex_;
   boost::scoped_ptr<FileReader> file_;
+  clock_t start_ticks_;
   CURL* ptr_curl_;
+  HttpUploaderStats stats_;
   DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
 
@@ -77,6 +82,11 @@ int HttpUploader::Init(HttpUploaderSettings* ptr_settings)
     return E_OUTOFMEMORY;
   }
   return ptr_uploader_->Init(&settings_);
+}
+
+int HttpUploader::GetStats(WebmLive::HttpUploaderStats* ptr_stats)
+{
+  return ptr_uploader_->GetStats(ptr_stats);
 }
 
 // Public method for kicking off the upload
@@ -170,9 +180,10 @@ int HttpUploaderImpl::Init(HttpUploaderSettings* settings)
   return ERROR_SUCCESS;
 }
 
-// Runs the upload thread
+// Uploads the file using libcurl
 int HttpUploaderImpl::Upload()
 {
+  ResetStats();
   CURLcode err = curl_easy_perform(ptr_curl_);
   if (err != CURLE_OK) {
     LOG_CURL_ERR(err, "curl_easy_perform failed.");
@@ -182,6 +193,27 @@ int HttpUploaderImpl::Upload()
     DBGLOG("server response code: " << resp_code);
   }
   return err;
+}
+
+// Reset uploaded byte count, and store upload start time
+void HttpUploaderImpl::ResetStats()
+{
+  boost::mutex::scoped_lock lock(mutex_);
+  stats_.bytes_per_second = 0;
+  stats_.bytes_sent = 0;
+  start_ticks_ = clock();
+}
+
+int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats)
+{
+  if (!ptr_stats) {
+    DBGLOG("ERROR: NULL ptr_stats");
+    return E_INVALIDARG;
+  }
+  boost::mutex::scoped_lock lock(mutex_);
+  ptr_stats->bytes_per_second = stats_.bytes_per_second;
+  ptr_stats->bytes_sent = stats_.bytes_sent;
+  return ERROR_SUCCESS;
 }
 
 // HttpUploaderImpl cleanup function
@@ -292,7 +324,7 @@ CURLcode HttpUploaderImpl::SetHeaders(const HttpUploaderSettings* const p)
 {
 
   curl_slist* header_list = NULL;
-  // Disable HTTP 100
+  // Disable HTTP 100 with an empty Expect header
   std::string expect_header = "Expect:";
   header_list = curl_slist_append(header_list, expect_header.c_str());
   typedef std::map<std::string, std::string> StringMap;
@@ -304,8 +336,7 @@ CURLcode HttpUploaderImpl::SetHeaders(const HttpUploaderSettings* const p)
     header << header_iter->first.c_str() << ":" << header_iter->second.c_str();
     header_list = curl_slist_append(header_list, header.str().c_str());
   }
-  CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_HTTPHEADER,
-                                      header_list);
+  CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_HTTPHEADER, header_list);
   if (err != CURLE_OK) {
     LOG_CURL_ERR(err, "setopt CURLOPT_HTTPHEADER failed err=");
   }
@@ -314,15 +345,26 @@ CURLcode HttpUploaderImpl::SetHeaders(const HttpUploaderSettings* const p)
 
 // Handle libcurl progress updates
 int HttpUploaderImpl::ProgressCallback(void* ptr_this,
-                                       double,
-                                       double, // we ignore download progress
+                                       double download_total,
+                                       double download_current,
                                        double upload_total,
                                        double upload_current)
 {
-  DBGLOG("total=" << int(upload_total) << " current=" << int(upload_current));
+  // we ignore download progress...
+  (void)download_total;
+  (void)download_current;
+  // and we don't care about |upload_current| at present
+  (void)upload_current;
   HttpUploaderImpl* ptr_uploader_ =
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
-  ptr_uploader_;
+  boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
+  HttpUploaderStats& stats = ptr_uploader_->stats_;
+  stats.bytes_sent = static_cast<int64>(upload_total);
+  double ticks_elapsed = clock() - ptr_uploader_->start_ticks_;
+  double ticks_per_sec = CLOCKS_PER_SEC;
+  stats.bytes_per_second = upload_total / ticks_elapsed / ticks_per_sec;
+  DBGLOG("total=" << int(upload_total) << " bytes_per_sec="
+          << int(stats.bytes_per_second));
   return 0;
 }
 

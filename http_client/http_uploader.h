@@ -28,6 +28,11 @@ struct HttpUploaderSettings {
   StringMap headers;
 };
 
+struct HttpUploaderStats {
+  double bytes_per_second;
+  int64 bytes_sent;
+};
+
 class HttpUploaderImpl;
 
 class HttpUploader {
@@ -35,9 +40,9 @@ public:
   HttpUploader();
   ~HttpUploader();
   int Init(HttpUploaderSettings* ptr_settings);
+  int GetStats(HttpUploaderStats* ptr_stats);
   void Go();
   void Stop();
-
 private:
   void UploadThread();
   volatile bool stop_;
