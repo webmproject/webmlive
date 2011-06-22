@@ -129,7 +129,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
   cout << "press a key to exit...\n";
 
+  WebmLive::HttpUploaderStats stats;
   while(!_kbhit()) {
+    if (uploader.GetStats(&stats) == ERROR_SUCCESS) {
+      cout << "\r" << "upload total: " << stats.bytes_sent << " bytes @ rate: "
+           << int(stats.bytes_per_second / 1000) << "kbps";
+    }
     Sleep(1);
   }
 
