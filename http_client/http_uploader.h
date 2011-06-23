@@ -45,7 +45,6 @@ public:
   void Stop();
 private:
   void UploadThread();
-  volatile bool stop_;
   HttpUploaderSettings settings_;
   boost::scoped_ptr<HttpUploaderImpl> ptr_uploader_;
   boost::shared_ptr<boost::thread> upload_thread_;

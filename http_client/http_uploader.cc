@@ -36,11 +36,13 @@ public:
   int Upload();
   void ResetStats();
   int GetStats(HttpUploaderStats* ptr_stats);
+  void Stop();
 private:
   int Final();
   CURLcode SetCurlCallbacks();
   int SetupForm(const HttpUploaderSettings* const ptr_settings);
   CURLcode SetHeaders(const HttpUploaderSettings* const ptr_settings);
+  bool StopRequested();
   static int ProgressCallback(void* ptr_this,
                               double, double, // we ignore download progress
                               double upload_total, double upload_current);
@@ -48,6 +50,7 @@ private:
                              void* ptr_this);
   static size_t WriteCallback(char* buffer, size_t size, size_t nitems,
                               void* ptr_this);
+  bool stop_;
   boost::mutex mutex_;
   boost::scoped_ptr<FileReader> file_;
   clock_t start_ticks_;
@@ -56,8 +59,7 @@ private:
   DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
 
-HttpUploader::HttpUploader():
-  stop_(false)
+HttpUploader::HttpUploader()
 {
 }
 
@@ -101,7 +103,7 @@ void HttpUploader::Go()
 void HttpUploader::Stop()
 {
   assert(upload_thread_);
-  stop_ = true;
+  ptr_uploader_->Stop();
   upload_thread_->join();
 }
 
@@ -115,7 +117,8 @@ void HttpUploader::UploadThread()
 }
 
 HttpUploaderImpl::HttpUploaderImpl() :
-  ptr_curl_(NULL)
+  ptr_curl_(NULL),
+  stop_(false)
 {
   DBGLOG("");
 }
@@ -214,6 +217,12 @@ int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats)
   ptr_stats->bytes_per_second = stats_.bytes_per_second;
   ptr_stats->bytes_sent = stats_.bytes_sent;
   return ERROR_SUCCESS;
+}
+
+void HttpUploaderImpl::Stop()
+{
+  boost::mutex::scoped_lock lock(mutex_);
+  stop_ = true;
 }
 
 // HttpUploaderImpl cleanup function
@@ -343,6 +352,16 @@ CURLcode HttpUploaderImpl::SetHeaders(const HttpUploaderSettings* const p)
   return err;
 }
 
+bool HttpUploaderImpl::StopRequested()
+{
+  bool stop_requested = false;
+  boost::mutex::scoped_try_lock lock(mutex_);
+  if (lock.owns_lock()) {
+    stop_requested = stop_;
+  }
+  return stop_requested;
+}
+
 // Handle libcurl progress updates
 int HttpUploaderImpl::ProgressCallback(void* ptr_this,
                                        double download_total,
@@ -355,8 +374,13 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
   (void)download_current;
   // and we don't care about |upload_current| at present
   (void)upload_current;
+
   HttpUploaderImpl* ptr_uploader_ =
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
+  if (ptr_uploader_->StopRequested()) {
+    DBGLOG("stop requested.");
+    return 1;
+  }
   boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
   HttpUploaderStats& stats = ptr_uploader_->stats_;
   stats.bytes_sent = static_cast<int64>(upload_total);
@@ -370,9 +394,13 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
 size_t HttpUploaderImpl::ReadCallback(char* buffer, size_t size, size_t nitems,
                                       void* ptr_this)
 {
-  DBGLOG("size=" << size << " nitems=" << nitems);
+  //DBGLOG("size=" << size << " nitems=" << nitems);
   HttpUploaderImpl* ptr_uploader_ =
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
+  if (ptr_uploader_->StopRequested()) {
+    DBGLOG("stop requested.");
+    return CURL_READFUNC_ABORT;
+  }
   uint64 available = ptr_uploader_->file_->GetBytesAvailable();
   size_t requested = size * nitems;
   if (requested > available && available > 0) {
@@ -399,7 +427,12 @@ size_t HttpUploaderImpl::WriteCallback(char* buffer, size_t size, size_t nitems,
   std::string tmp;
   tmp.assign(buffer, size*nitems);
   DBGLOG("from server: " << tmp.c_str());
-  ptr_this;
+  HttpUploaderImpl* ptr_uploader_ =
+    reinterpret_cast<HttpUploaderImpl*>(ptr_this);
+  if (ptr_uploader_->StopRequested()) {
+    DBGLOG("stop requested.");
+    return 0;
+  }
   return size*nitems;
 }
 
