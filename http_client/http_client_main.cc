@@ -132,8 +132,8 @@ int _tmain(int argc, _TCHAR* argv[])
   WebmLive::HttpUploaderStats stats;
   while(!_kbhit()) {
     if (uploader.GetStats(&stats) == ERROR_SUCCESS) {
-      cout << "\r" << "upload total: " << stats.bytes_sent << " bytes @ rate: "
-           << int(stats.bytes_per_second / 1000) << "kbps";
+      cout << "\r" << "uploaded: " << stats.bytes_sent << " @ "
+           << int(stats.bytes_per_second / 1000) << " kbps";
     }
     Sleep(1);
   }

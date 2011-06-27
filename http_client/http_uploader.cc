@@ -369,12 +369,10 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
                                        double upload_total,
                                        double upload_current)
 {
-  // we ignore download progress...
-  (void)download_total;
-  (void)download_current;
-  // and we don't care about |upload_current| at present
-  (void)upload_current;
-
+  download_total; download_current;   // we ignore download progress
+  upload_total; // |upload_total| is always -1 because we set
+                // CURLFORM_CONTENTSLENGTH to |kUnknownFileSize| in
+                // |SetupForm|.
   HttpUploaderImpl* ptr_uploader_ =
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
   if (ptr_uploader_->StopRequested()) {
@@ -383,10 +381,12 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
   }
   boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
   HttpUploaderStats& stats = ptr_uploader_->stats_;
-  stats.bytes_sent = static_cast<int64>(upload_total);
+  stats.bytes_sent = static_cast<int64>(upload_current);
   double ticks_elapsed = clock() - ptr_uploader_->start_ticks_;
   double ticks_per_sec = CLOCKS_PER_SEC;
   stats.bytes_per_second = upload_current / (ticks_elapsed / ticks_per_sec);
+  //DBGLOG("total=" << int(upload_total) << " bytes_per_sec="
+  //       << int(stats.bytes_per_second));
   return 0;
 }
 
@@ -405,16 +405,18 @@ size_t HttpUploaderImpl::ReadCallback(char* buffer, size_t size, size_t nitems,
   size_t requested = size * nitems;
   if (requested > available && available > 0) {
     requested = static_cast<size_t>(available);
-    DBGLOG("requested set to FileReader available byte count");
+    DBGLOG("requested set to FileReader available byte count: " << available);
   }
   size_t bytes_read = 0;
   if (available > 0) {
     int err = ptr_uploader_->file_->Read(requested, buffer, &bytes_read);
     if (err) {
-      DBGLOG("FileReader out of data!");
+      DBGLOG("file read failed!");
+      // TODO(tomfinegan): pause or die here?
     }
   } else {
     DBGLOG("no data available");
+    // TODO(tomfinegan): pause the upload
   }
   return bytes_read;
 }
@@ -423,7 +425,8 @@ size_t HttpUploaderImpl::ReadCallback(char* buffer, size_t size, size_t nitems,
 size_t HttpUploaderImpl::WriteCallback(char* buffer, size_t size, size_t nitems,
                                        void* ptr_this)
 {
-  DBGLOG("size=" << size << " nitems=" << nitems);
+  //DBGLOG("size=" << size << " nitems=" << nitems);
+  // TODO(tomfinegan): store response data for users
   std::string tmp;
   tmp.assign(buffer, size*nitems);
   DBGLOG("from server: " << tmp.c_str());
