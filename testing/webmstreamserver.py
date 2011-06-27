@@ -6,9 +6,9 @@
 # in the file PATENTS.  All contributing project authors may
 # be found in the AUTHORS file in the root of the source tree.
 import cgi
+import datetime
 import os.path
-
-FILENAME = 'test.webm'
+import time
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
@@ -20,7 +20,11 @@ class WebMStreamServer(BaseHTTPRequestHandler):
       print pdict
       query = cgi.parse_multipart(self.rfile, pdict)
       upfilecontent = query.get('webm_file')
-      self.file = file(FILENAME, 'ab')
+      d = datetime.date.today()
+      filename = d.strftime("%Y%m%d_") + time.strftime("%H%M%S", time.gmtime())
+      filename = filename + ".webm"
+      print "Writing file: " + filename
+      self.file = file(filename, 'wb')
       self.file.write(upfilecontent[0])
       self.file.close()
       self.send_response(301)
@@ -35,9 +39,6 @@ def main():
   try:
     server = HTTPServer(('', 8000), WebMStreamServer)
     print 'started streaming server...'
-    if os.path.exists(FILENAME):
-      print "removed " + FILENAME
-      os.remove(FILENAME)
     server.serve_forever()
   except KeyboardInterrupt:
     print '  shutting down server...'
