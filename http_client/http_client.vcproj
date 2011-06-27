@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\file_reader.cc"
+				>
+			</File>
+			<File
 				RelativePath=".\file_reader_win.cc"
 				>
 			</File>
@@ -212,6 +216,10 @@
 			</File>
 			<File
 				RelativePath=".\file_reader.h"
+				>
+			</File>
+			<File
+				RelativePath=".\file_reader_win.h"
 				>
 			</File>
 			<File
