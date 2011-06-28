@@ -9,6 +9,8 @@
 
 #include <time.h>
 
+#include "boost/shared_ptr.hpp"
+#include "boost/thread/thread.hpp"
 #include "curl/curl.h"
 #include "curl/types.h"
 #include "curl/easy.h"
@@ -36,8 +38,10 @@ public:
   int Upload();
   void ResetStats();
   int GetStats(HttpUploaderStats* ptr_stats);
-  void Stop();
+  int Run();
+  int Stop();
 private:
+  void UploadThread();
   int Final();
   CURLcode SetCurlCallbacks();
   int SetupForm(const HttpUploaderSettings* const ptr_settings);
@@ -53,6 +57,7 @@ private:
   bool stop_;
   boost::mutex mutex_;
   boost::scoped_ptr<FileReader> file_;
+  boost::shared_ptr<boost::thread> upload_thread_;
   clock_t start_ticks_;
   CURL* ptr_curl_;
   HttpUploaderStats stats_;
@@ -92,28 +97,15 @@ int HttpUploader::GetStats(WebmLive::HttpUploaderStats* ptr_stats)
 }
 
 // Public method for kicking off the upload
-void HttpUploader::Go()
+int HttpUploader::Run()
 {
-  assert(!upload_thread_);
-  upload_thread_ = boost::shared_ptr<boost::thread>(
-    new boost::thread(boost::bind(&HttpUploader::UploadThread, this)));
+  return ptr_uploader_->Run();
 }
 
 // Upload cancel method
-void HttpUploader::Stop()
+int HttpUploader::Stop()
 {
-  assert(upload_thread_);
-  ptr_uploader_->Stop();
-  upload_thread_->join();
-}
-
-// Upload thread wrapper
-void HttpUploader::UploadThread()
-{
-  DBGLOG("running...");
-  using boost::thread;
-  ptr_uploader_->Upload();
-  DBGLOG("thread done");
+  return ptr_uploader_->Stop();
 }
 
 HttpUploaderImpl::HttpUploaderImpl() :
@@ -219,10 +211,30 @@ int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats)
   return ERROR_SUCCESS;
 }
 
-void HttpUploaderImpl::Stop()
+int HttpUploaderImpl::Run()
 {
+  assert(!upload_thread_);
+  upload_thread_ = boost::shared_ptr<boost::thread>(
+    new boost::thread(boost::bind(&HttpUploaderImpl::UploadThread, this)));
+  return ERROR_SUCCESS;
+}
+
+int HttpUploaderImpl::Stop()
+{
+  assert(upload_thread_);
   boost::mutex::scoped_lock lock(mutex_);
   stop_ = true;
+  lock.release();
+  upload_thread_->join();
+  return ERROR_SUCCESS;
+}
+
+// Upload thread wrapper
+void HttpUploaderImpl::UploadThread()
+{
+  DBGLOG("running...");
+  Upload();
+  DBGLOG("thread done");
 }
 
 // HttpUploaderImpl cleanup function

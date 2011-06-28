@@ -123,7 +123,7 @@ int _tmain(int argc, _TCHAR* argv[])
     return EXIT_FAILURE;
   }
 
-  uploader.Go();
+  uploader.Run();
 
   // hooray, we survived arg parsing... let's do something
 

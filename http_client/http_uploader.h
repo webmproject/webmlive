@@ -11,8 +11,6 @@
 #pragma once
 
 #include "boost/scoped_ptr.hpp"
-#include "boost/shared_ptr.hpp"
-#include "boost/thread/thread.hpp"
 #include "chromium/base/basictypes.h"
 
 #include <map>
@@ -41,13 +39,11 @@ public:
   ~HttpUploader();
   int Init(HttpUploaderSettings* ptr_settings);
   int GetStats(HttpUploaderStats* ptr_stats);
-  void Go();
-  void Stop();
+  int Run();
+  int Stop();
 private:
-  void UploadThread();
   HttpUploaderSettings settings_;
   boost::scoped_ptr<HttpUploaderImpl> ptr_uploader_;
-  boost::shared_ptr<boost::thread> upload_thread_;
   DISALLOW_COPY_AND_ASSIGN(HttpUploader);
 };
 
