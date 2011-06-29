@@ -45,7 +45,7 @@ int FileReader::Init(std::wstring file_name)
   return ptr_reader_->Init(file_name);
 }
 
-int64 FileReader::GetBytesAvailable() const
+uint64 FileReader::GetBytesAvailable() const
 {
   return ptr_reader_->GetBytesAvailable();
 }

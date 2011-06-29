@@ -22,7 +22,7 @@ public:
   ~FileReaderImpl();
   int Init(std::wstring file_name);
   int Read(size_t num_bytes, void* ptr_buffer, size_t* ptr_num_read);
-  int64 GetBytesAvailable() const;
+  uint64 GetBytesAvailable() const;
   int64 GetBytesRead() const { return bytes_read_; };
 private:
   HANDLE file_hndl_;

@@ -10,12 +10,11 @@
 #include "file_reader.h"
 #include "file_reader_win.h"
 
-#include <shlwapi.h>
-
 #include <cstdio>
 #include <sstream>
 
 #include "debug_util.h"
+#include "file_util.h"
 
 namespace WebmLive {
 
@@ -39,7 +38,7 @@ int FileReaderImpl::Init(std::wstring file_name)
     DBGLOG("ERROR: empty file_name");
     return E_INVALIDARG;
   }
-  if (PathFileExists(file_name.c_str()) != TRUE) {
+  if (!FileUtil::file_exists(file_name)) {
     DBGLOG("ERROR: file " << file_name.c_str() << " does not exist.");
     return ERROR_FILE_NOT_FOUND;
   }
@@ -77,12 +76,10 @@ int FileReaderImpl::Read(size_t num_bytes, void* ptr_buffer,
   return status;
 }
 
-int64 FileReaderImpl::GetBytesAvailable() const
+uint64 FileReaderImpl::GetBytesAvailable() const
 {
-  int64 bytes_available = 0;
-  WIN32_FILE_ATTRIBUTE_DATA attr = {0};
-  if (GetFileAttributesEx(file_name_.c_str(), GetFileExInfoStandard, &attr)) {
-    bytes_available = (attr.nFileSizeHigh << 4) + attr.nFileSizeLow;
+  uint64 bytes_available = FileUtil::get_file_size(file_name_);
+  if (bytes_available > 0) {
     bytes_available -= bytes_read_;
   }
   return bytes_available;

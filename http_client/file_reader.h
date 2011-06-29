@@ -29,7 +29,7 @@ public:
   ~FileReader();
   int Init(std::string file_name);
   int Init(std::wstring file_name);
-  int64 GetBytesAvailable() const;
+  uint64 GetBytesAvailable() const;
   int Read(size_t num_bytes, void* ptr_buffer, size_t* ptr_num_read);
 private:
   boost::scoped_ptr<FileReaderImpl> ptr_reader_;
