@@ -73,17 +73,13 @@ const CLSID CLSID_VP8Encoder =
   {0x94, 0xAF, 0x00, 0x26, 0xB9, 0x77, 0xEE, 0xAA}
 };
 
-const IID IID_IVP8Encoder =
-{ // ED3110FE-5211-11DF-94AF-0026B977EEAA
-  0xED3110FE,
-  0x5211,
-  0x11DF,
-  {0x94, 0xAF, 0x00, 0x26, 0xB9, 0x77, 0xEE, 0xAA}
-};
-
 class WebmEncoderImpl {
  public:
   enum {
+    kWebmMuxerAudioConnectError = -212,
+    kWebmMuxerVideoConnectError = -211,
+    kWebmMuxerConfigureError = -210,
+    kCannotConfigureWebmMuxer = -209,
     kAudioConnectError = -208,
     kVideoConnectError = -207,
     kVpxConfigureError = -206,
@@ -108,6 +104,7 @@ class WebmEncoderImpl {
   int CreateAudioSource(std::wstring video_src);
   int CreateVorbisEncoder();
   int ConnectAudioSourceToVorbisEncoder();
+  int CreateWebmMuxer();
   int ConnectEncodersToWebmMuxer();
   int ConnectFileWriter();
   void WebmEncoderThread();

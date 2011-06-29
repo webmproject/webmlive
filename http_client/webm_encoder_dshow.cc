@@ -26,6 +26,7 @@ const wchar_t* kVideoSourceName = L"VideoSource";
 const wchar_t* kAudioSourceName = L"AudioSource";
 const wchar_t* kVpxEncoderName =  L"VP8Encoder";
 const wchar_t* kVorbisEncoderName = L"VorbisEncoder";
+const wchar_t* kWebmMuxerName = L"WebmMuxer";
 const int kVpxEncoderBitrate = 500;
 
 WebmEncoderImpl::WebmEncoderImpl()
@@ -76,6 +77,16 @@ int WebmEncoderImpl::Init(std::wstring out_file_name)
   if (status) {
     DBGLOG("ConnectAudioSourceToVorbisEncoder failed: " << status);
     return WebmEncoder::kAudioEncoderError;
+  }
+  status = CreateWebmMuxer();
+  if (status) {
+    DBGLOG("CreateWebmMuxer failed: " << status);
+    return WebmEncoder::kWebmMuxerError;
+  }
+  status = ConnectEncodersToWebmMuxer();
+  if (status) {
+    DBGLOG("ConnectEncodersToWebmMuxer failed: " << status);
+    return WebmEncoder::kWebmMuxerError;
   }
   return kSuccess;
 }
@@ -307,6 +318,90 @@ int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder()
     DBGLOG("ERROR: cannot connect audio source to Vorbis encoder."
            << HRLOG(hr));
     return kAudioConnectError;
+  }
+  return kSuccess;
+}
+
+int WebmEncoderImpl::CreateWebmMuxer()
+{
+  HRESULT hr = webm_muxer_.CreateInstance(CLSID_WebmMux);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: webm muxer creation failed." << HRLOG(hr));
+    return kCannotCreateWebmMuxer;
+  }
+  hr = graph_builder_->AddFilter(webm_muxer_, kWebmMuxerName);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot add webm muxer to graph." << HRLOG(hr));
+    return kCannotAddFilter;
+  }
+  _COM_SMARTPTR_TYPEDEF(IWebmMux, __uuidof(IWebmMux));
+  IWebmMuxPtr mux_config(webm_muxer_);
+  if (!mux_config) {
+    DBGLOG("ERROR: cannot create webm muxer interface.");
+    return kCannotConfigureWebmMuxer;
+  }
+  hr = mux_config->SetMuxMode(kWebmMuxModeLive);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot enable webm live mux mode." << HRLOG(hr));
+    return kWebmMuxerConfigureError;
+  }
+  // TODO(tomfinegan): set writing app
+  return kSuccess;
+}
+
+int WebmEncoderImpl::ConnectEncodersToWebmMuxer()
+{
+  // Find video encoder output pin
+  PinFinder pin_finder;
+  int status = pin_finder.Init(vpx_encoder_);
+  if (status) {
+    DBGLOG("ERROR: cannot look for pins on vpx encoder!");
+    return kWebmMuxerVideoConnectError;
+  }
+  IPinPtr encoder_pin = pin_finder.FindVideoOutputPin(0);
+  if (!encoder_pin) {
+    DBGLOG("ERROR: cannot find video output pin on vpx encoder!");
+    return kWebmMuxerVideoConnectError;
+  }
+  status = pin_finder.Init(webm_muxer_);
+  if (status) {
+    DBGLOG("ERROR: cannot look for pins on webm muxer!");
+    return kWebmMuxerVideoConnectError;
+  }
+  IPinPtr muxer_pin = pin_finder.FindVideoInputPin(0);
+  if (!muxer_pin) {
+    DBGLOG("ERROR: cannot find video input pin on webm muxer!");
+    return kWebmMuxerVideoConnectError;
+  }
+  HRESULT hr = graph_builder_->ConnectDirect(encoder_pin, muxer_pin, NULL);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot connect vpx encoder to webm muxer!" << HRLOG(hr));
+    return kWebmMuxerVideoConnectError;
+  }
+  status = pin_finder.Init(vorbis_encoder_);
+  if (status) {
+    DBGLOG("ERROR: cannot look for pins on vorbis encoder!");
+    return kWebmMuxerAudioConnectError;
+  }
+  encoder_pin = pin_finder.FindAudioOutputPin(0);
+  if (!encoder_pin) {
+    DBGLOG("ERROR: cannot find audio output pin on vorbis encoder!");
+    return kWebmMuxerAudioConnectError;
+  }
+  status = pin_finder.Init(webm_muxer_);
+  if (status) {
+    DBGLOG("ERROR: cannot look for pins on webm muxer!");
+    return kWebmMuxerAudioConnectError;
+  }
+  muxer_pin = pin_finder.FindAudioInputPin(0);
+  if (!muxer_pin) {
+    DBGLOG("ERROR: cannot find audio input pin on webm muxer!");
+    return kWebmMuxerAudioConnectError;
+  }
+  hr = graph_builder_->ConnectDirect(encoder_pin, muxer_pin, NULL);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot connect vorbis encoder to webm muxer!" << HRLOG(hr));
+    return kWebmMuxerAudioConnectError;
   }
   return kSuccess;
 }
