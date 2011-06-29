@@ -67,6 +67,16 @@ int WebmEncoderImpl::Init(std::wstring out_file_name)
     DBGLOG("CreateAudioSource failed: " << status);
     return WebmEncoder::kNoAudioSource;
   }
+  status = CreateVorbisEncoder();
+  if (status) {
+    DBGLOG("CreateVorbisEncoder failed: " << status);
+    return WebmEncoder::kAudioEncoderError;
+  }
+  status = ConnectAudioSourceToVorbisEncoder();
+  if (status) {
+    DBGLOG("ConnectAudioSourceToVorbisEncoder failed: " << status);
+    return WebmEncoder::kAudioEncoderError;
+  }
   return kSuccess;
 }
 
@@ -249,6 +259,55 @@ int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src)
     }
   }
   // TODO(tomfinegan): set audio format instead of hoping for sane defaults.
+  return kSuccess;
+}
+
+int WebmEncoderImpl::CreateVorbisEncoder()
+{
+  HRESULT hr = vorbis_encoder_.CreateInstance(CLSID_VorbisEncoder);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: Vorbis encoder creation failed." << HRLOG(hr));
+    return kCannotCreateVorbisEncoder;
+  }
+  hr = graph_builder_->AddFilter(vorbis_encoder_, kVorbisEncoderName);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot add Vorbis encoder to graph." << HRLOG(hr));
+    return kCannotAddFilter;
+  }
+  // TODO(tomfinegan): add Vorbis encoder configuration.
+  return kSuccess;
+}
+
+int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder()
+{
+  PinFinder pin_finder;
+  int status = pin_finder.Init(audio_source_);
+  if (status) {
+    DBGLOG("ERROR: cannot look for pins on audio source!");
+    return kAudioConnectError;
+  }
+  IPinPtr audio_src_pin = pin_finder.FindAudioOutputPin(0);
+  if (!audio_src_pin) {
+    DBGLOG("ERROR: cannot find output pin on audio source!");
+    return kAudioConnectError;
+  }
+  status = pin_finder.Init(vorbis_encoder_);
+  if (status) {
+    DBGLOG("ERROR: cannot look for pins on video source!");
+    return kAudioConnectError;
+  }
+  IPinPtr vorbis_input_pin = pin_finder.FindAudioInputPin(0);
+  if (!vorbis_input_pin) {
+    DBGLOG("ERROR: cannot find audio input pin on Vorbis encoder!");
+    return kAudioConnectError;
+  }
+  HRESULT hr = graph_builder_->ConnectDirect(audio_src_pin, vorbis_input_pin,
+                                             NULL);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot connect audio source to Vorbis encoder."
+           << HRLOG(hr));
+    return kAudioConnectError;
+  }
   return kSuccess;
 }
 

@@ -84,6 +84,7 @@ const IID IID_IVP8Encoder =
 class WebmEncoderImpl {
  public:
   enum {
+    kAudioConnectError = -208,
     kVideoConnectError = -207,
     kVpxConfigureError = -206,
     kCannotConfigureVpxEncoder = -205,
@@ -105,7 +106,7 @@ class WebmEncoderImpl {
   int CreateVpxEncoder();
   int ConnectVideoSourceToVpxEncoder();
   int CreateAudioSource(std::wstring video_src);
-  int CreateAudioEncoder();
+  int CreateVorbisEncoder();
   int ConnectAudioSourceToVorbisEncoder();
   int ConnectEncodersToWebmMuxer();
   int ConnectFileWriter();
