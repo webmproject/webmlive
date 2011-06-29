@@ -20,13 +20,14 @@ class WebmEncoderImpl;
 class WebmEncoder {
 public:
   enum {
+    kWebmMuxerError = -108,
     kAudioEncoderError = -107,
-    kVideoEncoderError = -107,
-    kInvalidArg = -106,
-    kNotImplemented = -105,
-    kNoAudioSource = -104,
-    kNoVideoSource = -103,
-    kInitFailed = -102,
+    kVideoEncoderError = -106,
+    kInvalidArg = -105,
+    kNotImplemented = -104,
+    kNoAudioSource = -103,
+    kNoVideoSource = -102,
+    kInitFailed = -101,
     kRunFailed = -100,
     kSuccess = 0,
   };
