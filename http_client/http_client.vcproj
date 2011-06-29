@@ -260,6 +260,14 @@
 				RelativePath="..\third_party\chromium\base\basictypes.h"
 				>
 			</File>
+			<File
+				RelativePath="..\third_party\webmdshow\IDL\vp8encoderidl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\third_party\webmdshow\IDL\webmmuxidl.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

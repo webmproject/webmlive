@@ -17,11 +17,16 @@
 
 #include "debug_util.h"
 #include "webmdshow/common/hrtext.hpp"
+#include "webmdshow/IDL/vp8encoderidl.h"
+#include "webmdshow/IDL/webmmuxidl.h"
 
 namespace WebmLive {
 
-const wchar_t* kVideoSourceName = L"Video Source";
-const wchar_t* kAudioSourceName = L"Audio Source";
+const wchar_t* kVideoSourceName = L"VideoSource";
+const wchar_t* kAudioSourceName = L"AudioSource";
+const wchar_t* kVpxEncoderName =  L"VP8Encoder";
+const wchar_t* kVorbisEncoderName = L"VorbisEncoder";
+const int kVpxEncoderBitrate = 500;
 
 WebmEncoderImpl::WebmEncoderImpl()
 {
@@ -45,6 +50,16 @@ int WebmEncoderImpl::Init(std::wstring out_file_name)
   if (status) {
     DBGLOG("CreateVideoSource failed: " << status);
     return WebmEncoder::kNoVideoSource;
+  }
+  status = CreateVpxEncoder();
+  if (status) {
+    DBGLOG("CreateVpxEncoder failed: " << status);
+    return WebmEncoder::kVideoEncoderError;
+  }
+  status = ConnectVideoSourceToVpxEncoder();
+  if (status) {
+    DBGLOG("ConnectVideoSourceToVpxEncoder failed: " << status);
+    return WebmEncoder::kVideoEncoderError;
   }
   std::wstring audio_src;
   status = CreateAudioSource(audio_src);
@@ -102,17 +117,89 @@ int WebmEncoderImpl::CreateVideoSource(std::wstring video_src)
   }
   // TODO(tomfinegan): Add device selection.
   // For now, use the first device found.
-  video_src_filter_ = loader.GetSource(0);
-  if (!video_src_filter_) {
+  video_source_ = loader.GetSource(0);
+  if (!video_source_) {
     DBGLOG("ERROR: cannot create video source!");
     return WebmEncoder::kNoVideoSource;
   }
-  HRESULT hr = graph_builder_->AddFilter(video_src_filter_, kVideoSourceName);
+  HRESULT hr = graph_builder_->AddFilter(video_source_, kVideoSourceName);
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot add video source to graph." << HRLOG(hr));
     return kCannotAddFilter;
   }
   // TODO(tomfinegan): set video format instead of hoping for sane defaults.
+  return kSuccess;
+}
+
+int WebmEncoderImpl::CreateVpxEncoder()
+{
+  HRESULT hr = vpx_encoder_.CreateInstance(CLSID_VP8Encoder);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: VP8 encoder creation failed." << HRLOG(hr));
+    return kCannotCreateVpxEncoder;
+  }
+  hr = graph_builder_->AddFilter(vpx_encoder_, kVpxEncoderName);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot add VP8 encoder to graph." << HRLOG(hr));
+    return kCannotAddFilter;
+  }
+  _COM_SMARTPTR_TYPEDEF(IVP8Encoder, __uuidof(IVP8Encoder));
+  IVP8EncoderPtr vp8_config(vpx_encoder_);
+  if (!vp8_config) {
+    DBGLOG("ERROR: cannot create VP8 encoder interface.");
+    return kCannotConfigureVpxEncoder;
+  }
+  // TODO(tomfinegan): Obtain VP8 encoder settings from user.
+  // Set minimal defaults for a live encode...
+  hr = vp8_config->SetDeadline(kDeadlineRealtime);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set VP8 encoder deadline." << HRLOG(hr));
+    return kVpxConfigureError;
+  }
+  hr = vp8_config->SetEndUsage(kEndUsageCBR);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set VP8 encoder bitrate mode." << HRLOG(hr));
+    return kVpxConfigureError;
+  }
+  hr = vp8_config->SetTargetBitrate(kVpxEncoderBitrate);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set VP8 encoder bitrate." << HRLOG(hr));
+    return kVpxConfigureError;
+  }
+  return kSuccess;
+}
+
+int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder()
+{
+  PinFinder pin_finder;
+  int status = pin_finder.Init(video_source_);
+  if (status) {
+    DBGLOG("ERROR: cannot look for pins on video source!");
+    return kVideoConnectError;
+  }
+  IPinPtr video_src_pin = pin_finder.FindVideoOutputPin(0);
+  if (!video_src_pin) {
+    DBGLOG("ERROR: cannot find output pin on video source!");
+    return kVideoConnectError;
+  }
+  status = pin_finder.Init(vpx_encoder_);
+  if (status) {
+    DBGLOG("ERROR: cannot look for pins on video source!");
+    return kVideoConnectError;
+  }
+  IPinPtr vpx_input_pin = pin_finder.FindVideoInputPin(0);
+  if (!vpx_input_pin) {
+    DBGLOG("ERROR: cannot find video input pin on VP8 encoder!");
+    return kVideoConnectError;
+  }
+  // TODO(tomfinegan): Add WebM Color Conversion filter when |ConnectDirect|
+  //                   fails here.
+  HRESULT hr = graph_builder_->ConnectDirect(video_src_pin, vpx_input_pin,
+                                             NULL);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot connect video source to VP8 encoder." << HRLOG(hr));
+    return kVideoConnectError;
+  }
   return kSuccess;
 }
 
@@ -127,7 +214,7 @@ int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src)
   //                   exposed by the video capture source.  This behavior
   //                   should be configurable.
   PinFinder pin_finder;
-  int status = pin_finder.Init(video_src_filter_);
+  int status = pin_finder.Init(video_source_);
   if (status) {
     DBGLOG("ERROR: cannot check video source for audio pins!");
     return WebmEncoder::kInitFailed;
@@ -135,7 +222,7 @@ int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src)
   if (pin_finder.FindAudioOutputPin(0)) {
     // Use the video source filter audio output pin.
     DBGLOG("Using video source filter audio output pin.");
-    audio_src_filter_ = video_src_filter_;
+    audio_source_ = video_source_;
   } else {
     // The video source doesn't have an audio output pin. Find an audio
     // capture source.
@@ -150,13 +237,12 @@ int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src)
     }
     // TODO(tomfinegan): Add device selection.
     // For now, use the first device found.
-    audio_src_filter_ = loader.GetSource(0);
-    if (!audio_src_filter_) {
+    audio_source_ = loader.GetSource(0);
+    if (!audio_source_) {
       DBGLOG("ERROR: cannot create audio source!");
       return WebmEncoder::kNoAudioSource;
     }
-    HRESULT hr = graph_builder_->AddFilter(audio_src_filter_,
-                                           kAudioSourceName);
+    HRESULT hr = graph_builder_->AddFilter(audio_source_, kAudioSourceName);
     if (FAILED(hr)) {
       DBGLOG("ERROR: cannot add audio source to graph." << HRLOG(hr));
       return kCannotAddFilter;
@@ -166,7 +252,7 @@ int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src)
   return kSuccess;
 }
 
-void WebmEncoderImpl::EncoderThread()
+void WebmEncoderImpl::WebmEncoderThread()
 {
 }
 
@@ -236,7 +322,7 @@ int CaptureSourceLoader::FindAllSources()
   return kSuccess;
 }
 
-IBaseFilter* CaptureSourceLoader::GetSource(int index)
+IBaseFilterPtr CaptureSourceLoader::GetSource(int index)
 {
   if (static_cast<size_t>(index) >= sources_.size()) {
     DBGLOG("ERROR: " << index << " is not a valid source index");
@@ -255,13 +341,13 @@ IBaseFilter* CaptureSourceLoader::GetSource(int index)
       return NULL;
     }
   }
-  IBaseFilter* ptr_filter = NULL;
+  IBaseFilterPtr filter = NULL;
   hr = source_moniker->BindToObject(NULL, NULL, IID_IBaseFilter,
-                                    reinterpret_cast<void**>(&ptr_filter));
+                                    reinterpret_cast<void**>(&filter));
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot bind filter!" << HRLOG(hr));
   }
-  return ptr_filter;
+  return filter;
 }
 
 std::wstring CaptureSourceLoader::GetStringProperty(IPropertyBagPtr &prop_bag,
@@ -300,7 +386,28 @@ int PinFinder::Init(IBaseFilterPtr& filter)
   return WebmEncoder::kSuccess;
 }
 
-IPin* PinFinder::FindAudioOutputPin(int index) const
+IPinPtr PinFinder::FindAudioInputPin(int index) const
+{
+  IPinPtr pin;
+  int num_found = 0;
+  for (;;) {
+    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    if (hr != S_OK) {
+      break;
+    }
+    PinInfo pin_info(pin);
+    if (pin_info.IsInput() && pin_info.IsAudio()) {
+      ++num_found;
+      if (num_found == index+1) {
+        break;
+      }
+    }
+    pin.Release();
+  }
+  return pin;
+}
+
+IPinPtr PinFinder::FindAudioOutputPin(int index) const
 {
   IPinPtr pin;
   int num_found = 0;
@@ -318,10 +425,31 @@ IPin* PinFinder::FindAudioOutputPin(int index) const
     }
     pin.Release();
   }
-  return pin.Detach();
+  return pin;
 }
 
-IPin* PinFinder::FindVideoOutputPin(int index) const
+IPinPtr PinFinder::FindVideoInputPin(int index) const
+{
+  IPinPtr pin;
+  int num_found = 0;
+  for (;;) {
+    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    if (hr != S_OK) {
+      break;
+    }
+    PinInfo pin_info(pin);
+    if (pin_info.IsInput() && pin_info.IsVideo()) {
+      ++num_found;
+      if (num_found == index+1) {
+        break;
+      }
+    }
+    pin.Release();
+  }
+  return pin;
+}
+
+IPinPtr PinFinder::FindVideoOutputPin(int index) const
 {
   IPinPtr pin;
   int num_found = 0;
@@ -339,7 +467,7 @@ IPin* PinFinder::FindVideoOutputPin(int index) const
     }
     pin.Release();
   }
-  return pin.Detach();
+  return pin;
 }
 
 PinInfo::PinInfo(IPinPtr& ptr_pin)

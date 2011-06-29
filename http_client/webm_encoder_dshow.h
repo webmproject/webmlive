@@ -50,11 +50,11 @@ const CLSID CLSID_VorbisEncoder =
 };
 
 const CLSID CLSID_WebmColorConversion =
-{   // ED311140-5211-11DF-94AF-0026B977EEAA
-    0xED311140,
-    0x5211,
-    0x11DF,
-    {0x94, 0xAF, 0x00, 0x26, 0xB9, 0x77, 0xEE, 0xAA}
+{ // ED311140-5211-11DF-94AF-0026B977EEAA
+  0xED311140,
+  0x5211,
+  0x11DF,
+  {0x94, 0xAF, 0x00, 0x26, 0xB9, 0x77, 0xEE, 0xAA}
 };
 
 const CLSID CLSID_WebmMux =
@@ -66,8 +66,8 @@ const CLSID CLSID_WebmMux =
 };
 
 const CLSID CLSID_VP8Encoder =
-{ // ED3110F3-5211-11DF-94AF-0026B977EEAA
-  0xED3110F3,
+{ // ED3110F5-5211-11DF-94AF-0026B977EEAA */
+  0xED3110F5,
   0x5211,
   0x11DF,
   {0x94, 0xAF, 0x00, 0x26, 0xB9, 0x77, 0xEE, 0xAA}
@@ -84,6 +84,9 @@ const IID IID_IVP8Encoder =
 class WebmEncoderImpl {
  public:
   enum {
+    kVideoConnectError = -207,
+    kVpxConfigureError = -206,
+    kCannotConfigureVpxEncoder = -205,
     kCannotAddFilter = -204,
     kCannotCreateVorbisEncoder = -203,
     kCannotCreateVpxEncoder = -202,
@@ -99,13 +102,19 @@ class WebmEncoderImpl {
  private:
   int CreateGraph();
   int CreateVideoSource(std::wstring video_src);
+  int CreateVpxEncoder();
+  int ConnectVideoSourceToVpxEncoder();
   int CreateAudioSource(std::wstring video_src);
-  void EncoderThread();
+  int CreateAudioEncoder();
+  int ConnectAudioSourceToVorbisEncoder();
+  int ConnectEncodersToWebmMuxer();
+  int ConnectFileWriter();
+  void WebmEncoderThread();
 
   IGraphBuilderPtr graph_builder_;
   ICaptureGraphBuilder2Ptr capture_graph_builder_;
-  IBaseFilterPtr audio_src_filter_;
-  IBaseFilterPtr video_src_filter_;
+  IBaseFilterPtr audio_source_;
+  IBaseFilterPtr video_source_;
   IBaseFilterPtr vorbis_encoder_;
   IBaseFilterPtr vpx_encoder_;
   IBaseFilterPtr webm_muxer_;
@@ -126,7 +135,7 @@ class CaptureSourceLoader {
   int Init(CLSID source_type);
   int GetNumSources() const { return sources_.size(); };
   std::wstring GetSourceName(int index) { return sources_[index]; };
-  IBaseFilter* GetSource(int index);
+  IBaseFilterPtr GetSource(int index);
  private:
   int FindAllSources();
   std::wstring GetStringProperty(IPropertyBagPtr& prop_bag,
@@ -142,8 +151,10 @@ class PinFinder {
   PinFinder();
   ~PinFinder();
   int Init(IBaseFilterPtr& filter);
-  IPin* FindAudioOutputPin(int index) const;
-  IPin* FindVideoOutputPin(int index) const;
+  IPinPtr FindAudioInputPin(int index) const;
+  IPinPtr FindAudioOutputPin(int index) const;
+  IPinPtr FindVideoInputPin(int index) const;
+  IPinPtr FindVideoOutputPin(int index) const;
  private:
   IEnumPinsPtr pin_enum_;
   DISALLOW_COPY_AND_ASSIGN(PinFinder);
