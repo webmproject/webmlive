@@ -20,6 +20,7 @@ class WebmEncoderImpl;
 class WebmEncoder {
 public:
   enum {
+    kFileWriteError = -109,
     kWebmMuxerError = -108,
     kAudioEncoderError = -107,
     kVideoEncoderError = -106,

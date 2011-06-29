@@ -76,6 +76,8 @@ const CLSID CLSID_VP8Encoder =
 class WebmEncoderImpl {
  public:
   enum {
+    kFileWriterConnectError = -214,
+    kCannotCreateFileWriter = -213,
     kWebmMuxerAudioConnectError = -212,
     kWebmMuxerVideoConnectError = -211,
     kWebmMuxerConfigureError = -210,
@@ -106,7 +108,8 @@ class WebmEncoderImpl {
   int ConnectAudioSourceToVorbisEncoder();
   int CreateWebmMuxer();
   int ConnectEncodersToWebmMuxer();
-  int ConnectFileWriter();
+  int CreateFileWriter();
+  int ConnectWebmMuxerToFileWriter();
   void WebmEncoderThread();
 
   IGraphBuilderPtr graph_builder_;
@@ -116,7 +119,7 @@ class WebmEncoderImpl {
   IBaseFilterPtr vorbis_encoder_;
   IBaseFilterPtr vpx_encoder_;
   IBaseFilterPtr webm_muxer_;
-  IFileSinkFilter2Ptr file_writer_;
+  IBaseFilterPtr file_writer_;
   boost::shared_ptr<boost::thread> upload_thread_;
   std::wstring out_file_name_;
   DISALLOW_COPY_AND_ASSIGN(WebmEncoderImpl);
@@ -133,7 +136,7 @@ class CaptureSourceLoader {
   int Init(CLSID source_type);
   int GetNumSources() const { return sources_.size(); };
   std::wstring GetSourceName(int index) { return sources_[index]; };
-  IBaseFilterPtr GetSource(int index);
+  IBaseFilterPtr GetSource(int index) const;
  private:
   int FindAllSources();
   std::wstring GetStringProperty(IPropertyBagPtr& prop_bag,
@@ -153,6 +156,9 @@ class PinFinder {
   IPinPtr FindAudioOutputPin(int index) const;
   IPinPtr FindVideoInputPin(int index) const;
   IPinPtr FindVideoOutputPin(int index) const;
+  IPinPtr FindStreamInputPin(int index) const;
+  IPinPtr FindStreamOutputPin(int index) const;
+  IPinPtr FindInputPin(int index) const;
  private:
   IEnumPinsPtr pin_enum_;
   DISALLOW_COPY_AND_ASSIGN(PinFinder);
@@ -167,6 +173,7 @@ class PinInfo {
   bool IsInput() const;
   bool IsOutput() const;
   bool IsVideo() const;
+  bool IsStream() const;
  private:
   PinInfo();
   IPinPtr& pin_;

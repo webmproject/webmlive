@@ -27,6 +27,7 @@ const wchar_t* kAudioSourceName = L"AudioSource";
 const wchar_t* kVpxEncoderName =  L"VP8Encoder";
 const wchar_t* kVorbisEncoderName = L"VorbisEncoder";
 const wchar_t* kWebmMuxerName = L"WebmMuxer";
+const wchar_t* kFileWriterName = L"FileWriter";
 const int kVpxEncoderBitrate = 500;
 
 WebmEncoderImpl::WebmEncoderImpl()
@@ -87,6 +88,17 @@ int WebmEncoderImpl::Init(std::wstring out_file_name)
   if (status) {
     DBGLOG("ConnectEncodersToWebmMuxer failed: " << status);
     return WebmEncoder::kWebmMuxerError;
+  }
+  out_file_name_ = out_file_name;
+  status = CreateFileWriter();
+  if (status) {
+    DBGLOG("CreateFileWriter failed: " << status);
+    return WebmEncoder::kFileWriteError;
+  }
+  status = ConnectWebmMuxerToFileWriter();
+  if (status) {
+    DBGLOG("ConnectWebmMuxerToFileWriter failed: " << status);
+    return WebmEncoder::kFileWriteError;
   }
   return kSuccess;
 }
@@ -351,7 +363,6 @@ int WebmEncoderImpl::CreateWebmMuxer()
 
 int WebmEncoderImpl::ConnectEncodersToWebmMuxer()
 {
-  // Find video encoder output pin
   PinFinder pin_finder;
   int status = pin_finder.Init(vpx_encoder_);
   if (status) {
@@ -402,6 +413,62 @@ int WebmEncoderImpl::ConnectEncodersToWebmMuxer()
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot connect vorbis encoder to webm muxer!" << HRLOG(hr));
     return kWebmMuxerAudioConnectError;
+  }
+  return kSuccess;
+}
+
+int WebmEncoderImpl::CreateFileWriter()
+{
+  HRESULT hr = file_writer_.CreateInstance(CLSID_FileWriter);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: file writer creation failed." << HRLOG(hr));
+    return kCannotCreateFileWriter;
+  }
+  hr = graph_builder_->AddFilter(file_writer_, kFileWriterName);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot add file writer to graph." << HRLOG(hr));
+    return kCannotAddFilter;
+  }
+  IFileSinkFilter2Ptr writer_config(file_writer_);
+  if (!writer_config) {
+    DBGLOG("ERROR: cannot create file writer sink interface.");
+    return kCannotCreateFileWriter;
+  }
+  hr = writer_config->SetFileName(out_file_name_.c_str(), NULL);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set output file name." << HRLOG(hr));
+    return kCannotCreateFileWriter;
+  }
+  return kSuccess;
+}
+
+int WebmEncoderImpl::ConnectWebmMuxerToFileWriter()
+{
+  PinFinder pin_finder;
+  int status = pin_finder.Init(webm_muxer_);
+  if (status) {
+    DBGLOG("ERROR: cannot look for pins on vpx encoder!");
+    return kFileWriterConnectError;
+  }
+  IPinPtr muxer_pin = pin_finder.FindStreamOutputPin(0);
+  if (!muxer_pin) {
+    DBGLOG("ERROR: cannot find stream output pin on webm muxer!");
+    return kFileWriterConnectError;
+  }
+  status = pin_finder.Init(file_writer_);
+  if (status) {
+    DBGLOG("ERROR: cannot look for pins on webm muxer!");
+    return kFileWriterConnectError;
+  }
+  IPinPtr writer_pin = pin_finder.FindInputPin(0);
+  if (!writer_pin) {
+    DBGLOG("ERROR: cannot find stream input pin on file writer!");
+    return kFileWriterConnectError;
+  }
+  HRESULT hr = graph_builder_->ConnectDirect(muxer_pin, writer_pin, NULL);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot connect webm muxer to file writer!" << HRLOG(hr));
+    return kFileWriterConnectError;
   }
   return kSuccess;
 }
@@ -478,7 +545,7 @@ int CaptureSourceLoader::FindAllSources()
   return kSuccess;
 }
 
-IBaseFilterPtr CaptureSourceLoader::GetSource(int index)
+IBaseFilterPtr CaptureSourceLoader::GetSource(int index) const
 {
   if (static_cast<size_t>(index) >= sources_.size()) {
     DBGLOG("ERROR: " << index << " is not a valid source index");
@@ -626,6 +693,69 @@ IPinPtr PinFinder::FindVideoOutputPin(int index) const
   return pin;
 }
 
+IPinPtr PinFinder::FindStreamInputPin(int index) const
+{
+  IPinPtr pin;
+  int num_found = 0;
+  for (;;) {
+    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    if (hr != S_OK) {
+      break;
+    }
+    PinInfo pin_info(pin);
+    if (pin_info.IsInput() && pin_info.IsStream()) {
+      ++num_found;
+      if (num_found == index+1) {
+        break;
+      }
+    }
+    pin.Release();
+  }
+  return pin;
+}
+
+IPinPtr PinFinder::FindStreamOutputPin(int index) const
+{
+  IPinPtr pin;
+  int num_found = 0;
+  for (;;) {
+    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    if (hr != S_OK) {
+      break;
+    }
+    PinInfo pin_info(pin);
+    if (pin_info.IsOutput() && pin_info.IsStream()) {
+      ++num_found;
+      if (num_found == index+1) {
+        break;
+      }
+    }
+    pin.Release();
+  }
+  return pin;
+}
+
+IPinPtr PinFinder::FindInputPin(int index) const
+{
+  IPinPtr pin;
+  int num_found = 0;
+  for (;;) {
+    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    if (hr != S_OK) {
+      break;
+    }
+    PinInfo pin_info(pin);
+    if (pin_info.IsInput()) {
+      ++num_found;
+      if (num_found == index+1) {
+        break;
+      }
+    }
+    pin.Release();
+  }
+  return pin;
+}
+
 PinInfo::PinInfo(IPinPtr& ptr_pin)
     : pin_(ptr_pin)
 {
@@ -714,6 +844,15 @@ bool PinInfo::IsVideo() const
     is_video_pin = HasMajorType(MEDIATYPE_Video);
   }
   return is_video_pin;
+}
+
+bool PinInfo::IsStream() const
+{
+  bool is_stream_pin = false;
+  if (pin_) {
+    is_stream_pin = HasMajorType(MEDIATYPE_Stream);
+  }
+  return is_stream_pin;
 }
 
 } // WebmLive
