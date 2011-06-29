@@ -23,6 +23,7 @@
 
 #include "debug_util.h"
 #include "http_uploader.h"
+#include "webm_encoder.h"
 
 int store_string_map_entries(const std::vector<std::string>& unparsed_entries,
                              std::map<std::string, std::string>& out_map)
@@ -60,7 +61,7 @@ int _tmain(int argc, _TCHAR* argv[])
   po::options_description opts_desc("Required options");
   opts_desc.add_options()
     ("help", "Show this help message.")
-    ("file", po::value<std::string>(), "Path to local WebM file.")
+    ("file", po::value<std::string>(), "Path for local WebM file.")
     ("url", po::value<std::string>(), "Destination for HTTP Post.")
     // use of |composing| tells program_options to collect multiple --header
     // instances into a single vector of strings
@@ -117,6 +118,12 @@ int _tmain(int argc, _TCHAR* argv[])
     }
   }
 
+  WebmLive::WebmEncoder encoder;
+  if (encoder.Init(settings.local_file)) {
+    cerr << "encoder init failed.\n";
+    return EXIT_FAILURE;
+  }
+
   WebmLive::HttpUploader uploader;
   if (uploader.Init(&settings) != 0) {
     cerr << "uploader init failed.\n";
@@ -124,8 +131,6 @@ int _tmain(int argc, _TCHAR* argv[])
   }
 
   uploader.Run();
-
-  // hooray, we survived arg parsing... let's do something
 
   cout << "press a key to exit...\n";
 

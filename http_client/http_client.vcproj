@@ -204,6 +204,14 @@
 				RelativePath=".\http_uploader.cc"
 				>
 			</File>
+			<File
+				RelativePath=".\webm_encoder.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\webm_encoder_dshow.cc"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -228,6 +236,14 @@
 			</File>
 			<File
 				RelativePath=".\http_uploader.h"
+				>
+			</File>
+			<File
+				RelativePath=".\webm_encoder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\webm_encoder_dshow.h"
 				>
 			</File>
 		</Filter>

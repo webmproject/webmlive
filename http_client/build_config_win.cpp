@@ -18,4 +18,6 @@
 #pragma comment(lib, "../third_party/curl/win/x86/libcurldll.a")
 
 // Windows API libraries
+#pragma comment(lib, "quartz.lib")
 #pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "strmiids.lib")
