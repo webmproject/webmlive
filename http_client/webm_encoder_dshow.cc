@@ -291,29 +291,31 @@ int CaptureSourceLoader::FindAllSources()
     DBGLOG("ERROR: moniker creation failed (no devices)." << HRLOG(hr));
     return kNoDeviceFound;
   }
-  int i = 0;
-  for (;; ++i) {
+  int source_index = 0;
+  for (;;) {
     IMonikerPtr source_moniker;
     hr = source_enum_->Next(1, &source_moniker, NULL);
     if (FAILED(hr) || hr == S_FALSE || !source_moniker) {
-      DBGLOG("Done enumerating sources, found " << i << ".");
+      DBGLOG("Done enumerating sources, found " << source_index << ".");
       break;
     }
     IPropertyBagPtr props;
     hr = source_moniker->BindToStorage(0, 0, IID_IPropertyBag,
                                        reinterpret_cast<void**>(&props));
     if (FAILED(hr) || hr == S_FALSE) {
-      DBGLOG("source=" << i << " has no property bag, skipping.");
+      DBGLOG("source=" << source_index << " has no property bag, skipping.");
       continue;
     }
     const wchar_t* const kFriendlyName = L"FriendlyName";
     std::wstring name = GetStringProperty(props, kFriendlyName);
     if (name.empty()) {
-      DBGLOG("source=" << i << " has no " << kFriendlyName << ", skipping.");
+      DBGLOG("source=" << source_index << " has no " << kFriendlyName
+             << " property, skipping.");
       continue;
     }
-    DBGLOG("source=" << i << " name=" << name.c_str());
-    sources_[i] = name;
+    DBGLOG("source=" << source_index << " name=" << name.c_str());
+    sources_[source_index] = name;
+    ++source_index;
   }
   if (sources_.size() == 0) {
     DBGLOG("No devices found!");
