@@ -18,7 +18,8 @@
 #define DBGLOG(X) \
 do { \
     wodbgstream wos; \
-    wos << "["__FUNCTION__"] " << X << std::endl; \
+    wos << __FILE__ << "(" << __LINE__ << ") : ["__FUNCTION__"] " << X \
+        << std::endl; \
 } while(0)
 
 // Extract error from the HRESULT, and output its hex and decimal values.
@@ -37,15 +38,5 @@ do { \
 // Keep the compiler quiet about do/while(0)'s (constant conditional) used in
 // log macros.
 #pragma warning(disable:4127)
-
-// Check the HRESULT for failure (<0), and log it if we're in debug mode, and
-// format the failure text so that it is clickable in vs output window.
-#define CHK(X, Y) \
-do { \
-    if (FAILED(X=(Y))) \
-    { \
-        DBGLOG("\n" << __FILE__ << "(" << __LINE__ << ") : " << #Y << HRLOG(X)); \
-    } \
-} while (0)
 
 #endif // WEBMLIVE_DEBUGUTIL_H
