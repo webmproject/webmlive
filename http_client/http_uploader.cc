@@ -120,9 +120,9 @@ int HttpUploader::Stop()
   return ptr_uploader_->Stop();
 }
 
-HttpUploaderImpl::HttpUploaderImpl() :
-  ptr_curl_(NULL),
-  stop_(false)
+HttpUploaderImpl::HttpUploaderImpl()
+    : ptr_curl_(NULL),
+      stop_(false)
 {
 }
 
@@ -238,7 +238,7 @@ int HttpUploaderImpl::Stop()
   assert(upload_thread_);
   boost::mutex::scoped_lock lock(mutex_);
   stop_ = true;
-  lock.release();
+  lock.unlock();
   upload_thread_->join();
   return kSuccess;
 }
