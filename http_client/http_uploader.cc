@@ -29,6 +29,7 @@ namespace WebmLive {
 static const char* kContentType = "video/webm";
 static const char* kFormName = "webm_file";
 static const int kUnknownFileSize = -1;
+static const int kBytesRequiredForResume = 32*1024;
 
 class HttpUploaderImpl {
  public:
@@ -37,6 +38,7 @@ class HttpUploaderImpl {
     kSuccess = 0,
     kWriteCallbackStopRequest = 0,
     kProgressCallbackStopRequest = 1,
+    kReadCallbackPauseRequest = CURL_READFUNC_PAUSE,
     kReadCallbackStopRequest = CURL_READFUNC_ABORT,
   };
   HttpUploaderImpl();
@@ -61,6 +63,7 @@ class HttpUploaderImpl {
                              void* ptr_this);
   static size_t WriteCallback(char* buffer, size_t size, size_t nitems,
                               void* ptr_this);
+  bool paused_;
   bool stop_;
   boost::mutex mutex_;
   boost::scoped_ptr<FileReader> file_;
@@ -122,6 +125,7 @@ int HttpUploader::Stop()
 
 HttpUploaderImpl::HttpUploaderImpl()
     : ptr_curl_(NULL),
+      paused_(false),
       stop_(false)
 {
 }
@@ -405,14 +409,29 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
     DBGLOG("stop requested.");
     return kProgressCallbackStopRequest;
   }
-  boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
-  HttpUploaderStats& stats = ptr_uploader_->stats_;
-  stats.bytes_sent = static_cast<int64>(upload_current);
-  double ticks_elapsed = clock() - ptr_uploader_->start_ticks_;
-  double ticks_per_sec = CLOCKS_PER_SEC;
-  stats.bytes_per_second = upload_current / (ticks_elapsed / ticks_per_sec);
-  //DBGLOG("total=" << int(upload_total) << " bytes_per_sec="
-  //       << int(stats.bytes_per_second));
+  if (ptr_uploader_->paused_) {
+    const uint64 bytes_available = ptr_uploader_->file_->GetBytesAvailable();
+    DBGLOG("paused, bytes_available=" << bytes_available);
+    if (bytes_available > kBytesRequiredForResume) {
+      const int resume_flags = CURLPAUSE_SEND_CONT;
+      CURLcode err = curl_easy_pause(ptr_uploader_->ptr_curl_, resume_flags);
+      if (err != CURLE_OK) {
+        LOG_CURL_ERR(err, "could not resume upload!");
+        return kProgressCallbackStopRequest;
+      }
+      ptr_uploader_->paused_ = false;
+      DBGLOG("resumed upload.");
+    }
+  } else {
+    boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
+    HttpUploaderStats& stats = ptr_uploader_->stats_;
+    stats.bytes_sent = static_cast<int64>(upload_current);
+    double ticks_elapsed = clock() - ptr_uploader_->start_ticks_;
+    double ticks_per_sec = CLOCKS_PER_SEC;
+    stats.bytes_per_second = upload_current / (ticks_elapsed / ticks_per_sec);
+    //DBGLOG("total=" << int(upload_total) << " bytes_per_sec="
+    //       << int(stats.bytes_per_second));
+  }
   return 0;
 }
 
@@ -420,7 +439,7 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
 size_t HttpUploaderImpl::ReadCallback(char* buffer, size_t size, size_t nitems,
                                       void* ptr_this)
 {
-  //DBGLOG("size=" << size << " nitems=" << nitems);
+  DBGLOG("size=" << size << " nitems=" << nitems);
   HttpUploaderImpl* ptr_uploader_ =
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
   if (ptr_uploader_->StopRequested()) {
@@ -441,8 +460,9 @@ size_t HttpUploaderImpl::ReadCallback(char* buffer, size_t size, size_t nitems,
       // TODO(tomfinegan): pause or die here?
     }
   } else {
-    DBGLOG("no data available");
-    // TODO(tomfinegan): pause the upload
+    DBGLOG("no data available, pausing.");
+    ptr_uploader_->paused_ = true;
+    return kReadCallbackPauseRequest;
   }
   return bytes_read;
 }
