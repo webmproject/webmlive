@@ -11,21 +11,25 @@
 
 #pragma once
 
+#include <fstream>
 #include <string>
 #include "chromium/base/basictypes.h"
 
 namespace WebmLive {
 
 class FileReaderImpl {
-public:
+ public:
+  enum {
+    kSuccess = 0,
+  };
   FileReaderImpl();
   ~FileReaderImpl();
   int Init(std::wstring file_name);
   int Read(size_t num_bytes, void* ptr_buffer, size_t* ptr_num_read);
   uint64 GetBytesAvailable() const;
   int64 GetBytesRead() const { return bytes_read_; };
-private:
-  HANDLE file_hndl_;
+ private:
+  std::ifstream input_file_;
   int64 bytes_read_;
   std::wstring file_name_;
   DISALLOW_COPY_AND_ASSIGN(FileReaderImpl);

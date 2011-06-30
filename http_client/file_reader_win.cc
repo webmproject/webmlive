@@ -10,7 +10,6 @@
 #include "file_reader.h"
 #include "file_reader_win.h"
 
-#include <cstdio>
 #include <sstream>
 
 #include "debug_util.h"
@@ -19,16 +18,14 @@
 namespace WebmLive {
 
 FileReaderImpl::FileReaderImpl():
-  bytes_read_(0),
-  file_hndl_(INVALID_HANDLE_VALUE)
+  bytes_read_(0)
 {
 }
 
 FileReaderImpl::~FileReaderImpl()
 {
-  if (file_hndl_ != INVALID_HANDLE_VALUE) {
-    CloseHandle(file_hndl_);
-    file_hndl_ = INVALID_HANDLE_VALUE;
+  if (input_file_.is_open()) {
+    input_file_.close();
   }
 }
 
@@ -42,14 +39,14 @@ int FileReaderImpl::Init(std::wstring file_name)
     DBGLOG("ERROR: file " << file_name.c_str() << " does not exist.");
     return ERROR_FILE_NOT_FOUND;
   }
-  file_hndl_ = CreateFile(file_name.c_str(), GENERIC_READ, FILE_SHARE_READ,
-                          NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-  if (file_hndl_ == INVALID_HANDLE_VALUE) {
+  using std::ios_base;
+  input_file_.open(file_name.c_str(), ios_base::in | ios_base::binary);
+  if (!input_file_.is_open() || input_file_.fail()) {
     DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
     return FileReader::kOpenFailed;
   }
   file_name_ = file_name;
-  return FileReader::kSuccess;
+  return kSuccess;
 }
 
 int FileReaderImpl::Read(size_t num_bytes, void* ptr_buffer,
@@ -59,21 +56,19 @@ int FileReaderImpl::Read(size_t num_bytes, void* ptr_buffer,
     return E_INVALIDARG;
   }
   size_t& num_read = *ptr_num_read;
-  DWORD dw_bytes_read = 0;
-  BOOL read_ok = ReadFile(file_hndl_, ptr_buffer, num_bytes, &dw_bytes_read,
-                          NULL);
-  if (!read_ok) {
-    DBGLOG("ERROR: could not read file, GetLastError=" << GetLastError());
+  char* ptr_buf = reinterpret_cast<char*>(ptr_buffer);
+  input_file_.read(ptr_buf, num_bytes);
+  if (input_file_.bad()) {
+    DBGLOG("ERROR: read error, badbit set, GetLastError=" << GetLastError());
     return FileReader::kReadFailed;
   }
-  num_read = dw_bytes_read;
+  num_read = input_file_.gcount();
   bytes_read_ += num_read;
-  int status = FileReader::kSuccess;
   if (num_bytes != num_read) {
     DBGLOG("shortfall! requested=" << num_bytes << " read=" << num_read);
-    status = FileReader::kAtEOF;
+    return FileReader::kAtEOF;
   }
-  return status;
+  return kSuccess;
 }
 
 uint64 FileReaderImpl::GetBytesAvailable() const
