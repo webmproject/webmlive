@@ -20,6 +20,11 @@
 #include "webmdshow/IDL/vp8encoderidl.h"
 #include "webmdshow/IDL/webmmuxidl.h"
 
+double WebmLive::media_time_to_seconds(REFERENCE_TIME media_time)
+{
+  return media_time / 10000000.0;
+}
+
 namespace WebmLive {
 
 const wchar_t* kVideoSourceName = L"VideoSource";
@@ -31,12 +36,29 @@ const wchar_t* kFileWriterName = L"FileWriter";
 const int kVpxEncoderBitrate = 500;
 
 WebmEncoderImpl::WebmEncoderImpl()
+    : encoded_duration_(0.0),
+      media_event_handle_(INVALID_HANDLE_VALUE),
+      stop_(false)
 {
   CoInitialize(NULL);
 }
 
 WebmEncoderImpl::~WebmEncoderImpl()
 {
+  // Manually release directshow interfaces to avoid problems related to
+  // destruction order of com_ptr_t members.
+  file_writer_ = 0;
+  webm_muxer_ = 0;
+  vorbis_encoder_ = 0;
+  audio_source_ = 0;
+  vpx_encoder_ = 0;
+  video_source_ = 0;
+  media_event_handle_ = INVALID_HANDLE_VALUE;
+  media_control_ = 0;
+  media_event_ = 0;
+  media_seeking_ = 0;
+  capture_graph_builder_ = 0;
+  graph_builder_ = 0;
   CoUninitialize();
 }
 
@@ -105,12 +127,64 @@ int WebmEncoderImpl::Init(std::wstring out_file_name)
 
 int WebmEncoderImpl::Run()
 {
-  return WebmEncoder::kRunFailed;
+  if (encode_thread_) {
+    DBGLOG("ERROR: non-null encode thread. Already running?");
+    return WebmEncoder::kRunFailed;
+  }
+  media_control_ = IMediaControlPtr(graph_builder_);
+  if (!media_control_) {
+    DBGLOG("ERROR: cannot create media control.");
+    return kCannotCreateMediaControl;
+  }
+  media_event_ = IMediaEventPtr(graph_builder_);
+  if (!media_event_) {
+    DBGLOG("ERROR: cannot create media event.");
+    return kCannotCreateMediaControl;
+  }
+  OAEVENT* ptr_handle = reinterpret_cast<OAEVENT*>(&media_event_handle_);
+  HRESULT hr = media_event_->GetEventHandle(ptr_handle);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: could not media event handle!" << HRLOG(hr));
+    return kCannotCreateMediaEvent;
+  }
+  media_seeking_ = IMediaSeekingPtr(graph_builder_);
+  if (!media_seeking_) {
+    DBGLOG("ERROR: cannot create media seeking interface.");
+    return kCannotCreateMediaSeeking;
+  }
+  using boost::bind;
+  using boost::shared_ptr;
+  using boost::thread;
+  using std::nothrow;
+  encode_thread_ = shared_ptr<thread>(
+    new (nothrow) thread(bind(&WebmEncoderImpl::WebmEncoderThread, this)));
+  return kSuccess;
 }
 
 int WebmEncoderImpl::Stop()
 {
+  assert(encode_thread_);
+  boost::mutex::scoped_lock lock(mutex_);
+  stop_ = true;
+  lock.unlock();
+  encode_thread_->join();
   return kSuccess;
+}
+
+double WebmEncoderImpl::GetEncodedDuration()
+{
+  boost::mutex::scoped_lock lock(mutex_);
+  return encoded_duration_;
+}
+
+bool WebmEncoderImpl::StopRequested()
+{
+  bool stop_requested = false;
+  boost::mutex::scoped_try_lock lock(mutex_);
+  if (lock.owns_lock()) {
+    stop_requested = stop_;
+  }
+  return stop_requested;
 }
 
 int WebmEncoderImpl::CreateGraph()
@@ -128,7 +202,7 @@ int WebmEncoderImpl::CreateGraph()
   hr = capture_graph_builder_->SetFiltergraph(graph_builder_);
   if (FAILED(hr)) {
     DBGLOG("ERROR: could not set capture builder graph." << HRLOG(hr));
-    return kCannotCreateGraph;
+    return kGraphConfigureError;
   }
   return kSuccess;
 }
@@ -473,8 +547,72 @@ int WebmEncoderImpl::ConnectWebmMuxerToFileWriter()
   return kSuccess;
 }
 
+int WebmEncoderImpl::HandleMediaEvent()
+{
+  int status = kSuccess;
+  const DWORD wait_status = WaitForSingleObject(media_event_handle_, 0);
+  const bool media_event_recvd = (wait_status == WAIT_OBJECT_0);
+  if (media_event_recvd) {
+    long code = 0;
+    long param1 = 0;
+    long param2 = 0;
+    HRESULT hr = media_event_->GetEvent(&code, &param1, &param2, 0);
+    media_event_->FreeEventParams(code, param1, param2);
+    if (SUCCEEDED(hr)) {
+        if (code == EC_ERRORABORT) {
+          DBGLOG("EC_ERRORABORT");
+          status = kGraphAborted;
+        } else if (code == EC_ERRORABORTEX) {
+          DBGLOG("EC_ERRORABORTEX");
+          status = kGraphAborted;
+        } else if (code == EC_USERABORT) {
+          DBGLOG("EC_USERABORT");
+          status = kGraphAborted;
+        } else if (code == EC_COMPLETE) {
+            DBGLOG("EC_COMPLETE");
+            status = kGraphCompleted;
+        }
+    }
+  }
+  return status;
+}
+
+void WebmEncoderImpl::UpdateEncodedDuration(double current_duration)
+{
+  boost::mutex::scoped_lock lock(mutex_);
+  encoded_duration_ = current_duration;
+}
+
 void WebmEncoderImpl::WebmEncoderThread()
 {
+  CoInitialize(NULL);
+  HRESULT hr = media_control_->Run();
+  if (FAILED(hr)) {
+    DBGLOG("media control Run failed, cannot run encode!" << HRLOG(hr));
+  } else {
+    for (;;) {
+      int status = HandleMediaEvent();
+      bool stop_event_recvd =
+        (status == kGraphAborted || status == kGraphCompleted);
+      if (stop_event_recvd || StopRequested()) {
+        break;
+      }
+      REFERENCE_TIME current_duration = 0;
+      hr = media_seeking_->GetCurrentPosition(&current_duration);
+      if (SUCCEEDED(hr)) {
+        UpdateEncodedDuration(media_time_to_seconds(current_duration));
+      }
+      boost::thread::yield();
+    }
+    hr = media_control_->Stop();
+    if (FAILED(hr)) {
+      DBGLOG("media control Stop failed!" << HRLOG(hr));
+    } else {
+      DBGLOG("graph stopping." << HRLOG(hr));
+    }
+  }
+  CoUninitialize();
+  DBGLOG("Done.");
 }
 
 CaptureSourceLoader::CaptureSourceLoader()

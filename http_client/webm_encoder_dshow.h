@@ -37,6 +37,9 @@ COMPTR_TYPEDEF(IEnumPins);
 COMPTR_TYPEDEF(IFilterGraph);
 COMPTR_TYPEDEF(IFileSinkFilter2);
 COMPTR_TYPEDEF(IGraphBuilder);
+COMPTR_TYPEDEF(IMediaControl);
+COMPTR_TYPEDEF(IMediaEvent);
+COMPTR_TYPEDEF(IMediaSeeking);
 COMPTR_TYPEDEF(IMoniker);
 COMPTR_TYPEDEF(IPin);
 COMPTR_TYPEDEF(IPropertyBag);
@@ -73,9 +76,16 @@ const CLSID CLSID_VP8Encoder =
   {0x94, 0xAF, 0x00, 0x26, 0xB9, 0x77, 0xEE, 0xAA}
 };
 
+double media_time_to_seconds(REFERENCE_TIME media_time);
+
 class WebmEncoderImpl {
  public:
   enum {
+    kGraphAborted = -219,
+    kCannotCreateMediaSeeking = -218,
+    kCannotCreateMediaEvent = -217,
+    kCannotCreateMediaControl = -216,
+    kGraphConfigureError = -215,
     kFileWriterConnectError = -214,
     kCannotCreateFileWriter = -213,
     kWebmMuxerAudioConnectError = -212,
@@ -92,13 +102,16 @@ class WebmEncoderImpl {
     kCannotCreateWebmMuxer = -201,
     kCannotCreateGraph = -200,
     kSuccess = 0,
+    kGraphCompleted = 1,
   };
   WebmEncoderImpl();
   ~WebmEncoderImpl();
   int Init(std::wstring out_file_name);
   int Run();
   int Stop();
+  double GetEncodedDuration();
  private:
+  bool StopRequested();
   int CreateGraph();
   int CreateVideoSource(std::wstring video_src);
   int CreateVpxEncoder();
@@ -110,8 +123,13 @@ class WebmEncoderImpl {
   int ConnectEncodersToWebmMuxer();
   int CreateFileWriter();
   int ConnectWebmMuxerToFileWriter();
+  int HandleMediaEvent();
+  void UpdateEncodedDuration(double current_duration);
   void WebmEncoderThread();
 
+  bool stop_;
+  double encoded_duration_;
+  HANDLE media_event_handle_;
   IGraphBuilderPtr graph_builder_;
   ICaptureGraphBuilder2Ptr capture_graph_builder_;
   IBaseFilterPtr audio_source_;
@@ -120,7 +138,11 @@ class WebmEncoderImpl {
   IBaseFilterPtr vpx_encoder_;
   IBaseFilterPtr webm_muxer_;
   IBaseFilterPtr file_writer_;
-  boost::shared_ptr<boost::thread> upload_thread_;
+  IMediaControlPtr media_control_;
+  IMediaEventPtr media_event_;
+  IMediaSeekingPtr media_seeking_;
+  boost::mutex mutex_;
+  boost::shared_ptr<boost::thread> encode_thread_;
   std::wstring out_file_name_;
   DISALLOW_COPY_AND_ASSIGN(WebmEncoderImpl);
 };
