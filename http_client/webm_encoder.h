@@ -38,6 +38,7 @@ public:
   int Init(std::wstring out_file_name);
   int Run();
   int Stop();
+  double GetEncodedDuration();
 private:
   boost::scoped_ptr<WebmEncoderImpl> ptr_encoder_;
   DISALLOW_COPY_AND_ASSIGN(WebmEncoder);

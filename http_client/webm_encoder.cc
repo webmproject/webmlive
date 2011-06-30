@@ -55,4 +55,9 @@ int WebmEncoder::Stop()
   return ptr_encoder_->Stop();
 }
 
+double WebmEncoder::GetEncodedDuration()
+{
+  return ptr_encoder_->GetEncodedDuration();
+}
+
 } // WebmLive

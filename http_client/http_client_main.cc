@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <tchar.h>
 
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -120,8 +121,20 @@ int _tmain(int argc, _TCHAR* argv[])
 
   WebmLive::WebmEncoder encoder;
   if (encoder.Init(settings.local_file)) {
-    cerr << "encoder init failed.\n";
+    cerr << "encoder Init failed.\n";
     return EXIT_FAILURE;
+  }
+
+  if (encoder.Run()) {
+    cerr << "encoder Run failed.\n";
+    return EXIT_FAILURE;
+  }
+
+  cout << "waiting for encode duration to reach 5 seconds...\n";
+  double duration;
+  while ((duration = encoder.GetEncodedDuration()) < 5) {
+    Sleep(100);
+    cout << "\rencoded duration: " << std::setprecision(4) << duration;
   }
 
   WebmLive::HttpUploader uploader;
@@ -132,18 +145,24 @@ int _tmain(int argc, _TCHAR* argv[])
 
   uploader.Run();
 
-  cout << "press a key to exit...\n";
+  cout << "\npress a key to exit...\n";
 
   WebmLive::HttpUploaderStats stats;
   while(!_kbhit()) {
-    if (uploader.GetStats(&stats) == ERROR_SUCCESS) {
-      cout << "\r" << "uploaded: " << stats.bytes_sent << " @ "
+    duration = encoder.GetEncodedDuration();
+    if (uploader.GetStats(&stats) == WebmLive::HttpUploader::kSuccess) {
+      cout << "\rencoded duration: " << std::setprecision(4) << duration
+           << " seconds, " << "uploaded: " << stats.bytes_sent << " @ "
            << int(stats.bytes_per_second / 1000) << " kbps";
     }
     Sleep(1);
   }
 
+  DBGLOG("stopping encoder...");
+  encoder.Stop();
+  DBGLOG("stopping uploader...");
   uploader.Stop();
+  DBGLOG("Done.");
 
   return EXIT_SUCCESS;
 }
