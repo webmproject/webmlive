@@ -27,13 +27,13 @@ double WebmLive::media_time_to_seconds(REFERENCE_TIME media_time)
 
 namespace WebmLive {
 
-const wchar_t* kVideoSourceName = L"VideoSource";
-const wchar_t* kAudioSourceName = L"AudioSource";
-const wchar_t* kVpxEncoderName =  L"VP8Encoder";
-const wchar_t* kVorbisEncoderName = L"VorbisEncoder";
-const wchar_t* kWebmMuxerName = L"WebmMuxer";
-const wchar_t* kFileWriterName = L"FileWriter";
-const int kVpxEncoderBitrate = 500;
+static const wchar_t* const kVideoSourceName = L"VideoSource";
+static const wchar_t* const kAudioSourceName = L"AudioSource";
+static const wchar_t* const kVpxEncoderName =  L"VP8Encoder";
+static const wchar_t* const kVorbisEncoderName = L"VorbisEncoder";
+static const wchar_t* const kWebmMuxerName = L"WebmMuxer";
+static const wchar_t* const kFileWriterName = L"FileWriter";
+static const int kVpxEncoderBitrate = 500;
 
 WebmEncoderImpl::WebmEncoderImpl()
     : encoded_duration_(0.0),
