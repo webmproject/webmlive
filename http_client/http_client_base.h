@@ -7,15 +7,17 @@
 // be found in the AUTHORS file in the root of the source tree.
 #ifndef WEBMLIVE_HTTP_CLIENT_BASE_H
 #define WEBMLIVE_HTTP_CLIENT_BASE_H
+
 #pragma once
+
+#if _WIN32
 
 #ifndef _WIN32_WINNT
 #  define _WIN32_WINNT 0x0501 // WinXP
 #endif
 
-#if !defined ERROR_SUCCESS
-#  define ERROR_SUCCESS 0L
-#endif
-
 #include "Windows.h"
+
+#endif // _WIN32
+
 #endif // WEBMLIVE_HTTP_CLIENT_BASE_H

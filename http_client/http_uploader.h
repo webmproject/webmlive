@@ -34,14 +34,24 @@ struct HttpUploaderStats {
 class HttpUploaderImpl;
 
 class HttpUploader {
-public:
+ public:
+  enum {
+    kUrlConfigError = -307,
+    kFileReaderError = -306,
+    kHeaderError = -305,
+    kFormError = -304,
+    kInvalidArg = -303,
+    kInitFailed = -302,
+    kRunFailed = -301,
+    kSuccess = 0,
+  };
   HttpUploader();
   ~HttpUploader();
   int Init(HttpUploaderSettings* ptr_settings);
   int GetStats(HttpUploaderStats* ptr_stats);
   int Run();
   int Stop();
-private:
+ private:
   HttpUploaderSettings settings_;
   boost::scoped_ptr<HttpUploaderImpl> ptr_uploader_;
   DISALLOW_COPY_AND_ASSIGN(HttpUploader);

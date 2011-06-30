@@ -31,7 +31,14 @@ static const char* kFormName = "webm_file";
 static const int kUnknownFileSize = -1;
 
 class HttpUploaderImpl {
-public:
+ public:
+  enum {
+    kLibCurlError = -401,
+    kSuccess = 0,
+    kWriteCallbackStopRequest = 0,
+    kProgressCallbackStopRequest = 1,
+    kReadCallbackStopRequest = CURL_READFUNC_ABORT,
+  };
   HttpUploaderImpl();
   ~HttpUploaderImpl();
   int Init(HttpUploaderSettings* ptr_settings);
@@ -40,7 +47,7 @@ public:
   int GetStats(HttpUploaderStats* ptr_stats);
   int Run();
   int Stop();
-private:
+ private:
   void UploadThread();
   int Final();
   CURLcode SetCurlCallbacks();
@@ -77,7 +84,7 @@ int HttpUploader::Init(HttpUploaderSettings* ptr_settings)
 {
   if (!ptr_settings) {
     DBGLOG("ERROR: null ptr_settings");
-    return E_INVALIDARG;
+    return kInvalidArg;
   }
   settings_.local_file = ptr_settings->local_file;
   settings_.target_url = ptr_settings->target_url;
@@ -86,9 +93,14 @@ int HttpUploader::Init(HttpUploaderSettings* ptr_settings)
   ptr_uploader_.reset(new (std::nothrow) HttpUploaderImpl());
   if (!ptr_uploader_) {
     DBGLOG("ERROR: can't construct HttpUploaderImpl.");
-    return E_OUTOFMEMORY;
+    return kInitFailed;
   }
-  return ptr_uploader_->Init(&settings_);
+  int status = ptr_uploader_->Init(&settings_);
+  if (status) {
+    DBGLOG("ERROR: uploader init failed. " << status);
+    return kInitFailed;
+  }
+  return kSuccess;
 }
 
 int HttpUploader::GetStats(WebmLive::HttpUploaderStats* ptr_stats)
@@ -112,13 +124,11 @@ HttpUploaderImpl::HttpUploaderImpl() :
   ptr_curl_(NULL),
   stop_(false)
 {
-  DBGLOG("");
 }
 
 HttpUploaderImpl::~HttpUploaderImpl()
 {
   Final();
-  DBGLOG("");
 }
 
 // Initialize the upload
@@ -130,49 +140,49 @@ int HttpUploaderImpl::Init(HttpUploaderSettings* settings)
   file_.reset(new (std::nothrow) FileReader());
   if (!file_) {
     DBGLOG("ERROR: can't construct FileReader.");
-    return E_OUTOFMEMORY;
+    return HttpUploader::kInitFailed;
   }
   int err = file_->Init(settings->local_file);
   if (err) {
     DBGLOG("ERROR: FileReader Init failed err=" << err);
-    return err;
+    return HttpUploader::kFileReaderError;
   }
   // init libcurl
   ptr_curl_ = curl_easy_init();
   if (!ptr_curl_)
   {
     DBGLOG("curl_easy_init failed!");
-    return E_FAIL;
+    return kLibCurlError;
   }
   CURLcode curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_URL,
                                        settings->target_url.c_str());
   if (curl_ret != CURLE_OK) {
     LOG_CURL_ERR(curl_ret, "could not pass URL to curl.");
-    return E_FAIL;
+    return HttpUploader::kUrlConfigError;
   }
   // enable progress reports
   curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_NOPROGRESS, FALSE);
   if (curl_ret != CURLE_OK) {
     LOG_CURL_ERR(curl_ret, "curl progress enable failed.");
-    return E_FAIL;
+    return kLibCurlError;
   }
   // set callbacks
   curl_ret = SetCurlCallbacks();
   if (curl_ret != CURLE_OK) {
     LOG_CURL_ERR(curl_ret, "curl callback setup failed.");
-    return E_FAIL;
+    return kLibCurlError;
   }
   err = SetupForm(settings);
   if (err) {
     LOG_CURL_ERR(curl_ret, "unable to set form variables.");
-    return err;
+    return HttpUploader::kFormError;
   }
   err = SetHeaders(settings);
   if (err) {
     LOG_CURL_ERR(curl_ret, "unable to set headers.");
-    return err;
+    return HttpUploader::kHeaderError;
   }
-  return ERROR_SUCCESS;
+  return kSuccess;
 }
 
 // Uploads the file using libcurl
@@ -208,15 +218,19 @@ int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats)
   boost::mutex::scoped_lock lock(mutex_);
   ptr_stats->bytes_per_second = stats_.bytes_per_second;
   ptr_stats->bytes_sent = stats_.bytes_sent;
-  return ERROR_SUCCESS;
+  return kSuccess;
 }
 
 int HttpUploaderImpl::Run()
 {
   assert(!upload_thread_);
-  upload_thread_ = boost::shared_ptr<boost::thread>(
-    new boost::thread(boost::bind(&HttpUploaderImpl::UploadThread, this)));
-  return ERROR_SUCCESS;
+  using boost::bind;
+  using boost::shared_ptr;
+  using boost::thread;
+  using std::nothrow;
+  upload_thread_ = shared_ptr<thread>(
+    new (nothrow) thread(bind(&HttpUploaderImpl::UploadThread, this)));
+  return kSuccess;
 }
 
 int HttpUploaderImpl::Stop()
@@ -226,7 +240,7 @@ int HttpUploaderImpl::Stop()
   stop_ = true;
   lock.release();
   upload_thread_->join();
-  return ERROR_SUCCESS;
+  return kSuccess;
 }
 
 // Upload thread wrapper
@@ -245,7 +259,7 @@ int HttpUploaderImpl::Final()
     ptr_curl_ = NULL;
   }
   DBGLOG("");
-  return ERROR_SUCCESS;
+  return kSuccess;
 }
 
 CURLcode HttpUploaderImpl::SetCurlCallbacks()
@@ -312,7 +326,7 @@ int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
                        CURLFORM_END);
     if (err != CURL_FORMADD_OK) {
       LOG_CURLFORM_ERR(err, "curl_formadd failed.");
-      return E_FAIL;
+      return err;
     }
   }
   // add file data
@@ -328,15 +342,15 @@ int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
                      CURLFORM_END);
   if (err != CURL_FORMADD_OK) {
     LOG_CURLFORM_ERR(err, "curl_formadd CURLFORM_FILE failed.");
-    return E_FAIL;
+    return err;
   }
   CURLcode err_setopt = curl_easy_setopt(ptr_curl_, CURLOPT_HTTPPOST,
                                          ptr_form_items);
   if (err_setopt != CURLE_OK) {
     LOG_CURL_ERR(err_setopt, "setopt CURLOPT_HTTPPOST failed.");
-    return E_FAIL;
+    return err;
   }
-  return ERROR_SUCCESS;
+  return kSuccess;
 }
 
 // Disable HTTP 100 responses (send empty Expect header), and pass user HTTP
@@ -389,7 +403,7 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
   if (ptr_uploader_->StopRequested()) {
     DBGLOG("stop requested.");
-    return 1;
+    return kProgressCallbackStopRequest;
   }
   boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
   HttpUploaderStats& stats = ptr_uploader_->stats_;
@@ -411,7 +425,7 @@ size_t HttpUploaderImpl::ReadCallback(char* buffer, size_t size, size_t nitems,
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
   if (ptr_uploader_->StopRequested()) {
     DBGLOG("stop requested.");
-    return CURL_READFUNC_ABORT;
+    return kReadCallbackStopRequest;
   }
   uint64 available = ptr_uploader_->file_->GetBytesAvailable();
   size_t requested = size * nitems;
@@ -446,7 +460,7 @@ size_t HttpUploaderImpl::WriteCallback(char* buffer, size_t size, size_t nitems,
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
   if (ptr_uploader_->StopRequested()) {
     DBGLOG("stop requested.");
-    return 0;
+    return kWriteCallbackStopRequest;
   }
   return size*nitems;
 }
