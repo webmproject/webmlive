@@ -20,6 +20,7 @@ namespace WebmLive {
 class FileReaderImpl {
  public:
   enum {
+    kSeekFailed = -501,
     kSuccess = 0,
   };
   FileReaderImpl();
@@ -29,6 +30,8 @@ class FileReaderImpl {
   uint64 GetBytesAvailable() const;
   int64 GetBytesRead() const { return bytes_read_; };
  private:
+  int Open();
+  int OpenAtReadOffset();
   std::ifstream input_file_;
   int64 bytes_read_;
   std::wstring file_name_;

@@ -17,8 +17,8 @@
 
 namespace WebmLive {
 
-FileReaderImpl::FileReaderImpl():
-  bytes_read_(0)
+FileReaderImpl::FileReaderImpl()
+    : bytes_read_(0)
 {
 }
 
@@ -39,13 +39,14 @@ int FileReaderImpl::Init(std::wstring file_name)
     DBGLOG("ERROR: file " << file_name.c_str() << " does not exist.");
     return ERROR_FILE_NOT_FOUND;
   }
+  // Make sure the file exists-- we'll be reopening it on each call to |Read|
   using std::ios_base;
-  input_file_.open(file_name.c_str(), ios_base::in | ios_base::binary);
-  if (!input_file_.is_open() || input_file_.fail()) {
+  file_name_ = file_name;
+  if (Open()) {
     DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
     return FileReader::kOpenFailed;
   }
-  file_name_ = file_name;
+  input_file_.close();
   return kSuccess;
 }
 
@@ -57,16 +58,27 @@ int FileReaderImpl::Read(size_t num_bytes, void* ptr_buffer,
   }
   size_t& num_read = *ptr_num_read;
   char* ptr_buf = reinterpret_cast<char*>(ptr_buffer);
-  input_file_.read(ptr_buf, num_bytes);
-  if (input_file_.bad()) {
-    DBGLOG("ERROR: read error, badbit set, GetLastError=" << GetLastError());
-    return FileReader::kReadFailed;
-  }
-  num_read = input_file_.gcount();
-  bytes_read_ += num_read;
-  if (num_bytes != num_read) {
-    DBGLOG("shortfall! requested=" << num_bytes << " read=" << num_read);
-    return FileReader::kAtEOF;
+
+  if (GetBytesAvailable() > 0) {
+    int err = OpenAtReadOffset();
+    if (err) {
+      DBGLOG("ERROR: could not open file, err=" << err << " GetLastError="
+              << GetLastError());
+      return FileReader::kOpenFailed;
+    }
+    input_file_.read(ptr_buf, num_bytes);
+    const bool read_failed = input_file_.bad() || input_file_.fail();
+    input_file_.close();
+    if (read_failed) {
+      DBGLOG("ERROR: read error, badbit set, GetLastError=" << GetLastError());
+      return FileReader::kReadFailed;
+    }
+    num_read = input_file_.gcount();
+    bytes_read_ += num_read;
+    if (num_bytes != num_read) {
+      DBGLOG("shortfall! requested=" << num_bytes << " read=" << num_read);
+      return FileReader::kAtEOF;
+    }
   }
   return kSuccess;
 }
@@ -78,6 +90,39 @@ uint64 FileReaderImpl::GetBytesAvailable() const
     bytes_available -= bytes_read_;
   }
   return bytes_available;
+}
+
+int FileReaderImpl::Open()
+{
+  using std::ios_base;
+  input_file_.open(file_name_.c_str(), ios_base::in | ios_base::binary);
+  if (!input_file_.is_open() || input_file_.fail()) {
+    DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
+    return FileReader::kOpenFailed;
+  }
+  return kSuccess;
+}
+
+int FileReaderImpl::OpenAtReadOffset()
+{
+  int err = Open();
+  if (err) {
+    DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
+    return FileReader::kOpenFailed;
+  }
+  if (bytes_read_ > 0) {
+    using std::ios_base;
+    // TODO(tomfinegan): this breaks once we get to 2GB, use boost maybe?
+    long offset = static_cast<long>(bytes_read_);
+    input_file_.seekg(offset, ios_base::beg);
+    if (input_file_.fail() || input_file_.bad()) {
+      DBGLOG("ERROR: could not seek to read offset, GetLastError="
+             << GetLastError());
+      input_file_.close();
+      return kSeekFailed;
+    }
+  }
+  return kSuccess;
 }
 
 } // WebmLive
