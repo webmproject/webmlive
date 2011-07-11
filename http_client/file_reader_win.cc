@@ -105,8 +105,7 @@ int FileReaderImpl::Open()
 
 int FileReaderImpl::OpenAtReadOffset()
 {
-  int err = Open();
-  if (err) {
+  if (Open()) {
     DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
     return FileReader::kOpenFailed;
   }
