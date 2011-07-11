@@ -70,6 +70,8 @@ class HttpUploaderImpl {
   boost::shared_ptr<boost::thread> upload_thread_;
   clock_t start_ticks_;
   CURL* ptr_curl_;
+  curl_httppost* ptr_form_;
+  curl_slist* ptr_headers_;
   HttpUploaderStats stats_;
   DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
@@ -125,6 +127,8 @@ int HttpUploader::Stop()
 
 HttpUploaderImpl::HttpUploaderImpl()
     : ptr_curl_(NULL),
+      ptr_form_(NULL),
+      ptr_headers_(NULL),
       paused_(false),
       stop_(false)
 {
@@ -262,6 +266,14 @@ int HttpUploaderImpl::Final()
     curl_easy_cleanup(ptr_curl_);
     ptr_curl_ = NULL;
   }
+  if (ptr_form_) {
+    curl_formfree(ptr_form_);
+    ptr_form_ = NULL;
+  }
+  if (ptr_headers_) {
+    curl_slist_free_all(ptr_headers_);
+    ptr_headers_ = NULL;
+  }
   DBGLOG("");
   return kSuccess;
 }
@@ -320,11 +332,10 @@ int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
   const HttpUploaderSettings& settings = *p;
   StringMap::const_iterator var_iter = settings.form_variables.begin();
   CURLFORMcode err;
-  curl_httppost* ptr_form_items = NULL;
   curl_httppost* ptr_last_form_item = NULL;
   // add user form variables
   for (; var_iter != settings.form_variables.end(); ++var_iter) {
-    err = curl_formadd(&ptr_form_items, &ptr_last_form_item,
+    err = curl_formadd(&ptr_form_, &ptr_last_form_item,
                        CURLFORM_COPYNAME, var_iter->first.c_str(),
                        CURLFORM_COPYCONTENTS, var_iter->second.c_str(),
                        CURLFORM_END);
@@ -334,7 +345,7 @@ int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
     }
   }
   // add file data
-  err = curl_formadd(&ptr_form_items, &ptr_last_form_item,
+  err = curl_formadd(&ptr_form_, &ptr_last_form_item,
                      CURLFORM_COPYNAME, kFormName,
                      // note that |CURLFORM_STREAM| relies on the callback
                      // set in the call to curl_easy_setopt with
@@ -349,7 +360,7 @@ int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
     return err;
   }
   CURLcode err_setopt = curl_easy_setopt(ptr_curl_, CURLOPT_HTTPPOST,
-                                         ptr_form_items);
+                                         ptr_form_);
   if (err_setopt != CURLE_OK) {
     LOG_CURL_ERR(err_setopt, "setopt CURLOPT_HTTPPOST failed.");
     return err;
@@ -361,11 +372,9 @@ int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
 // headers into lib curl.
 CURLcode HttpUploaderImpl::SetHeaders(const HttpUploaderSettings* const p)
 {
-
-  curl_slist* header_list = NULL;
   // Disable HTTP 100 with an empty Expect header
   std::string expect_header = "Expect:";
-  header_list = curl_slist_append(header_list, expect_header.c_str());
+  ptr_headers_ = curl_slist_append(ptr_headers_, expect_header.c_str());
   typedef std::map<std::string, std::string> StringMap;
   const HttpUploaderSettings& settings = *p;
   StringMap::const_iterator header_iter = settings.headers.begin();
@@ -373,9 +382,9 @@ CURLcode HttpUploaderImpl::SetHeaders(const HttpUploaderSettings* const p)
   for (; header_iter != settings.headers.end(); ++header_iter) {
     std::ostringstream header;
     header << header_iter->first.c_str() << ":" << header_iter->second.c_str();
-    header_list = curl_slist_append(header_list, header.str().c_str());
+    ptr_headers_ = curl_slist_append(ptr_headers_, header.str().c_str());
   }
-  CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_HTTPHEADER, header_list);
+  CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_HTTPHEADER, ptr_headers_);
   if (err != CURLE_OK) {
     LOG_CURL_ERR(err, "setopt CURLOPT_HTTPHEADER failed err=");
   }
