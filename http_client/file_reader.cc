@@ -28,21 +28,21 @@ FileReader::~FileReader()
 {
 }
 
-int FileReader::Init(std::string file_name)
+int FileReader::Init(std::string file_name, int64 start_offset)
 {
   std::wostringstream fname_cnv;
   fname_cnv << file_name.c_str();
-  return Init(fname_cnv.str());
+  return Init(fname_cnv.str(), start_offset);
 }
 
-int FileReader::Init(std::wstring file_name)
+int FileReader::Init(std::wstring file_name, int64 start_offset)
 {
   ptr_reader_.reset(new (std::nothrow) FileReaderImpl());
   if (!ptr_reader_) {
     DBGLOG("ERROR: can't construct FileReaderImpl.");
     return kOpenFailed;
   }
-  return ptr_reader_->Init(file_name);
+  return ptr_reader_->Init(file_name, start_offset);
 }
 
 uint64 FileReader::GetBytesAvailable() const

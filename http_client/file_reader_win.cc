@@ -33,11 +33,11 @@ int FileReaderImpl::Init(std::wstring file_name)
 {
   if (file_name.empty()) {
     DBGLOG("ERROR: empty file_name");
-    return E_INVALIDARG;
+    return FileReader::kOpenFailed;
   }
   if (!FileUtil::file_exists(file_name)) {
     DBGLOG("ERROR: file " << file_name.c_str() << " does not exist.");
-    return ERROR_FILE_NOT_FOUND;
+    return FileReader::kOpenFailed;
   }
   // Make sure the file exists-- we'll be reopening it on each call to |Read|
   using std::ios_base;
@@ -50,11 +50,22 @@ int FileReaderImpl::Init(std::wstring file_name)
   return kSuccess;
 }
 
+int FileReaderImpl::Init(std::wstring file_name, int64 start_offset)
+{
+  if (start_offset < 0 ||
+      static_cast<uint64>(start_offset) > GetBytesAvailable()) {
+    DBGLOG("ERROR: bad start_offset");
+    return FileReader::kBadOffset;
+  }
+  bytes_read_ = start_offset;
+  return Init(file_name);
+}
+
 int FileReaderImpl::Read(size_t num_bytes, void* ptr_buffer,
                          size_t* ptr_num_read)
 {
   if (num_bytes < 1 || !ptr_buffer || !ptr_num_read) {
-    return E_INVALIDARG;
+    return FileReader::kInvalidArg;
   }
   size_t& num_read = *ptr_num_read;
   char* ptr_buf = reinterpret_cast<char*>(ptr_buffer);
@@ -118,7 +129,7 @@ int FileReaderImpl::OpenAtReadOffset()
       DBGLOG("ERROR: could not seek to read offset, GetLastError="
              << GetLastError());
       input_file_.close();
-      return kSeekFailed;
+      return FileReader::kSeekFailed;
     }
   }
   return kSuccess;

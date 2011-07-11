@@ -20,15 +20,18 @@ class FileReaderImpl;
 class FileReader {
 public:
   enum {
-    kOpenFailed = -2,
-    kReadFailed = -1,
+    kSeekFailed = -5,
+    kBadOffset = -4,
+    kOpenFailed = -3,
+    kReadFailed = -2,
+    kInvalidArg = -1,
     kSuccess = 0,
     kAtEOF = 1
   };
   FileReader();
   ~FileReader();
-  int Init(std::string file_name);
-  int Init(std::wstring file_name);
+  int Init(std::string file_name, int64 start_offset);
+  int Init(std::wstring file_name, int64 start_offset);
   uint64 GetBytesAvailable() const;
   int Read(size_t num_bytes, void* ptr_buffer, size_t* ptr_num_read);
 private:

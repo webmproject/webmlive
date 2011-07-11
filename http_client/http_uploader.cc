@@ -150,7 +150,7 @@ int HttpUploaderImpl::Init(HttpUploaderSettings* settings)
     DBGLOG("ERROR: can't construct FileReader.");
     return HttpUploader::kInitFailed;
   }
-  int err = file_->Init(settings->local_file);
+  int err = file_->Init(settings->local_file, 0);
   if (err) {
     DBGLOG("ERROR: FileReader Init failed err=" << err);
     return HttpUploader::kFileReaderError;
