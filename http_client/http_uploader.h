@@ -19,6 +19,9 @@
 namespace WebmLive {
 
 struct HttpUploaderSettings {
+  // |local_file| is what the HTTP server sees as the local file name.
+  // Assigning a path to a local file and passing the settings struct to
+  // |HttpUploader::Init| will not upload an existing file.
   std::string local_file;
   std::string target_url;
   typedef std::map<std::string, std::string> StringMap;
@@ -44,13 +47,19 @@ class HttpUploader {
     kInitFailed = -302,
     kRunFailed = -301,
     kSuccess = 0,
+    kUploadInProgress = 1,
   };
   HttpUploader();
   ~HttpUploader();
+  bool UploadComplete();
   int Init(HttpUploaderSettings* ptr_settings);
   int GetStats(HttpUploaderStats* ptr_stats);
   int Run();
   int Stop();
+  int UploadBuffer(const uint8* const ptr_buffer, int32 length);
+  // TODO(tomfinegan): Add UploadFile for upload of existing files. This will
+  //                   complicate the upload thread, but will be worth it when
+  //                   upload of existing files is implemented.
  private:
   HttpUploaderSettings settings_;
   boost::scoped_ptr<HttpUploaderImpl> ptr_uploader_;

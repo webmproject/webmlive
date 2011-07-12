@@ -5,41 +5,42 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef WEBMLIVE_FILE_READER_H
-#define WEBMLIVE_FILE_READER_H
+#ifndef WEBMLIVE_HTTP_CLIENT_BUFFER_UTIL_H
+#define WEBMLIVE_HTTP_CLIENT_BUFFER_UTIL_H
 
 #pragma once
 
 #include "http_client_base.h"
-#include "boost/scoped_ptr.hpp"
+
+#include <vector>
+
+#include "boost/thread/mutex.hpp"
 #include "chromium/base/basictypes.h"
 
 namespace WebmLive {
 
-class FileReaderImpl;
-
-class FileReader {
+class LockableBuffer {
  public:
   enum {
-    kSeekFailed = -5,
-    kBadOffset = -4,
-    kOpenFailed = -3,
-    kReadFailed = -2,
+    kNotLocked = -2,
     kInvalidArg = -1,
     kSuccess = 0,
-    kAtEOF = 1
+    kLocked = 1,
   };
-  FileReader();
-  ~FileReader();
-  int CreateFile(std::string file_name);
-  int CreateFile(std::wstring file_name);
-  uint64 GetBytesAvailable() const;
-  int Read(size_t num_bytes, uint8* ptr_buffer, size_t* ptr_num_read);
+  LockableBuffer();
+  ~LockableBuffer();
+  bool IsLocked();
+  int Init(const uint8* const ptr_data, int32 length);
+  int GetBuffer(uint8** ptr_buffer, int32* ptr_length);
+  int Lock();
+  int Unlock();
  private:
-  boost::scoped_ptr<FileReaderImpl> ptr_reader_;
-  DISALLOW_COPY_AND_ASSIGN(FileReader);
+  bool locked_;
+  boost::mutex mutex_;
+  std::vector<uint8> buffer_;
+  DISALLOW_COPY_AND_ASSIGN(LockableBuffer);
 };
 
 } // WebmLive
 
-#endif // WEBMLIVE_FILE_READER_H
+#endif // WEBMLIVE_HTTP_CLIENT_BUFFER_UTIL_H

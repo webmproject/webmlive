@@ -11,8 +11,11 @@
 
 #pragma once
 
+#include "http_client_base.h"
+
 #include <fstream>
 #include <string>
+
 #include "chromium/base/basictypes.h"
 
 namespace WebmLive {
@@ -24,15 +27,16 @@ class FileReaderImpl {
   };
   FileReaderImpl();
   ~FileReaderImpl();
-  int Init(std::wstring file_name);
-  int Init(std::wstring file_name, int64 start_offset);
-  int Read(size_t num_bytes, void* ptr_buffer, size_t* ptr_num_read);
-  uint64 GetBytesAvailable() const;
+  int CreateFile(std::wstring file_name);
+  int Read(size_t num_bytes, uint8* ptr_buffer, size_t* ptr_num_read);
+  uint64 GetBytesAvailable();
   int64 GetBytesRead() const { return bytes_read_; };
  private:
   int Open();
-  int OpenAtReadOffset();
-  std::ifstream input_file_;
+  int ReadFromStream(size_t num_bytes, uint8* ptr_buffer,
+                     size_t& num_read);
+  //std::ifstream input_file_;
+  FILE* ptr_file_;
   int64 bytes_read_;
   std::wstring file_name_;
   DISALLOW_COPY_AND_ASSIGN(FileReaderImpl);

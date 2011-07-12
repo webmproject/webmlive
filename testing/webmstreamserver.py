@@ -12,6 +12,8 @@ import time
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
+FILENAME = 'test.webm'
+
 class WebMStreamServer(BaseHTTPRequestHandler):
   def do_POST(self):
     try:
@@ -20,11 +22,7 @@ class WebMStreamServer(BaseHTTPRequestHandler):
       print pdict
       query = cgi.parse_multipart(self.rfile, pdict)
       upfilecontent = query.get('webm_file')
-      d = datetime.date.today()
-      filename = d.strftime("%Y%m%d_") + time.strftime("%H%M%S", time.gmtime())
-      filename = filename + ".webm"
-      print "Writing file: " + filename
-      self.file = file(filename, 'wb')
+      self.file = file(FILENAME, 'ab')
       self.file.write(upfilecontent[0])
       self.file.close()
       self.send_response(301)
@@ -37,6 +35,9 @@ class WebMStreamServer(BaseHTTPRequestHandler):
 def main():
   # TODO(hwasoo) : to consider if there is a new connection.  
   try:
+    if os.path.exists(FILENAME):
+     print "removed " + FILENAME
+     os.remove(FILENAME)
     server = HTTPServer(('', 8000), WebMStreamServer)
     print 'started streaming server...'
     server.serve_forever()
