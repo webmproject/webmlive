@@ -10,12 +10,12 @@
 #include <time.h>
 
 #include "boost/shared_ptr.hpp"
+#include "boost/thread/condition.hpp"
 #include "boost/thread/thread.hpp"
 #include "curl/curl.h"
 #include "curl/types.h"
 #include "curl/easy.h"
 #include "debug_util.h"
-#include "file_reader.h"
 #include "http_uploader.h"
 
 #define LOG_CURL_ERR(CURL_ERR, MSG_STR) \
@@ -28,6 +28,7 @@ namespace WebmLive {
 
 static const char* kContentType = "video/webm";
 static const char* kFormName = "webm_file";
+static const char* kFileName = "live.webm";
 static const int kUnknownFileSize = -1;
 static const int kBytesRequiredForResume = 32*1024;
 
@@ -44,7 +45,7 @@ class HttpUploaderImpl {
   HttpUploaderImpl();
   ~HttpUploaderImpl();
   int Init(HttpUploaderSettings* ptr_settings);
-  int Upload();
+  int UploadBuffer(const uint8* const ptr_buffer, int32 length);
   int GetStats(HttpUploaderStats* ptr_stats);
   int Run();
   int Stop();
@@ -53,20 +54,18 @@ class HttpUploaderImpl {
   CURLcode SetCurlCallbacks();
   CURLcode SetHeaders(const HttpUploaderSettings* const ptr_settings);
   int Final();
-  int SetupForm(const HttpUploaderSettings* const ptr_settings);
+  int SetUploadBuffer(const uint8* const ptr_buffer, int32 length);
+  int SetUserFormVariables(const HttpUploaderSettings* const ptr_settings);
   static int ProgressCallback(void* ptr_this,
                               double, double, // we ignore download progress
                               double upload_total, double upload_current);
-  static size_t ReadCallback(char* buffer, size_t size, size_t nitems,
-                             void* ptr_this);
   static size_t WriteCallback(char* buffer, size_t size, size_t nitems,
                               void* ptr_this);
   void ResetStats();
   void UploadThread();
-  bool paused_;
   bool stop_;
+  boost::condition_variable buffer_ready_;
   boost::mutex mutex_;
-  boost::scoped_ptr<FileReader> file_;
   boost::shared_ptr<boost::thread> upload_thread_;
   clock_t start_ticks_;
   CURL* ptr_curl_;
@@ -131,7 +130,6 @@ HttpUploaderImpl::HttpUploaderImpl()
       ptr_form_(NULL),
       ptr_form_end_(NULL),
       ptr_headers_(NULL),
-      paused_(false),
       stop_(false)
 {
 }
@@ -147,16 +145,6 @@ HttpUploaderImpl::~HttpUploaderImpl()
 // - call SetHeaders to pass user headers
 int HttpUploaderImpl::Init(HttpUploaderSettings* settings)
 {
-  file_.reset(new (std::nothrow) FileReader());
-  if (!file_) {
-    DBGLOG("ERROR: can't construct FileReader.");
-    return HttpUploader::kInitFailed;
-  }
-  int err = file_->Init(settings->local_file, 0);
-  if (err) {
-    DBGLOG("ERROR: FileReader Init failed err=" << err);
-    return HttpUploader::kFileReaderError;
-  }
   // init libcurl
   ptr_curl_ = curl_easy_init();
   if (!ptr_curl_)
@@ -182,23 +170,26 @@ int HttpUploaderImpl::Init(HttpUploaderSettings* settings)
     LOG_CURL_ERR(curl_ret, "curl callback setup failed.");
     return kLibCurlError;
   }
-  err = SetupForm(settings);
+  int err = SetUserFormVariables(settings);
   if (err) {
-    LOG_CURL_ERR(curl_ret, "unable to set form variables.");
+    DBGLOG("unable to set user form variables, err=" << err);
     return HttpUploader::kFormError;
   }
-  err = SetHeaders(settings);
-  if (err) {
+  curl_ret = SetHeaders(settings);
+  if (curl_ret) {
     LOG_CURL_ERR(curl_ret, "unable to set headers.");
     return HttpUploader::kHeaderError;
   }
+  ResetStats();
   return kSuccess;
 }
 
-// Uploads the file using libcurl
-int HttpUploaderImpl::Upload()
+int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length)
 {
-  ResetStats();
+  if (SetUploadBuffer(ptr_buf, length)) {
+    DBGLOG("ERROR: SetUploadBuffer failed!");
+    return HttpUploader::kRunFailed;
+  }
   CURLcode err = curl_easy_perform(ptr_curl_);
   if (err != CURLE_OK) {
     LOG_CURL_ERR(err, "curl_easy_perform failed.");
@@ -214,7 +205,7 @@ int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats)
 {
   if (!ptr_stats) {
     DBGLOG("ERROR: NULL ptr_stats");
-    return E_INVALIDARG;
+    return HttpUploader::kInvalidArg;
   }
   boost::mutex::scoped_lock lock(mutex_);
   ptr_stats->bytes_per_second = stats_.bytes_per_second;
@@ -268,19 +259,6 @@ CURLcode HttpUploaderImpl::SetCurlCallbacks()
                          reinterpret_cast<void*>(this));
   if (err != CURLE_OK) {
     LOG_CURL_ERR(err, "curl progress callback data setup failed.");
-    return err;
-  }
-  // set read callback function pointer
-  err = curl_easy_setopt(ptr_curl_, CURLOPT_READFUNCTION, ReadCallback);
-  if (err != CURLE_OK) {
-    LOG_CURL_ERR(err, "curl read callback setup failed.");
-    return err;
-  }
-  // set read callback data pointer
-  err = curl_easy_setopt(ptr_curl_, CURLOPT_READDATA,
-                         reinterpret_cast<void*>(this));
-  if (err != CURLE_OK) {
-    LOG_CURL_ERR(err, "curl read callback data setup failed.");
     return err;
   }
   // set write callback function pointer
@@ -341,38 +319,17 @@ int HttpUploaderImpl::Final()
   return kSuccess;
 }
 
-// Set necessary curl options for form file upload, and add the user form
-// variables.  Note the use of |CURLFORM_STREAM|, it completes the read
-// callback setup.
-int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
+int HttpUploaderImpl::SetUploadBuffer(const uint8* const ptr_buffer,
+                                      int32 length)
 {
-  typedef std::map<std::string, std::string> StringMap;
-  const HttpUploaderSettings& settings = *p;
-  StringMap::const_iterator var_iter = settings.form_variables.begin();
-  CURLFORMcode err;
-  // add user form variables
-  for (; var_iter != settings.form_variables.end(); ++var_iter) {
-    err = curl_formadd(&ptr_form_, &ptr_form_end_,
-                       CURLFORM_COPYNAME, var_iter->first.c_str(),
-                       CURLFORM_COPYCONTENTS, var_iter->second.c_str(),
-                       CURLFORM_END);
-    if (err != CURL_FORMADD_OK) {
-      LOG_CURLFORM_ERR(err, "curl_formadd failed.");
-      return err;
-    }
-  }
-  // Add file data. Note that the size, specified using
-  // CURLFORM_CONTENTSLENGTH, is set in |SetUpload
-  err = curl_formadd(&ptr_form_, &ptr_form_end_,
-                     CURLFORM_COPYNAME, kFormName,
-                     // note that |CURLFORM_STREAM| relies on the callback
-                     // set in the call to curl_easy_setopt with
-                     // |CURLOPT_READFUNCTION| specified
-                     CURLFORM_STREAM, reinterpret_cast<void*>(this),
-                     CURLFORM_FILENAME, settings.local_file.c_str(),
-                     CURLFORM_CONTENTSLENGTH, kUnknownFileSize,
-                     CURLFORM_CONTENTTYPE, kContentType,
-                     CURLFORM_END);
+  // Pass the buffer pointer to libcurl
+  CURLFORMcode err = curl_formadd(&ptr_form_, &ptr_form_end_,
+                                  CURLFORM_COPYNAME, kFormName,
+                                  CURLFORM_BUFFER, kFileName,
+                                  CURLFORM_BUFFERPTR, ptr_buffer,
+                                  CURLFORM_BUFFERLENGTH, length,
+                                  CURLFORM_CONTENTTYPE, kContentType,
+                                  CURLFORM_END);
   if (err != CURL_FORMADD_OK) {
     LOG_CURLFORM_ERR(err, "curl_formadd CURLFORM_FILE failed.");
     return err;
@@ -386,6 +343,35 @@ int HttpUploaderImpl::SetupForm(const HttpUploaderSettings* const p)
   return kSuccess;
 }
 
+// Set necessary curl options for form file upload, and add the user form
+// variables.  Note the use of |CURLFORM_STREAM|, it completes the read
+// callback setup.
+int HttpUploaderImpl::SetUserFormVariables(const HttpUploaderSettings* const p)
+{
+  typedef std::map<std::string, std::string> StringMap;
+  const HttpUploaderSettings& settings = *p;
+  StringMap::const_iterator var_iter = settings.form_variables.begin();
+  CURLFORMcode err;
+  // add user form variables
+  for (; var_iter != settings.form_variables.end(); ++var_iter) {
+    err = curl_formadd(&ptr_form_, &ptr_form_end_,
+                       CURLFORM_COPYNAME, var_iter->first.c_str(),
+                       CURLFORM_COPYCONTENTS, var_iter->second.c_str(),
+                       CURLFORM_END);
+    if (err != CURL_FORMADD_OK) {
+      LOG_CURLFORM_ERR(err, "curl_formadd failed.");
+      return HttpUploader::kFormError;
+    }
+  }
+  CURLcode err_setopt = curl_easy_setopt(ptr_curl_, CURLOPT_HTTPPOST,
+                                         ptr_form_);
+  if (err_setopt != CURLE_OK) {
+    LOG_CURL_ERR(err_setopt, "setopt CURLOPT_HTTPPOST failed.");
+    return err_setopt;
+  }
+  return kSuccess;
+}
+
 // Handle libcurl progress updates
 int HttpUploaderImpl::ProgressCallback(void* ptr_this,
                                        double download_total,
@@ -394,71 +380,22 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
                                        double upload_current)
 {
   download_total; download_current;   // we ignore download progress
-  upload_total; // |upload_total| is always -1 because we set
-                // CURLFORM_CONTENTSLENGTH to |kUnknownFileSize| in
-                // |SetupForm|.
+  upload_total; // we use |upload_total| only in DBGLOGs
   HttpUploaderImpl* ptr_uploader_ =
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
   if (ptr_uploader_->StopRequested()) {
     DBGLOG("stop requested.");
     return kProgressCallbackStopRequest;
   }
-  if (ptr_uploader_->paused_) {
-    const uint64 bytes_available = ptr_uploader_->file_->GetBytesAvailable();
-    DBGLOG("paused, bytes_available=" << bytes_available);
-    if (bytes_available > kBytesRequiredForResume) {
-      const int resume_flags = CURLPAUSE_SEND_CONT;
-      CURLcode err = curl_easy_pause(ptr_uploader_->ptr_curl_, resume_flags);
-      if (err != CURLE_OK) {
-        LOG_CURL_ERR(err, "could not resume upload!");
-        return kProgressCallbackStopRequest;
-      }
-      ptr_uploader_->paused_ = false;
-      DBGLOG("resumed upload.");
-    }
-  } else {
-    boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
-    HttpUploaderStats& stats = ptr_uploader_->stats_;
-    stats.bytes_sent = static_cast<int64>(upload_current);
-    double ticks_elapsed = clock() - ptr_uploader_->start_ticks_;
-    double ticks_per_sec = CLOCKS_PER_SEC;
-    stats.bytes_per_second = upload_current / (ticks_elapsed / ticks_per_sec);
-    //DBGLOG("total=" << int(upload_total) << " bytes_per_sec="
-    //       << int(stats.bytes_per_second));
-  }
+  boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
+  HttpUploaderStats& stats = ptr_uploader_->stats_;
+  stats.bytes_sent = static_cast<int64>(upload_current);
+  double ticks_elapsed = clock() - ptr_uploader_->start_ticks_;
+  double ticks_per_sec = CLOCKS_PER_SEC;
+  stats.bytes_per_second = upload_current / (ticks_elapsed / ticks_per_sec);
+  DBGLOG("total=" << int(upload_total) << " bytes_per_sec="
+         << int(stats.bytes_per_second));
   return 0;
-}
-
-// Read data and hand it back to libcurl
-size_t HttpUploaderImpl::ReadCallback(char* buffer, size_t size, size_t nitems,
-                                      void* ptr_this)
-{
-  DBGLOG("size=" << size << " nitems=" << nitems);
-  HttpUploaderImpl* ptr_uploader_ =
-    reinterpret_cast<HttpUploaderImpl*>(ptr_this);
-  if (ptr_uploader_->StopRequested()) {
-    DBGLOG("stop requested.");
-    return kReadCallbackStopRequest;
-  }
-  uint64 available = ptr_uploader_->file_->GetBytesAvailable();
-  size_t requested = size * nitems;
-  if (requested > available && available > 0) {
-    requested = static_cast<size_t>(available);
-    DBGLOG("requested set to FileReader available byte count: " << available);
-  }
-  size_t bytes_read = 0;
-  if (available > 0) {
-    int err = ptr_uploader_->file_->Read(requested, buffer, &bytes_read);
-    if (err) {
-      DBGLOG("file read failed!");
-      // TODO(tomfinegan): pause or die here?
-    }
-  } else {
-    DBGLOG("no data available, pausing.");
-    ptr_uploader_->paused_ = true;
-    return kReadCallbackPauseRequest;
-  }
-  return bytes_read;
 }
 
 // Handle HTTP response data
@@ -492,7 +429,8 @@ void HttpUploaderImpl::ResetStats()
 void HttpUploaderImpl::UploadThread()
 {
   DBGLOG("running...");
-  Upload();
+  // TODO(tomfinegan): monitor |buffer_ready|, and kick off uploads when we
+  //                   have data!
   DBGLOG("thread done");
 }
 
