@@ -148,10 +148,6 @@ int client_main(WebmLive::HttpUploaderSettings& settings) {
     if (uploader.UploadComplete()) {
       // Read some data
       size_t bytes_read = 0;
-      // TODO(tomfinegan): Figure out why Read can only read the file when I
-      //                   open an explorer window in the folder where the
-      //                   output file is being written.  Switching to
-      //                   HANDLE based file I/O might help...
       status = reader.Read(kReadBufferSize, &read_buf[0], &bytes_read);
       if (status && status != WebmLive::FileReader::kAtEOF) {
         DBGLOG("Read failed, status=" << status);
@@ -176,7 +172,7 @@ int client_main(WebmLive::HttpUploaderSettings& settings) {
   encoder.Stop();
   DBGLOG("stopping uploader...");
   uploader.Stop();
-  DBGLOG("Done.");
+  printf("\nDone.\n");
   return EXIT_SUCCESS;
 }
 

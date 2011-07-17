@@ -29,13 +29,12 @@ class FileReaderImpl {
   ~FileReaderImpl();
   int CreateFile(std::wstring file_name);
   int Read(size_t num_bytes, uint8* ptr_buffer, size_t* ptr_num_read);
-  uint64 GetBytesAvailable();
   int64 GetBytesRead() const { return bytes_read_; };
  private:
-  int Open();
+  int Open(const wchar_t* const ptr_mode);
   int ReadFromStream(size_t num_bytes, uint8* ptr_buffer,
                      size_t& num_read);
-  //std::ifstream input_file_;
+  uint64 GetBytesAvailable();
   FILE* ptr_file_;
   int64 bytes_read_;
   std::wstring file_name_;

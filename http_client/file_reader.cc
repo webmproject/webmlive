@@ -39,10 +39,6 @@ int FileReader::CreateFile(std::wstring file_name) {
   return ptr_reader_->CreateFile(file_name);
 }
 
-uint64 FileReader::GetBytesAvailable() const {
-  return ptr_reader_->GetBytesAvailable();
-}
-
 int FileReader::Read(size_t num_bytes, uint8* ptr_buffer,
                      size_t* ptr_num_read) {
   return ptr_reader_->Read(num_bytes, ptr_buffer, ptr_num_read);

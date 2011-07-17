@@ -33,7 +33,6 @@ class FileReader {
   ~FileReader();
   int CreateFile(std::string file_name);
   int CreateFile(std::wstring file_name);
-  uint64 GetBytesAvailable() const;
   int Read(size_t num_bytes, uint8* ptr_buffer, size_t* ptr_num_read);
  private:
   boost::scoped_ptr<FileReaderImpl> ptr_reader_;

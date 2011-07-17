@@ -519,8 +519,6 @@ void HttpUploaderImpl::ResetStats() {
 // |UploadBuffer|.
 void HttpUploaderImpl::UploadThread() {
   DBGLOG("running...");
-  // TODO(tomfinegan): monitor |buffer_ready_|, and kick off uploads when we
-  //                   have data!
   while (!StopRequested()) {
     DBGLOG("waiting...");
     WaitForUserData();

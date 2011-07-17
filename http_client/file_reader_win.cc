@@ -19,7 +19,8 @@
 
 namespace WebmLive {
 namespace {
-  const wchar_t* const kOpenMode = L"w+b";
+  const wchar_t* const kModeOpen = L"w+b";
+  const wchar_t* const kModeReopen = L"r+b";
 }
 
 FileReaderImpl::FileReaderImpl() : bytes_read_(0), ptr_file_(NULL) {
@@ -36,7 +37,7 @@ int FileReaderImpl::CreateFile(std::wstring file_name) {
     return FileReader::kOpenFailed;
   }
   file_name_ = file_name;
-  if (Open()) {
+  if (Open(kModeOpen)) {
     DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
     return FileReader::kOpenFailed;
   }
@@ -49,6 +50,11 @@ int FileReaderImpl::Read(size_t num_bytes, uint8* ptr_buffer,
     return FileReader::kInvalidArg;
   }
   size_t& num_read = *ptr_num_read;
+  int status = Open(kModeReopen);
+  if (status) {
+    DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
+    return FileReader::kOpenFailed;
+  }
   if (GetBytesAvailable() > 0) {
     int err = ReadFromStream(num_bytes, ptr_buffer, num_read);
     if (err && err != FileReader::kAtEOF) {
@@ -64,37 +70,27 @@ int FileReaderImpl::Read(size_t num_bytes, uint8* ptr_buffer,
   return kSuccess;
 }
 
-uint64 FileReaderImpl::GetBytesAvailable() {
-  uint64 available = 0;
-  fflush(ptr_file_);
-  if (FileUtil::get_file_size(file_name_)) {
-    int64 offset = _ftelli64(ptr_file_);
-    assert(offset == bytes_read_);
-    int failed = _fseeki64(ptr_file_, 0, SEEK_END);
-    if (failed) {
-      DBGLOG("ERROR: could not seek to end of file, GetLastError="
-             << GetLastError());
-      return 0;
-    }
-    int64 file_size = _ftelli64(ptr_file_);
-    if (file_size > bytes_read_) {
-      available = file_size - bytes_read_;
-    }
-    failed = _fseeki64(ptr_file_, offset, SEEK_SET);
-    if (failed) {
-      DBGLOG("ERROR: could not seek to read pos, GetLastError="
-             << GetLastError());
-      return 0;
-    }
+int FileReaderImpl::Open(const wchar_t* const ptr_mode) {
+  if (ptr_file_) {
+    DBGLOG("closing");
+    fclose(ptr_file_);
+    ptr_file_ = NULL;
   }
-  return available;
-}
-
-int FileReaderImpl::Open() {
-  ptr_file_ = _wfsopen(file_name_.c_str(), kOpenMode, _SH_DENYNO);
+  DBGLOG("opening, mode=" << ptr_mode);
+  ptr_file_ = _wfsopen(file_name_.c_str(), ptr_mode, _SH_DENYNO);
   if (!ptr_file_) {
     DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
     return FileReader::kOpenFailed;
+  }
+  if (bytes_read_ > 0) {
+    if (_fseeki64(ptr_file_, bytes_read_, SEEK_SET)) {
+      DBGLOG("ERROR: could not seek to read pos, GetLastError="
+             << GetLastError());
+      DBGLOG("closing");
+      fclose(ptr_file_);
+      ptr_file_ = NULL;
+      return FileReader::kSeekFailed;
+    }
   }
   return kSuccess;
 }
@@ -112,6 +108,31 @@ int FileReaderImpl::ReadFromStream(size_t num_bytes, uint8* ptr_buffer,
     return FileReader::kReadFailed;
   }
   return kSuccess;
+}
+
+
+
+uint64 FileReaderImpl::GetBytesAvailable() {
+  uint64 available = 0;
+  int64 offset = _ftelli64(ptr_file_);
+  assert(offset == bytes_read_);
+  int failed = _fseeki64(ptr_file_, 0, SEEK_END);
+  if (failed) {
+    DBGLOG("ERROR: could not seek to end of file, GetLastError="
+           << GetLastError());
+    return 0;
+  }
+  int64 file_size = _ftelli64(ptr_file_);
+  if (file_size > bytes_read_) {
+    available = file_size - bytes_read_;
+  }
+  failed = _fseeki64(ptr_file_, offset, SEEK_SET);
+  if (failed) {
+    DBGLOG("ERROR: could not seek to read pos, GetLastError="
+           << GetLastError());
+    return 0;
+  }
+  return available;
 }
 
 } // WebmLive
