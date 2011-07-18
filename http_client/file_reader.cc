@@ -24,21 +24,25 @@ FileReader::FileReader() {
 FileReader::~FileReader() {
 }
 
-int FileReader::CreateFile(std::string file_name) {
-  std::wostringstream fname_cnv;
-  fname_cnv << file_name.c_str();
-  return CreateFile(fname_cnv.str());
+// Convert |file_path| to wide chars using a |wostringstream|, and then call
+// |CreateFile|.
+int FileReader::CreateFile(std::string file_path) {
+  std::wostringstream fpath_cnv;
+  fpath_cnv << file_path.c_str();
+  return CreateFile(fpath_cnv.str());
 }
 
-int FileReader::CreateFile(std::wstring file_name) {
+// Construct |ptr_reader_| and call its |CreateFile| method.
+int FileReader::CreateFile(std::wstring file_path) {
   ptr_reader_.reset(new (std::nothrow) FileReaderImpl());
   if (!ptr_reader_) {
     DBGLOG("ERROR: can't construct FileReaderImpl.");
     return kOpenFailed;
   }
-  return ptr_reader_->CreateFile(file_name);
+  return ptr_reader_->CreateFile(file_path);
 }
 
+// Pass through to implementation defined |Read| method.
 int FileReader::Read(size_t num_bytes, uint8* ptr_buffer,
                      size_t* ptr_num_read) {
   return ptr_reader_->Read(num_bytes, ptr_buffer, ptr_num_read);

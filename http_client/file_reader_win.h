@@ -13,31 +13,57 @@
 
 #include "http_client_base.h"
 
-#include <fstream>
+#include <cstdio>
 #include <string>
 
 #include "chromium/base/basictypes.h"
+#include "file_reader.h"
 
 namespace WebmLive {
 
+// FileReader implementation.  Creates a writable file that will later be
+// read through calls to the public |Read| method.
 class FileReaderImpl {
  public:
+  // Define |FileReader| status codes for brevity.
   enum {
-    kSuccess = 0,
+    // Status codes.
+    kSeekFailed = FileReader::kSeekFailed,
+    kOpenFailed = FileReader::kOpenFailed,
+    kReadFailed = FileReader::kReadFailed,
+    kInvalidArg = FileReader::kInvalidArg,
+    kSuccess = FileReader::kSuccess,
+    kAtEOF = FileReader::kAtEOF,
+    // Values for use with the |mode| argument of |Open|.
+    kModeCreate,
+    kModeOpen,
   };
   FileReaderImpl();
   ~FileReaderImpl();
-  int CreateFile(std::wstring file_name);
+  // Create file specified with the |file_name| parameter.  Overwrites existing
+  // files.
+  int CreateFile(std::wstring file_path);
+  // Read up to |num_bytes| into |ptr_buffer|.  Actual number of bytes read
+  // returned through |ptr_num_read|.  Calls |ReadFromStream| to do the actual
+  // work.  Returns |kAtEOF| if end of file is reached during the read.
   int Read(size_t num_bytes, uint8* ptr_buffer, size_t* ptr_num_read);
+  // Returns total number of bytes read from the file.
   int64 GetBytesRead() const { return bytes_read_; };
  private:
-  int Open(const wchar_t* const ptr_mode);
+  // Creates or reopens the file based based on |mode| value.
+  int Open(int mode);
+  // Read up to |num_bytes| into |ptr_buffer|.  Actual number of bytes read
+  // returned through |num_read|.
   int ReadFromStream(size_t num_bytes, uint8* ptr_buffer,
                      size_t& num_read);
+  // Returns number of unread bytes remaining in |ptr_file_|.
   uint64 GetBytesAvailable();
+  // File pointer.
   FILE* ptr_file_;
+  // Total bytes read.
   int64 bytes_read_;
-  std::wstring file_name_;
+  // File name.
+  std::wstring file_path_;
   DISALLOW_COPY_AND_ASSIGN(FileReaderImpl);
 };
 
