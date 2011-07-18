@@ -140,27 +140,24 @@ HttpUploader::HttpUploader() {
 HttpUploader::~HttpUploader() {
 }
 
+// Return result of |UploadeComplete| on |ptr_uploader_|.
 bool HttpUploader::UploadComplete()
 {
   return ptr_uploader_->UploadComplete();
 }
 
-// Copy user settings, and setup the internal uploader object
+// Copy user settings, and setup the internal uploader object.
 int HttpUploader::Init(HttpUploaderSettings* ptr_settings) {
   if (!ptr_settings) {
     DBGLOG("ERROR: null ptr_settings");
     return kInvalidArg;
   }
-  settings_.local_file = ptr_settings->local_file;
-  settings_.target_url = ptr_settings->target_url;
-  settings_.form_variables = ptr_settings->form_variables;
-  settings_.headers = ptr_settings->headers;
   ptr_uploader_.reset(new (std::nothrow) HttpUploaderImpl());
   if (!ptr_uploader_) {
     DBGLOG("ERROR: can't construct HttpUploaderImpl.");
     return kInitFailed;
   }
-  int status = ptr_uploader_->Init(&settings_);
+  int status = ptr_uploader_->Init(ptr_settings);
   if (status) {
     DBGLOG("ERROR: uploader init failed. " << status);
     return kInitFailed;
@@ -168,20 +165,22 @@ int HttpUploader::Init(HttpUploaderSettings* ptr_settings) {
   return kSuccess;
 }
 
+// Return result of |GetStats| on |ptr_uploader_|.
 int HttpUploader::GetStats(WebmLive::HttpUploaderStats* ptr_stats) {
   return ptr_uploader_->GetStats(ptr_stats);
 }
 
-// Public method for kicking off the upload
+// Return result of |Run| on |ptr_uploader_|.
 int HttpUploader::Run() {
   return ptr_uploader_->Run();
 }
 
-// Upload cancel method
+// Return result of |Stop| on |ptr_uploader_|.
 int HttpUploader::Stop() {
   return ptr_uploader_->Stop();
 }
 
+// Return result of |UploadBuffer| on |ptr_uploader_|.
 int HttpUploader::UploadBuffer(const uint8* const ptr_buffer, int32 length) {
   return ptr_uploader_->UploadBuffer(ptr_buffer, length);
 }
@@ -211,6 +210,7 @@ HttpUploaderImpl::~HttpUploaderImpl() {
   }
 }
 
+// Obtain lock on |mutex_| and return value of |upload_complete_|.
 bool HttpUploaderImpl::UploadComplete() {
   bool complete = false;
   boost::mutex::scoped_try_lock lock(mutex_);
@@ -262,6 +262,8 @@ int HttpUploaderImpl::Init(HttpUploaderSettings* settings) {
   return kSuccess;
 }
 
+// Obtain lock on |mutex_| and copy current stats values from |stats_| to
+// |ptr_stats|.
 int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats) {
   if (!ptr_stats) {
     DBGLOG("ERROR: NULL ptr_stats");
@@ -273,6 +275,7 @@ int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats) {
   return kSuccess;
 }
 
+// Run |UploadThread| using |boost::thread|.
 int HttpUploaderImpl::Run() {
   assert(!upload_thread_);
   using boost::bind;
@@ -284,6 +287,11 @@ int HttpUploaderImpl::Run() {
   return kSuccess;
 }
 
+// Try to obtain lock on |mutex_|, and upload the user buffer stored in
+// |upload_buffer_| if the buffer is unlocked.  If the lock is obtained and the
+// buffer is unlocked, |UploadBuffer| locks the buffer and notifies the upload
+// thread through call to |notify_one| on the |buffer_ready_| condition
+// variable.
 int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length) {
   int status = HttpUploader::kUploadInProgress;
   boost::mutex::scoped_try_lock lock(mutex_);
@@ -309,6 +317,14 @@ int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length) {
   return status;
 }
 
+// Stop |UploadThread|. First it wakes the thread by calling |notify_one| on the
+// |buffer_ready_| condition variable without locking |upload_buffer_|, which
+// causes |Upload| to return |kStopping| to |UploadThread|, breaking the loop.
+// This takes care of stopping if the uploader was waiting for user data in
+// |WaitForUserData|.
+// It then obtains lock on |mutex_|, sets |stop_| to true, and releases lock to
+// ensure a running upload stops when |StopRequested| is called within the
+// libcurl callbacks.
 int HttpUploaderImpl::Stop() {
   assert(upload_thread_);
   if (UploadComplete()) {
@@ -322,6 +338,8 @@ int HttpUploaderImpl::Stop() {
   return kSuccess;
 }
 
+// Try to obtain lock on |mutex_|, and return the value of |stop_| if lock is
+// obtained.  Returns false if unable to obtain the lock.
 bool HttpUploaderImpl::StopRequested() {
   bool stop_requested = false;
   boost::mutex::scoped_try_lock lock(mutex_);
@@ -331,6 +349,8 @@ bool HttpUploaderImpl::StopRequested() {
   return stop_requested;
 }
 
+// Pass callback function pointers (|ProgressCallback| and |WriteCallback|) and
+// data (|this|) to libcurl.
 CURLcode HttpUploaderImpl::SetCurlCallbacks() {
   // set the progress callback function pointer
   CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_PROGRESSFUNCTION,
@@ -383,9 +403,8 @@ CURLcode HttpUploaderImpl::SetHeaders() {
   return err;
 }
 
-// Set necessary curl options for form file upload, and add the user form
-// variables.  Note the use of |CURLFORM_STREAM|, it completes the read
-// callback setup.
+// Set necessary curl options for form based file upload, and add the user form
+// variables.
 int HttpUploaderImpl::SetupFormPost(const uint8* const ptr_buffer,
                                     int32 length) {
   if (ptr_form_) {
@@ -429,6 +448,7 @@ int HttpUploaderImpl::SetupFormPost(const uint8* const ptr_buffer,
   return kSuccess;
 }
 
+// Upload data using libcurl.
 int HttpUploaderImpl::Upload() {
   if (!upload_buffer_.IsLocked()) {
     DBGLOG("woke with unlocked buffer, stopping.");
@@ -457,6 +477,7 @@ int HttpUploaderImpl::Upload() {
   return kSuccess;
 }
 
+// Idle the upload thread while awaiting user data.
 int HttpUploaderImpl::WaitForUserData() {
   boost::mutex::scoped_lock lock(mutex_);
   buffer_ready_.wait(lock); // Unlock |mutex_| and idle the thread while we

@@ -23,45 +23,66 @@ struct HttpUploaderSettings {
   // Assigning a path to a local file and passing the settings struct to
   // |HttpUploader::Init| will not upload an existing file.
   std::string local_file;
+  // Target for HTTP POST.
   std::string target_url;
   typedef std::map<std::string, std::string> StringMap;
+  // User form variables.
   StringMap form_variables;
+  // User HTTP headers.
   StringMap headers;
 };
 
 struct HttpUploaderStats {
+  // Upload average bytes per second.
   double bytes_per_second;
+  // Total bytes sent.
   int64 bytes_sent;
 };
 
 class HttpUploaderImpl;
 
+// Pimpl idiom based HTTP uploaded. The reason the implementation is hidden is
+// mainly to avoid shoving libcurl in the face of all code using the uploader.
 class HttpUploader {
  public:
   enum {
+    // Bad URL.
     kUrlConfigError = -307,
-    kFileReaderError = -306,
+    // Bad user HTTP header, or error passing header to libcurl.
     kHeaderError = -305,
+    // Bad user Form variable, or error passsing it to libcurl.
     kFormError = -304,
+    // Invalid argument supplied to method call.
     kInvalidArg = -303,
+    // Uploader |Init| failed.
     kInitFailed = -302,
+    // Uploader |Run| failed.
     kRunFailed = -301,
+    // Success.
     kSuccess = 0,
+    // Upload already running.
     kUploadInProgress = 1,
   };
   HttpUploader();
   ~HttpUploader();
+  // Test for upload completion.
   bool UploadComplete();
+  // Initialize the uploader.
   int Init(HttpUploaderSettings* ptr_settings);
+  // Return the current upload stats. Note, obtains lock before copying stats to
+  // |ptr_stats|.
   int GetStats(HttpUploaderStats* ptr_stats);
+  // Run the uploader thread.
   int Run();
+  // Stop the uploader thread.
   int Stop();
+  // Send a buffer to the uploader thread.
   int UploadBuffer(const uint8* const ptr_buffer, int32 length);
   // TODO(tomfinegan): Add UploadFile for upload of existing files. This will
   //                   complicate the upload thread, but will be worth it when
   //                   upload of existing files is implemented.
  private:
-  HttpUploaderSettings settings_;
+  // Pointer to uploader implementation.
   boost::scoped_ptr<HttpUploaderImpl> ptr_uploader_;
   DISALLOW_COPY_AND_ASSIGN(HttpUploader);
 };
