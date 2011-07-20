@@ -13,6 +13,7 @@
 
 #include <cstdio>
 #include <sstream>
+#include <string>
 
 #include "debug_util.h"
 
@@ -48,4 +49,4 @@ int FileReader::Read(size_t num_bytes, uint8* ptr_buffer,
   return ptr_reader_->Read(num_bytes, ptr_buffer, ptr_num_read);
 }
 
-} // WebmLive
+}  // WebmLive
