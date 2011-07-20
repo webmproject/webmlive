@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef WEBMLIVE_DEBUGUTIL_H
-#define WEBMLIVE_DEBUGUTIL_H
+#ifndef HTTP_CLIENT_DEBUG_UTIL_H_
+#define HTTP_CLIENT_DEBUG_UTIL_H_
 
 #pragma once
 
@@ -20,7 +20,7 @@ do { \
     wodbgstream wos; \
     wos << __FILE__ << "(" << __LINE__ << ") : ["__FUNCTION__"] " << X \
         << std::endl; \
-} while(0)
+} while (0)
 
 // Extract error from the HRESULT, and output its hex and decimal values.
 #define \
@@ -28,7 +28,7 @@ do { \
     << L" (" << hrtext(X) << L")}"
 
 // Convert 100ns units to seconds
-#define REFTIMETOSECONDS(X) (double(X) / 10000000.0f)
+#define REFTIMETOSECONDS(X) (static_cast<double>(X) / 10000000.0f)
 
 #else
 #define DBGLOG(X)
@@ -39,4 +39,4 @@ do { \
 // log macros.
 #pragma warning(disable:4127)
 
-#endif // WEBMLIVE_DEBUGUTIL_H
+#endif  // HTTP_CLIENT_DEBUG_UTIL_H_
