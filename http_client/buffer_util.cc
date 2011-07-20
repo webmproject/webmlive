@@ -16,6 +16,8 @@ LockableBuffer::LockableBuffer() : locked_(false) {
 LockableBuffer::~LockableBuffer() {
 }
 
+// Attempts to obtain lock on |mutex_|. Returns value of |locked_| if the lock
+// is obtained, assumes locked and returns true otherwise.
 bool LockableBuffer::IsLocked() {
   boost::mutex::scoped_try_lock lock(mutex_);
   if (lock.owns_lock()) {
@@ -24,6 +26,8 @@ bool LockableBuffer::IsLocked() {
   return true;
 }
 
+// Confirms buffer is unlocked via call to |IsLocked|, obtains lock on
+// |mutex_|, and copies the user data into |buffer_|.
 int LockableBuffer::Init(const uint8* const ptr_data, int32 length) {
   if (IsLocked()) {
     return kLocked;
@@ -38,8 +42,9 @@ int LockableBuffer::Init(const uint8* const ptr_data, int32 length) {
   return kSuccess;
 }
 
-int LockableBuffer::GetBuffer(uint8** ptr_buffer, int32* ptr_length)
-{
+// Confirms buffer is locked via call to |IsLocked|, obtains lock on
+// |mutex_|, and copies the user data into |buffer_|.
+int LockableBuffer::GetBuffer(uint8** ptr_buffer, int32* ptr_length) {
   if (!ptr_length) {
     return kInvalidArg;
   }
@@ -52,6 +57,7 @@ int LockableBuffer::GetBuffer(uint8** ptr_buffer, int32* ptr_length)
   return kSuccess;
 }
 
+// Obtains lock on |mutex_| and sets |locked_| to true.
 int LockableBuffer::Lock() {
   boost::mutex::scoped_lock lock(mutex_);
   int status = kSuccess;
@@ -62,6 +68,7 @@ int LockableBuffer::Lock() {
   return status;
 }
 
+// Obtains lock on |mutex_| and sets |locked_| to false.
 int LockableBuffer::Unlock() {
   boost::mutex::scoped_lock lock(mutex_);
   int status = kSuccess;
@@ -73,4 +80,4 @@ int LockableBuffer::Unlock() {
   return status;
 }
 
-} // namespace WebmLive
+}  // namespace WebmLive
