@@ -6,37 +6,34 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include "http_client_base.h"
 #include "webm_encoder.h"
-
-#ifdef _WIN32
-#include "webm_encoder_dshow.h"
-#endif
 
 #include <cstdio>
 #include <sstream>
 
 #include "debug_util.h"
 
+#ifdef _WIN32
+#include "webm_encoder_dshow.h"
+#endif
+
 namespace WebmLive {
 
-WebmEncoder::WebmEncoder()
-{
+WebmEncoder::WebmEncoder() {
 }
 
-WebmEncoder::~WebmEncoder()
-{
+WebmEncoder::~WebmEncoder() {
 }
 
-int WebmEncoder::Init(std::string out_file_name)
-{
+// Convert |out_file_name| to a |std::wstring| and call |Init|.
+int WebmEncoder::Init(const std::string& out_file_name) {
   std::wostringstream fname_cnv;
   fname_cnv << out_file_name.c_str();
   return Init(fname_cnv.str());
 }
 
-int WebmEncoder::Init(std::wstring out_file_name)
-{
+// Create the encoder object and call its |Init| method.
+int WebmEncoder::Init(const std::wstring& out_file_name) {
   ptr_encoder_.reset(new (std::nothrow) WebmEncoderImpl());
   if (!ptr_encoder_) {
     DBGLOG("ERROR: cannot construct WebmEncoderImpl.");
@@ -45,19 +42,19 @@ int WebmEncoder::Init(std::wstring out_file_name)
   return ptr_encoder_->Init(out_file_name);
 }
 
-int WebmEncoder::Run()
-{
+// Return result of encoder object's |Run| method.
+int WebmEncoder::Run() {
   return ptr_encoder_->Run();
 }
 
-int WebmEncoder::Stop()
-{
-  return ptr_encoder_->Stop();
+// Return result of encoder object's |Stop| method.
+void WebmEncoder::Stop() {
+  ptr_encoder_->Stop();
 }
 
-double WebmEncoder::GetEncodedDuration()
-{
-  return ptr_encoder_->GetEncodedDuration();
+// Return encoded duration in seconds.
+double WebmEncoder::encoded_duration() {
+  return ptr_encoder_->encoded_duration();
 }
 
-} // WebmLive
+}  // WebmLive
