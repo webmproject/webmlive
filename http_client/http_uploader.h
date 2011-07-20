@@ -41,7 +41,7 @@ struct HttpUploaderStats {
 
 class HttpUploaderImpl;
 
-// Pimpl idiom based HTTP uploaded. The reason the implementation is hidden is
+// Pimpl idiom based HTTP uploader. The reason the implementation is hidden is
 // mainly to avoid shoving libcurl in the face of all code using the uploader.
 class HttpUploader {
  public:
@@ -65,7 +65,8 @@ class HttpUploader {
   };
   HttpUploader();
   ~HttpUploader();
-  // Test for upload completion.
+  // Test for upload completion. Returns true when the uploader is ready to
+  // start an upload. Always true when no uploads have been attempted.
   bool UploadComplete();
   // Initialize the uploader.
   int Init(HttpUploaderSettings* ptr_settings);

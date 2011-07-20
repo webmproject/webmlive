@@ -46,15 +46,15 @@ class HttpUploaderImpl {
     // Constant value used to stop libcurl when |StopRequested| returns true
     // in |ProgressCallback|.
     kProgressCallbackStopRequest = 1,
-    // Returned by |Upload| when |WaitForUserData| was notified with an unlocked
-    // |upload_buffer_|, which means |Stop| is waiting for |UploadThread| to
-    // exit.
+    // Returned by |Upload| when |WaitForUserData| was notified with an
+    // unlocked |upload_buffer_|, which means |Stop| is waiting for
+    // |UploadThread| to exit.
     kStopping = 2,
   };
   HttpUploaderImpl();
   ~HttpUploaderImpl();
-  // Returns true when the uploader ready to start an upload. Always true when
-  // no uploads have been attempted.
+  // Returns true when the uploader is ready to start an upload. Always true
+  // when no uploads have been attempted.
   bool UploadComplete();
   // Initialize the uploader with user settings.
   int Init(HttpUploaderSettings* ptr_settings);
@@ -134,6 +134,10 @@ class HttpUploaderImpl {
   DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
 
+///////////////////////////////////////////////////////////////////////////////
+// HttpUploader
+//
+
 HttpUploader::HttpUploader() {
 }
 
@@ -184,6 +188,10 @@ int HttpUploader::Stop() {
 int HttpUploader::UploadBuffer(const uint8* const ptr_buffer, int32 length) {
   return ptr_uploader_->UploadBuffer(ptr_buffer, length);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// HttpUploaderImpl
+//
 
 HttpUploaderImpl::HttpUploaderImpl()
     : ptr_curl_(NULL),
@@ -317,11 +325,11 @@ int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length) {
   return status;
 }
 
-// Stop |UploadThread|. First it wakes the thread by calling |notify_one| on the
-// |buffer_ready_| condition variable without locking |upload_buffer_|, which
-// causes |Upload| to return |kStopping| to |UploadThread|, breaking the loop.
-// This takes care of stopping if the uploader was waiting for user data in
-// |WaitForUserData|.
+// Stops |UploadThread|. First it wakes the thread by calling |notify_one| on
+// the |buffer_ready_| condition variable without locking |upload_buffer_|,
+// which causes |Upload| to return |kStopping| to |UploadThread|, breaking the
+// loop. This takes care of stopping if the uploader was waiting for user data
+// in |WaitForUserData|.
 // It then obtains lock on |mutex_|, sets |stop_| to true, and releases lock to
 // ensure a running upload stops when |StopRequested| is called within the
 // libcurl callbacks.
@@ -349,8 +357,8 @@ bool HttpUploaderImpl::StopRequested() {
   return stop_requested;
 }
 
-// Pass callback function pointers (|ProgressCallback| and |WriteCallback|) and
-// data (|this|) to libcurl.
+// Pass callback function pointers (|ProgressCallback| and |WriteCallback|),
+// and data, |this|, to libcurl.
 CURLcode HttpUploaderImpl::SetCurlCallbacks() {
   // set the progress callback function pointer
   CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_PROGRESSFUNCTION,
@@ -485,7 +493,7 @@ int HttpUploaderImpl::WaitForUserData() {
   return kSuccess;
 }
 
-// Handle libcurl progress updates
+// Handle libcurl progress updates.
 int HttpUploaderImpl::ProgressCallback(void* ptr_this,
                                        double download_total,
                                        double download_current,
@@ -510,7 +518,7 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
   return 0;
 }
 
-// Handle HTTP response data
+// Handle HTTP response data.
 size_t HttpUploaderImpl::WriteCallback(char* buffer, size_t size,
                                        size_t nitems,
                                        void* ptr_this) {
@@ -528,7 +536,7 @@ size_t HttpUploaderImpl::WriteCallback(char* buffer, size_t size,
   return size*nitems;
 }
 
-// Reset uploaded byte count, and store upload start time
+// Reset uploaded byte count, and store upload start time.
 void HttpUploaderImpl::ResetStats() {
   boost::mutex::scoped_lock lock(mutex_);
   stats_.bytes_per_second = 0;
