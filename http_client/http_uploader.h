@@ -33,8 +33,10 @@ struct HttpUploaderSettings {
 struct HttpUploaderStats {
   // Upload average bytes per second.
   double bytes_per_second;
-  // Total bytes sent.
-  int64 bytes_sent;
+  // Bytes sent for current upload.
+  int64 bytes_sent_current;
+  // Total number of bytes uploaded.
+  int64 total_bytes_uploaded;
 };
 
 class HttpUploaderImpl;

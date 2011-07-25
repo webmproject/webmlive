@@ -279,7 +279,8 @@ int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats) {
   }
   boost::mutex::scoped_lock lock(mutex_);
   ptr_stats->bytes_per_second = stats_.bytes_per_second;
-  ptr_stats->bytes_sent = stats_.bytes_sent;
+  ptr_stats->bytes_sent_current = stats_.bytes_sent_current;
+  ptr_stats->total_bytes_uploaded = stats_.total_bytes_uploaded;
   return kSuccess;
 }
 
@@ -482,6 +483,16 @@ int HttpUploaderImpl::Upload() {
     curl_easy_getinfo(ptr_curl_, CURLINFO_RESPONSE_CODE, &resp_code);
     DBGLOG("server response code: " << resp_code);
   }
+  // Update total bytes uploaded.
+  double bytes_uploaded = 0;
+  err = curl_easy_getinfo(ptr_curl_, CURLINFO_SIZE_UPLOAD, &bytes_uploaded);
+  if (err != CURLE_OK) {
+    LOG_CURL_ERR(err, "curl_easy_getinfo CURLINFO_SIZE_UPLOAD failed.");
+  } else {
+    boost::mutex::scoped_lock lock(mutex_);
+    stats_.bytes_sent_current = 0;
+    stats_.total_bytes_uploaded += static_cast<int64>(bytes_uploaded);
+  }
   return kSuccess;
 }
 
@@ -509,10 +520,12 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
   }
   boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
   HttpUploaderStats& stats = ptr_uploader_->stats_;
-  stats.bytes_sent = static_cast<int64>(upload_current);
+  stats.bytes_sent_current = static_cast<int64>(upload_current);
   double ticks_elapsed = clock() - ptr_uploader_->start_ticks_;
   double ticks_per_sec = CLOCKS_PER_SEC;
-  stats.bytes_per_second = upload_current / (ticks_elapsed / ticks_per_sec);
+  stats.bytes_per_second =
+      (upload_current + stats.total_bytes_uploaded) /
+      (ticks_elapsed / ticks_per_sec);
   DBGLOG("total=" << int(upload_total) << " bytes_per_sec="
          << int(stats.bytes_per_second));
   return 0;
@@ -540,7 +553,8 @@ size_t HttpUploaderImpl::WriteCallback(char* buffer, size_t size,
 void HttpUploaderImpl::ResetStats() {
   boost::mutex::scoped_lock lock(mutex_);
   stats_.bytes_per_second = 0;
-  stats_.bytes_sent = 0;
+  stats_.bytes_sent_current = 0;
+  stats_.total_bytes_uploaded = 0;
   start_ticks_ = clock();
 }
 

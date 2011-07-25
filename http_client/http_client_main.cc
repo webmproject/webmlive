@@ -141,7 +141,8 @@ int client_main(webmlive::HttpUploaderSettings& settings) {
     // Output current duration and upload progress
     if (uploader.GetStats(&stats) == webmlive::HttpUploader::kSuccess) {
       printf("\rencoded duration: %04f seconds, uploaded: %I64d @ %d kBps",
-             encoder.encoded_duration(), stats.bytes_sent,
+             encoder.encoded_duration(),
+             stats.bytes_sent_current + stats.total_bytes_uploaded,
              static_cast<int>(stats.bytes_per_second / 1000));
     }
     // Check if the upload thread is ready
