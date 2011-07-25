@@ -17,6 +17,12 @@
 
 #pragma comment(lib, "../third_party/curl/win/x86/libcurldll.a")
 
+#ifdef _DEBUG
+#pragma comment(lib, "../third_party/libwebm/win/x86/debug/mkvparser.lib")
+#else
+#pragma comment(lib, "../third_party/libwebm/win/x86/relese/mkvparser.lib")
+#endif
+
 // Windows API libraries
 #pragma comment(lib, "quartz.lib")
 #pragma comment(lib, "shlwapi.lib")

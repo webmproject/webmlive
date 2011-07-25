@@ -20,6 +20,7 @@
 #include "curl/easy.h"
 #include "debug_util.h"
 #include "http_client_base.h"
+#include "libwebm/mkvparser.hpp"
 
 #define LOG_CURL_ERR(CURL_ERR, MSG_STR) \
   DBGLOG("ERROR: " << MSG_STR << " err=" << CURL_ERR << ":" << \

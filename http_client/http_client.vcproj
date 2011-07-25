@@ -276,14 +276,30 @@
 		<Filter
 			Name="third_party"
 			>
-			<File
-				RelativePath="..\third_party\webmdshow\IDL\vp8encoderidl.h"
+			<Filter
+				Name="libwebm"
 				>
-			</File>
-			<File
-				RelativePath="..\third_party\webmdshow\IDL\webmmuxidl.h"
+				<File
+					RelativePath="..\third_party\libwebm\mkvparser.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libwebm\mkvreader.hpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="webmdshow"
 				>
-			</File>
+				<File
+					RelativePath="..\third_party\webmdshow\IDL\vp8encoderidl.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\webmdshow\IDL\webmmuxidl.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>
