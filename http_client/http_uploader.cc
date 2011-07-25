@@ -5,7 +5,6 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "http_client_base.h"
 #include "http_uploader.h"
 
 #include <time.h>
@@ -20,6 +19,7 @@
 #include "curl/types.h"
 #include "curl/easy.h"
 #include "debug_util.h"
+#include "http_client_base.h"
 
 #define LOG_CURL_ERR(CURL_ERR, MSG_STR) \
   DBGLOG("ERROR: " << MSG_STR << " err=" << CURL_ERR << ":" << \
@@ -27,7 +27,7 @@
 #define LOG_CURLFORM_ERR(CURL_ERR, MSG_STR) \
   DBGLOG("ERROR: " << MSG_STR << " err=" << CURL_ERR)
 
-namespace WebmLive {
+namespace webmlive {
 
 static const char* kContentType = "video/webm";
 static const char* kFormName = "webm_file";
@@ -131,7 +131,7 @@ class HttpUploaderImpl {
   // it's information included within the form data contained within the HTTP
   // post.
   std::string local_file_name_;
-  DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -170,7 +170,7 @@ int HttpUploader::Init(HttpUploaderSettings* ptr_settings) {
 }
 
 // Return result of |GetStats| on |ptr_uploader_|.
-int HttpUploader::GetStats(WebmLive::HttpUploaderStats* ptr_stats) {
+int HttpUploader::GetStats(webmlive::HttpUploaderStats* ptr_stats) {
   return ptr_uploader_->GetStats(ptr_stats);
 }
 
@@ -573,4 +573,4 @@ void HttpUploaderImpl::UploadThread() {
   DBGLOG("thread done");
 }
 
-} // WebmLive
+}  // namespace webmlive

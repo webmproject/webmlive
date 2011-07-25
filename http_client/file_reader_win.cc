@@ -5,17 +5,16 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-
 #include "file_reader_win.h"
 
-#include <share.h> // defines _SH_DENYNO, used with _wfsopen
+#include <share.h>  // defines _SH_DENYNO, used with _wfsopen
 
 #include <sstream>
 
 #include "debug_util.h"
 #include "file_util.h"
 
-namespace WebmLive {
+namespace webmlive {
 
 FileReaderImpl::FileReaderImpl() : bytes_read_(0), ptr_file_(NULL) {
 }
@@ -149,4 +148,4 @@ uint64 FileReaderImpl::GetBytesAvailable() {
   return available;
 }
 
-} // WebmLive
+}  // namespace webmlive

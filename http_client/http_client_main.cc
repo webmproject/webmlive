@@ -71,8 +71,8 @@ int store_string_map_entries(const std::vector<std::string>& unparsed_entries,
 
 // Calls |Init| and |Run| on |encoder| to start the encode of a WebM file.
 // TODO(tomfinegan): Add capture and encoder settings configuration.
-int start_encoder(WebmLive::WebmEncoder& encoder,
-                  const WebmLive::HttpUploaderSettings& settings) {
+int start_encoder(webmlive::WebmEncoder& encoder,
+                  const webmlive::HttpUploaderSettings& settings) {
   int status = encoder.Init(settings.local_file);
   if (status) {
     DBGLOG("encoder Init failed, status=" << status);
@@ -87,8 +87,8 @@ int start_encoder(WebmLive::WebmEncoder& encoder,
 
 // Calls |Init| and |Run| on |uploader| to start the uploader thread, which
 // uploads buffers when |UploadBuffer| is called on the uploader.
-int start_uploader(WebmLive::HttpUploader& uploader,
-                   WebmLive::HttpUploaderSettings& settings) {
+int start_uploader(webmlive::HttpUploader& uploader,
+                   webmlive::HttpUploaderSettings& settings) {
   int status = uploader.Init(&settings);
   if (status) {
     DBGLOG("uploader Init failed, status=" << status);
@@ -101,31 +101,31 @@ int start_uploader(WebmLive::HttpUploader& uploader,
   return status;
 }
 
-int client_main(WebmLive::HttpUploaderSettings& settings) {
+int client_main(webmlive::HttpUploaderSettings& settings) {
   // Setup the file reader.  This is a little strange since |reader| actually
   // creates the output file that is used by the encoder.
-  WebmLive::FileReader reader;
+  webmlive::FileReader reader;
   int status = reader.CreateFile(settings.local_file);
   if (status) {
     fprintf(stderr, "file reader init failed, status=%d.\n", status);
     return EXIT_FAILURE;
   }
   // Start encoding the WebM file.
-  WebmLive::WebmEncoder encoder;
+  webmlive::WebmEncoder encoder;
   status = start_encoder(encoder, settings);
   if (status) {
     fprintf(stderr, "start_encoder failed, status=%d\n", status);
     return EXIT_FAILURE;
   }
   // Start the uploader thread.
-  WebmLive::HttpUploader uploader;
+  webmlive::HttpUploader uploader;
   status = start_uploader(uploader, settings);
   if (status) {
     fprintf(stderr, "start_uploader failed, status=%d\n", status);
     encoder.Stop();
     return EXIT_FAILURE;
   }
-  WebmLive::HttpUploaderStats stats;
+  webmlive::HttpUploaderStats stats;
   const size_t kReadBufferSize = 100*1024;
   using boost::scoped_array;
   scoped_array<uint8> read_buf(new (std::nothrow) uint8[kReadBufferSize]);
@@ -139,7 +139,7 @@ int client_main(WebmLive::HttpUploaderSettings& settings) {
   printf("\nPress the any key to quit...\n");
   while(!_kbhit()) {
     // Output current duration and upload progress
-    if (uploader.GetStats(&stats) == WebmLive::HttpUploader::kSuccess) {
+    if (uploader.GetStats(&stats) == webmlive::HttpUploader::kSuccess) {
       printf("\rencoded duration: %04f seconds, uploaded: %I64d @ %d kBps",
              encoder.encoded_duration(), stats.bytes_sent,
              static_cast<int>(stats.bytes_per_second / 1000));
@@ -149,7 +149,7 @@ int client_main(WebmLive::HttpUploaderSettings& settings) {
       // Read some data
       size_t bytes_read = 0;
       status = reader.Read(kReadBufferSize, &read_buf[0], &bytes_read);
-      if (status && status != WebmLive::FileReader::kAtEOF) {
+      if (status && status != webmlive::FileReader::kAtEOF) {
         DBGLOG("Read failed, status=" << status);
         //fprintf(stderr, "\nERROR: can't read from file!\n");
         //break;
@@ -205,7 +205,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
   DBGLOG("file: " << var_map["file"].as<std::string>().c_str());
   DBGLOG("url: " << var_map["url"].as<std::string>().c_str());
   // TODO(tomfinegan): Need to add capture and encoder settings...
-  WebmLive::HttpUploaderSettings settings;
+  webmlive::HttpUploaderSettings settings;
   settings.local_file = var_map["file"].as<std::string>();
   settings.target_url = var_map["url"].as<std::string>();
   // Parse and store any HTTP header name:value pairs passed via command line.
@@ -236,7 +236,6 @@ int _tmain(int argc, _TCHAR* argv[]) {
 // We build with BOOST_NO_EXCEPTIONS defined; boost will call this function
 // instead of throwing.  We must stop execution here.
 void boost::throw_exception(const std::exception& e) {
-  using std::cerr;
-  cerr << "Fatal error: " << e.what() << "\n";
+  fprintf(stderr, "Fatal error: %s\n", e.what());
   exit(EXIT_FAILURE);
 }

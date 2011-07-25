@@ -5,16 +5,14 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef WEBMLIVE_FILE_READER_H
-#define WEBMLIVE_FILE_READER_H
+#ifndef HTTP_CLIENT_FILE_READER_H_
+#define HTTP_CLIENT_FILE_READER_H_
 
-#pragma once
-
-#include "http_client_base.h"
+#include "basictypes.h"
 #include "boost/scoped_ptr.hpp"
-#include "chromium/base/basictypes.h"
+#include "http_client_base.h"
 
-namespace WebmLive {
+namespace webmlive {
 
 class FileReaderImpl;
 
@@ -49,9 +47,9 @@ class FileReader {
  private:
    // Pointer to reader implementation.
   boost::scoped_ptr<FileReaderImpl> ptr_reader_;
-  DISALLOW_COPY_AND_ASSIGN(FileReader);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(FileReader);
 };
 
-} // WebmLive
+}  // namespace webmlive
 
-#endif // WEBMLIVE_FILE_READER_H
+#endif  // HTTP_CLIENT_FILE_READER_H_

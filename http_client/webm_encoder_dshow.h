@@ -8,24 +8,26 @@
 #ifndef HTTP_CLIENT_WEBM_ENCODER_DSHOW_H_
 #define HTTP_CLIENT_WEBM_ENCODER_DSHOW_H_
 
-#pragma once
-
-#include <map>
-#include <string>
-
 #include <comdef.h>
-// files included by dshow.h cause many 4996 warnings
+// files included by dshow.h cause many 4996 warnings, disable them:
 #pragma warning(disable:4996)
 #include <dshow.h>
 #pragma warning(default:4996)
 
+// <map> includes <cstdlib> (indirectly), which leads to deprecation warnings,
+// disable them.
+#pragma warning(disable:4995)
+#include <map>
+#pragma warning(default:4995)
+#include <string>
+
+#include "basictypes.h"
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/thread.hpp"
-#include "chromium/base/basictypes.h"
 #include "http_client_base.h"
 #include "webm_encoder.h"
 
-namespace WebmLive {
+namespace webmlive {
 // A slightly more brief version of the com_ptr_t definition macro.
 #define COMPTR_TYPEDEF(InterfaceName) \
   _COM_SMARTPTR_TYPEDEF(InterfaceName, IID_##InterfaceName)
@@ -198,7 +200,7 @@ class WebmEncoderImpl {
   boost::shared_ptr<boost::thread> encode_thread_;
   // Output file name.
   std::wstring out_file_name_;
-  DISALLOW_COPY_AND_ASSIGN(WebmEncoderImpl);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoderImpl);
 };
 
 // Utility class for finding and loading capture devices available through
@@ -233,7 +235,7 @@ class CaptureSourceLoader {
   IEnumMonikerPtr source_enum_;
   // Map of sources.
   std::map<int, std::wstring> sources_;
-  DISALLOW_COPY_AND_ASSIGN(CaptureSourceLoader);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(CaptureSourceLoader);
 };
 
 // Utility class for finding a specific pin on a DirectShow filter.
@@ -262,7 +264,7 @@ class PinFinder {
  private:
   // Filter pin enumerator interface.
   IEnumPinsPtr pin_enum_;
-  DISALLOW_COPY_AND_ASSIGN(PinFinder);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(PinFinder);
 };
 
 // Utility class for obtaining information about a pin.
@@ -290,9 +292,9 @@ class PinInfo {
   void FreeMediaType(AM_MEDIA_TYPE* ptr_media_type) const;
   // Copy of |ptr_pin| from |Init|
   const IPinPtr pin_;
-  DISALLOW_COPY_AND_ASSIGN(PinInfo);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(PinInfo);
 };
 
-} // WebmLive
+}  // namespace webmlive
 
 #endif  // HTTP_CLIENT_WEBM_ENCODER_DSHOW_H_

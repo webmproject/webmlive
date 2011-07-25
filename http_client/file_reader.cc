@@ -7,17 +7,16 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "file_reader.h"
 
-#ifdef _WIN32
-#include "file_reader_win.h"
-#endif
-
 #include <cstdio>
 #include <sstream>
 #include <string>
 
 #include "debug_util.h"
+#ifdef _WIN32
+#include "file_reader_win.h"
+#endif
 
-namespace WebmLive {
+namespace webmlive {
 
 FileReader::FileReader() {
 }
@@ -49,4 +48,4 @@ int FileReader::Read(size_t num_bytes, uint8* ptr_buffer,
   return ptr_reader_->Read(num_bytes, ptr_buffer, ptr_num_read);
 }
 
-}  // WebmLive
+}  // namespace webmlive

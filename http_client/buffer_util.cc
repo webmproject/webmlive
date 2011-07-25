@@ -8,7 +8,7 @@
 #include "buffer_util.h"
 #include "debug_util.h"
 
-namespace WebmLive {
+namespace webmlive {
 
 LockableBuffer::LockableBuffer() : locked_(false) {
 }
@@ -80,4 +80,4 @@ int LockableBuffer::Unlock() {
   return status;
 }
 
-}  // namespace WebmLive
+}  // namespace webmlive

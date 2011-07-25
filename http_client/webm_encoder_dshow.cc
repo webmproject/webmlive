@@ -5,12 +5,10 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-
 #include "webm_encoder_dshow.h"
 
 #include <vfwmsgs.h>
 
-#include <cstdio>
 #include <sstream>
 
 #include "debug_util.h"
@@ -19,7 +17,7 @@
 #include "webmdshow/IDL/vp8encoderidl.h"
 #include "webmdshow/IDL/webmmuxidl.h"
 
-namespace WebmLive {
+namespace webmlive {
 
 namespace {
 // DirectShow Filter name constants.
@@ -1052,4 +1050,4 @@ void PinInfo::FreeMediaType(AM_MEDIA_TYPE* ptr_media_type) const {
   }
 }
 
-}  // WebmLive
+}  // namespace webmlive

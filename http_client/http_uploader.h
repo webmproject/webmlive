@@ -5,18 +5,16 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef WEBMLIVE_HTTP_UPLOADER_H
-#define WEBMLIVE_HTTP_UPLOADER_H
-
-#pragma once
-
-#include "boost/scoped_ptr.hpp"
-#include "chromium/base/basictypes.h"
+#ifndef HTTP_CLIENT_HTTP_UPLOADER_H_
+#define HTTP_CLIENT_HTTP_UPLOADER_H_
 
 #include <map>
 #include <string>
 
-namespace WebmLive {
+#include "basictypes.h"
+#include "boost/scoped_ptr.hpp"
+
+namespace webmlive {
 
 struct HttpUploaderSettings {
   // |local_file| is what the HTTP server sees as the local file name.
@@ -79,15 +77,12 @@ class HttpUploader {
   int Stop();
   // Send a buffer to the uploader thread.
   int UploadBuffer(const uint8* const ptr_buffer, int32 length);
-  // TODO(tomfinegan): Add UploadFile for upload of existing files. This will
-  //                   complicate the upload thread, but will be worth it when
-  //                   upload of existing files is implemented.
  private:
   // Pointer to uploader implementation.
   boost::scoped_ptr<HttpUploaderImpl> ptr_uploader_;
-  DISALLOW_COPY_AND_ASSIGN(HttpUploader);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(HttpUploader);
 };
 
-} // WebmLive
+}  // namespace webmlive
 
-#endif // WEBMLIVE_HTTP_UPLOADER_H
+#endif  // HTTP_CLIENT_HTTP_UPLOADER_H_

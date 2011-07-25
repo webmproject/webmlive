@@ -8,8 +8,6 @@
 #ifndef HTTP_CLIENT_DEBUG_UTIL_H_
 #define HTTP_CLIENT_DEBUG_UTIL_H_
 
-#pragma once
-
 #ifdef _DEBUG
 #include "webmdshow/common/odbgstream.hpp"
 

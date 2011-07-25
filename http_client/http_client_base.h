@@ -5,19 +5,17 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef WEBMLIVE_HTTP_CLIENT_BASE_H
-#define WEBMLIVE_HTTP_CLIENT_BASE_H
-
-#pragma once
+#ifndef HTTP_CLIENT_HTTP_CLIENT_BASE_H_
+#define HTTP_CLIENT_HTTP_CLIENT_BASE_H_
 
 #if _WIN32
 
 #ifndef _WIN32_WINNT
-#  define _WIN32_WINNT 0x0501 // WinXP
+#  define _WIN32_WINNT 0x0501  // WinXP
 #endif
 
-#include "Windows.h"
+#include "windows.h"
 
-#endif // _WIN32
+#endif  // _WIN32
 
-#endif // WEBMLIVE_HTTP_CLIENT_BASE_H
+#endif  // HTTP_CLIENT_HTTP_CLIENT_BASE_H_

@@ -227,6 +227,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\basictypes.h"
+				>
+			</File>
+			<File
 				RelativePath=".\buffer_util.h"
 				>
 			</File>
@@ -272,10 +276,6 @@
 		<Filter
 			Name="third_party"
 			>
-			<File
-				RelativePath="..\third_party\chromium\base\basictypes.h"
-				>
-			</File>
 			<File
 				RelativePath="..\third_party\webmdshow\IDL\vp8encoderidl.h"
 				>

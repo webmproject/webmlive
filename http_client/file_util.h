@@ -5,22 +5,20 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-
-#ifndef WEBMLIVE_FILE_UTIL_H
-#define WEBMLIVE_FILE_UTIL_H
-
-#pragma once
+#ifndef HTTP_CLIENT_FILE_UTIL_H_
+#define HTTP_CLIENT_FILE_UTIL_H_
 
 #include <string>
-#include "chromium/base/basictypes.h"
 
-namespace WebmLive {
+#include "basictypes.h"
+
+namespace webmlive {
 namespace FileUtil {
 
 bool file_exists(std::wstring path);
 uint64 get_file_size(std::wstring path);
 
-} // FileUtil
-} // WebmLive
+}  // FileUtil
+}  // webmlive
 
-#endif // WEBMLIVE_FILE_UTIL_H
+#endif  // HTTP_CLIENT_FILE_UTIL_H_

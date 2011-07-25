@@ -8,16 +8,13 @@
 #ifndef HTTP_CLIENT_BUFFER_UTIL_H_
 #define HTTP_CLIENT_BUFFER_UTIL_H_
 
-#pragma once
-
-#include "http_client_base.h"
-
 #include <vector>
 
+#include "basictypes.h"
 #include "boost/thread/mutex.hpp"
-#include "chromium/base/basictypes.h"
+#include "http_client_base.h"
 
-namespace WebmLive {
+namespace webmlive {
 
 // Simple buffer object with locking facilities for passing data between
 // threads.  The general idea here is that one thread, A, calls |Init| to copy
@@ -57,8 +54,8 @@ class LockableBuffer {
   boost::mutex mutex_;
   // Internal buffer.
   std::vector<uint8> buffer_;
-  DISALLOW_COPY_AND_ASSIGN(LockableBuffer);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(LockableBuffer);
 };
-}  // WebmLive
+}  // namespace webmlive
 
 #endif  // HTTP_CLIENT_BUFFER_UTIL_H_

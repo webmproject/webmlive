@@ -5,21 +5,17 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-
-#ifndef WEBMLIVE_FILE_READER_WIN_H
-#define WEBMLIVE_FILE_READER_WIN_H
-
-#pragma once
-
-#include "http_client_base.h"
+#ifndef HTTP_CLIENT_FILE_READER_WIN_H_
+#define HTTP_CLIENT_FILE_READER_WIN_H_
 
 #include <cstdio>
 #include <string>
 
-#include "chromium/base/basictypes.h"
+#include "basictypes.h"
 #include "file_reader.h"
+#include "http_client_base.h"
 
-namespace WebmLive {
+namespace webmlive {
 
 // FileReader implementation.  Creates a writable file that will later be
 // read through calls to the public |Read| method.
@@ -64,9 +60,9 @@ class FileReaderImpl {
   int64 bytes_read_;
   // File name.
   std::wstring file_path_;
-  DISALLOW_COPY_AND_ASSIGN(FileReaderImpl);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(FileReaderImpl);
 };
 
 }
 
-#endif // WEBMLIVE_FILE_READER_WIN_H
+#endif  // HTTP_CLIENT_FILE_READER_WIN_H_

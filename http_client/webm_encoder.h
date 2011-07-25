@@ -8,15 +8,13 @@
 #ifndef HTTP_CLIENT_WEBM_ENCODER_H_
 #define HTTP_CLIENT_WEBM_ENCODER_H_
 
-#pragma once
-
 #include <string>
 
+#include "basictypes.h"
 #include "boost/scoped_ptr.hpp"
-#include "chromium/base/basictypes.h"
 #include "http_client_base.h"
 
-namespace WebmLive {
+namespace webmlive {
 
 class WebmEncoderImpl;
 
@@ -69,9 +67,9 @@ class WebmEncoder {
  private:
   // Encoder object.
   boost::scoped_ptr<WebmEncoderImpl> ptr_encoder_;
-  DISALLOW_COPY_AND_ASSIGN(WebmEncoder);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoder);
 };
 
-}  // WebmLive
+}  // namespace webmlive
 
 #endif  // HTTP_CLIENT_WEBM_ENCODER_H_
