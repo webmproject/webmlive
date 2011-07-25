@@ -8,6 +8,8 @@
 #ifndef HTTP_CLIENT_FILE_READER_H_
 #define HTTP_CLIENT_FILE_READER_H_
 
+#include <string>
+
 #include "basictypes.h"
 #include "boost/scoped_ptr.hpp"
 #include "http_client_base.h"

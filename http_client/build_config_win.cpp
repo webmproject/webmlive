@@ -20,7 +20,7 @@
 #ifdef _DEBUG
 #pragma comment(lib, "../third_party/libwebm/win/x86/debug/mkvparser.lib")
 #else
-#pragma comment(lib, "../third_party/libwebm/win/x86/relese/mkvparser.lib")
+#pragma comment(lib, "../third_party/libwebm/win/x86/release/mkvparser.lib")
 #endif
 
 // Windows API libraries
