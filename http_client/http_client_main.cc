@@ -139,10 +139,10 @@ int client_main(WebmLive::HttpUploaderSettings& settings) {
   printf("\nPress the any key to quit...\n");
   while(!_kbhit()) {
     // Output current duration and upload progress
-    double duration = encoder.GetEncodedDuration();
     if (uploader.GetStats(&stats) == WebmLive::HttpUploader::kSuccess) {
       printf("\rencoded duration: %04f seconds, uploaded: %I64d @ %d kBps",
-             duration, stats.bytes_sent, int(stats.bytes_per_second / 1000));
+             encoder.encoded_duration(), stats.bytes_sent,
+             static_cast<int>(stats.bytes_per_second / 1000));
     }
     // Check if the upload thread is ready
     if (uploader.UploadComplete()) {
@@ -235,8 +235,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 // We build with BOOST_NO_EXCEPTIONS defined; boost will call this function
 // instead of throwing.  We must stop execution here.
-void boost::throw_exception(const std::exception& e)
-{
+void boost::throw_exception(const std::exception& e) {
   using std::cerr;
   cerr << "Fatal error: " << e.what() << "\n";
   exit(EXIT_FAILURE);

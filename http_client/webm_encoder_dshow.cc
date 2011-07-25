@@ -6,45 +6,45 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include "http_client_base.h"
-#include "webm_encoder.h"
 #include "webm_encoder_dshow.h"
+
+#include <vfwmsgs.h>
 
 #include <cstdio>
 #include <sstream>
 
-#include <vfwmsgs.h>
-
 #include "debug_util.h"
+#include "webm_encoder.h"
 #include "webmdshow/common/hrtext.hpp"
 #include "webmdshow/IDL/vp8encoderidl.h"
 #include "webmdshow/IDL/webmmuxidl.h"
 
-double WebmLive::media_time_to_seconds(REFERENCE_TIME media_time)
-{
+namespace WebmLive {
+
+namespace {
+// DirectShow Filter name constants.
+const wchar_t* const kVideoSourceName = L"VideoSource";
+const wchar_t* const kAudioSourceName = L"AudioSource";
+const wchar_t* const kVpxEncoderName =  L"VP8Encoder";
+const wchar_t* const kVorbisEncoderName = L"VorbisEncoder";
+const wchar_t* const kWebmMuxerName = L"WebmMuxer";
+const wchar_t* const kFileWriterName = L"FileWriter";
+// Default VP8 encode bitrate.
+const int kVpxEncoderBitrate = 500;
+}  // namespace
+
+// Convert media time (100 nanosecond ticks) to seconds.
+double media_time_to_seconds(REFERENCE_TIME media_time) {
   return media_time / 10000000.0;
 }
 
-namespace WebmLive {
-
-static const wchar_t* const kVideoSourceName = L"VideoSource";
-static const wchar_t* const kAudioSourceName = L"AudioSource";
-static const wchar_t* const kVpxEncoderName =  L"VP8Encoder";
-static const wchar_t* const kVorbisEncoderName = L"VorbisEncoder";
-static const wchar_t* const kWebmMuxerName = L"WebmMuxer";
-static const wchar_t* const kFileWriterName = L"FileWriter";
-static const int kVpxEncoderBitrate = 500;
-
 WebmEncoderImpl::WebmEncoderImpl()
-    : encoded_duration_(0.0),
-      media_event_handle_(INVALID_HANDLE_VALUE),
-      stop_(false)
-{
-  CoInitialize(NULL);
+    : stop_(false),
+      encoded_duration_(0.0),
+      media_event_handle_(INVALID_HANDLE_VALUE) {
 }
 
-WebmEncoderImpl::~WebmEncoderImpl()
-{
+WebmEncoderImpl::~WebmEncoderImpl() {
   // Manually release directshow interfaces to avoid problems related to
   // destruction order of com_ptr_t members.
   file_writer_ = 0;
@@ -62,8 +62,17 @@ WebmEncoderImpl::~WebmEncoderImpl()
   CoUninitialize();
 }
 
-int WebmEncoderImpl::Init(std::wstring out_file_name)
-{
+// Build the DirectShow filter graph.
+// Constructs a graph that looks like this:
+// video source -> vp8 encoder    ->
+//                                   webm muxer -> file writer
+// audio source -> vorbis encoder ->
+int WebmEncoderImpl::Init(const std::wstring& out_file_name) {
+  const HRESULT hr = CoInitialize(NULL);
+  if (FAILED(hr)) {
+    DBGLOG("CoInitialize failed: " << HRLOG(hr));
+    return WebmEncoder::kInitFailed;
+  }
   int status = CreateGraph();
   if (status) {
     DBGLOG("CreateGraphInterfaces failed: " << status);
@@ -125,8 +134,12 @@ int WebmEncoderImpl::Init(std::wstring out_file_name)
   return kSuccess;
 }
 
-int WebmEncoderImpl::Run()
-{
+// Creates graph control and observation interfaces:
+// - |media_control_|
+// - |media_event_| (and media event handle: |media_event_handle_|)
+// - |media_seeking_|
+// Then starts the encoder thread.
+int WebmEncoderImpl::Run() {
   if (encode_thread_) {
     DBGLOG("ERROR: non-null encode thread. Already running?");
     return WebmEncoder::kRunFailed;
@@ -134,51 +147,53 @@ int WebmEncoderImpl::Run()
   media_control_ = IMediaControlPtr(graph_builder_);
   if (!media_control_) {
     DBGLOG("ERROR: cannot create media control.");
-    return kCannotCreateMediaControl;
+    return WebmEncoder::kEncodeControlError;
   }
   media_event_ = IMediaEventPtr(graph_builder_);
   if (!media_event_) {
     DBGLOG("ERROR: cannot create media event.");
-    return kCannotCreateMediaControl;
+    return WebmEncoder::kEncodeMonitorError;
   }
-  OAEVENT* ptr_handle = reinterpret_cast<OAEVENT*>(&media_event_handle_);
-  HRESULT hr = media_event_->GetEventHandle(ptr_handle);
+  OAEVENT* const ptr_handle = reinterpret_cast<OAEVENT*>(&media_event_handle_);
+  const HRESULT hr = media_event_->GetEventHandle(ptr_handle);
   if (FAILED(hr)) {
     DBGLOG("ERROR: could not media event handle!" << HRLOG(hr));
-    return kCannotCreateMediaEvent;
+    return WebmEncoder::kEncodeMonitorError;
   }
   media_seeking_ = IMediaSeekingPtr(graph_builder_);
   if (!media_seeking_) {
     DBGLOG("ERROR: cannot create media seeking interface.");
-    return kCannotCreateMediaSeeking;
+    return WebmEncoder::kEncodeMonitorError;
   }
   using boost::bind;
   using boost::shared_ptr;
   using boost::thread;
   using std::nothrow;
   encode_thread_ = shared_ptr<thread>(
-    new (nothrow) thread(bind(&WebmEncoderImpl::WebmEncoderThread, this)));
+      new (nothrow) thread(bind(&WebmEncoderImpl::WebmEncoderThread, this)));
   return kSuccess;
 }
 
-int WebmEncoderImpl::Stop()
-{
+// Obtains lock on |mutex_|, sets |stop_| to true, and waits for the encode
+// thread to finish via call to |join| on |encode_thread_|.
+void WebmEncoderImpl::Stop() {
   assert(encode_thread_);
   boost::mutex::scoped_lock lock(mutex_);
   stop_ = true;
   lock.unlock();
   encode_thread_->join();
-  return kSuccess;
 }
 
-double WebmEncoderImpl::GetEncodedDuration()
-{
+// Obtains lock on |mutex_| and returns |encoded_duration_|.
+double WebmEncoderImpl::encoded_duration() {
   boost::mutex::scoped_lock lock(mutex_);
   return encoded_duration_;
 }
 
-bool WebmEncoderImpl::StopRequested()
-{
+// Tries to obtain lock on |mutex_| and returns value of |stop_| if lock is
+// obtained. Assumes no stop requested and returns false if unable to obtain
+// the lock.
+bool WebmEncoderImpl::StopRequested() {
   bool stop_requested = false;
   boost::mutex::scoped_try_lock lock(mutex_);
   if (lock.owns_lock()) {
@@ -187,8 +202,10 @@ bool WebmEncoderImpl::StopRequested()
   return stop_requested;
 }
 
-int WebmEncoderImpl::CreateGraph()
-{
+// Creates the graph builder, |graph_builder_|, and capture graph builder,
+// |capture_graph_builder_|, and passes |graph_builder_| to
+// |capture_graph_builder_|.
+int WebmEncoderImpl::CreateGraph() {
   HRESULT hr = graph_builder_.CreateInstance(CLSID_FilterGraph);
   if (FAILED(hr)) {
     DBGLOG("ERROR: graph builder creation failed." << HRLOG(hr));
@@ -207,8 +224,10 @@ int WebmEncoderImpl::CreateGraph()
   return kSuccess;
 }
 
-int WebmEncoderImpl::CreateVideoSource(std::wstring video_src)
-{
+// Uses |CaptureSourceLoader| to find a video capture source.  If successful
+// an instance of the source filter is created and added to the filter graph.
+// Note: the first device found is used unconditionally.
+int WebmEncoderImpl::CreateVideoSource(std::wstring video_src) {
   if (!video_src.empty()) {
     DBGLOG("ERROR: specifying video source externally is not implemented.");
     return WebmEncoder::kNotImplemented;
@@ -229,7 +248,8 @@ int WebmEncoderImpl::CreateVideoSource(std::wstring video_src)
     DBGLOG("ERROR: cannot create video source!");
     return WebmEncoder::kNoVideoSource;
   }
-  HRESULT hr = graph_builder_->AddFilter(video_source_, kVideoSourceName);
+  const HRESULT hr = graph_builder_->AddFilter(video_source_,
+                                               kVideoSourceName);
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot add video source to graph." << HRLOG(hr));
     return kCannotAddFilter;
@@ -238,8 +258,9 @@ int WebmEncoderImpl::CreateVideoSource(std::wstring video_src)
   return kSuccess;
 }
 
-int WebmEncoderImpl::CreateVpxEncoder()
-{
+// Creates the VP8 encoder filter, adds it to the graph, and sets applies
+// minimal settings required for a realtime encode.
+int WebmEncoderImpl::CreateVpxEncoder() {
   HRESULT hr = vpx_encoder_.CreateInstance(CLSID_VP8Encoder);
   if (FAILED(hr)) {
     DBGLOG("ERROR: VP8 encoder creation failed." << HRLOG(hr));
@@ -276,8 +297,9 @@ int WebmEncoderImpl::CreateVpxEncoder()
   return kSuccess;
 }
 
-int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder()
-{
+// Locates the output pin on |video_source_| and the input pin on
+// |vpx_encoder_|, and connects them directly.
+int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
   PinFinder pin_finder;
   int status = pin_finder.Init(video_source_);
   if (status) {
@@ -301,8 +323,9 @@ int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder()
   }
   // TODO(tomfinegan): Add WebM Color Conversion filter when |ConnectDirect|
   //                   fails here.
-  HRESULT hr = graph_builder_->ConnectDirect(video_src_pin, vpx_input_pin,
-                                             NULL);
+  const HRESULT hr = graph_builder_->ConnectDirect(video_src_pin,
+                                                   vpx_input_pin,
+                                                   NULL);
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot connect video source to VP8 encoder." << HRLOG(hr));
     return kVideoConnectError;
@@ -310,8 +333,14 @@ int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder()
   return kSuccess;
 }
 
-int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src)
-{
+// Checks for an audio output pin on |video_source_|.  If one exists
+// |video_source_| is copied to |audio_source_| and |kSuccess| is returned.
+// If there is no audio output pin |CaptureSourceLoader| is used to find an
+// audio capture source.  If successful an instance of the source filter is
+// created and added to the filter graph.
+// Note: in the |CaptureSourceLoader| case, the first device found is used
+// unconditionally.
+int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src) {
   if (!audio_src.empty()) {
     DBGLOG("ERROR: specifying audio source externally is not implemented.");
     return WebmEncoder::kNotImplemented;
@@ -349,7 +378,8 @@ int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src)
       DBGLOG("ERROR: cannot create audio source!");
       return WebmEncoder::kNoAudioSource;
     }
-    HRESULT hr = graph_builder_->AddFilter(audio_source_, kAudioSourceName);
+    const HRESULT hr = graph_builder_->AddFilter(audio_source_,
+                                                 kAudioSourceName);
     if (FAILED(hr)) {
       DBGLOG("ERROR: cannot add audio source to graph." << HRLOG(hr));
       return kCannotAddFilter;
@@ -359,8 +389,9 @@ int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src)
   return kSuccess;
 }
 
-int WebmEncoderImpl::CreateVorbisEncoder()
-{
+// Creates an instance of the Xiph.org Vorbis encoder filter, and adds it to
+// the filter graph.
+int WebmEncoderImpl::CreateVorbisEncoder() {
   HRESULT hr = vorbis_encoder_.CreateInstance(CLSID_VorbisEncoder);
   if (FAILED(hr)) {
     DBGLOG("ERROR: Vorbis encoder creation failed." << HRLOG(hr));
@@ -375,8 +406,9 @@ int WebmEncoderImpl::CreateVorbisEncoder()
   return kSuccess;
 }
 
-int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder()
-{
+// Locates the output pin on |audio_source_| and the input pin on
+// |vorbis_encoder_|, and connects them directly.
+int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder() {
   PinFinder pin_finder;
   int status = pin_finder.Init(audio_source_);
   if (status) {
@@ -398,8 +430,9 @@ int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder()
     DBGLOG("ERROR: cannot find audio input pin on Vorbis encoder!");
     return kAudioConnectError;
   }
-  HRESULT hr = graph_builder_->ConnectDirect(audio_src_pin, vorbis_input_pin,
-                                             NULL);
+  const HRESULT hr = graph_builder_->ConnectDirect(audio_src_pin,
+                                                   vorbis_input_pin,
+                                                   NULL);
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot connect audio source to Vorbis encoder."
            << HRLOG(hr));
@@ -408,8 +441,8 @@ int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder()
   return kSuccess;
 }
 
-int WebmEncoderImpl::CreateWebmMuxer()
-{
+// Creates the WebM muxer filter and adds it to the filter graph.
+int WebmEncoderImpl::CreateWebmMuxer() {
   HRESULT hr = webm_muxer_.CreateInstance(CLSID_WebmMux);
   if (FAILED(hr)) {
     DBGLOG("ERROR: webm muxer creation failed." << HRLOG(hr));
@@ -435,8 +468,9 @@ int WebmEncoderImpl::CreateWebmMuxer()
   return kSuccess;
 }
 
-int WebmEncoderImpl::ConnectEncodersToWebmMuxer()
-{
+// Finds the output pins on the encoder filters, and connects them directly to
+// the input pins on the WebM muxer filter.
+int WebmEncoderImpl::ConnectEncodersToWebmMuxer() {
   PinFinder pin_finder;
   int status = pin_finder.Init(vpx_encoder_);
   if (status) {
@@ -491,8 +525,9 @@ int WebmEncoderImpl::ConnectEncodersToWebmMuxer()
   return kSuccess;
 }
 
-int WebmEncoderImpl::CreateFileWriter()
-{
+// Creates the file writer filter, adds it to the graph, and sets the output
+// file name.
+int WebmEncoderImpl::CreateFileWriter() {
   HRESULT hr = file_writer_.CreateInstance(CLSID_FileWriter);
   if (FAILED(hr)) {
     DBGLOG("ERROR: file writer creation failed." << HRLOG(hr));
@@ -516,8 +551,9 @@ int WebmEncoderImpl::CreateFileWriter()
   return kSuccess;
 }
 
-int WebmEncoderImpl::ConnectWebmMuxerToFileWriter()
-{
+// Locates the output pin on |webm_muxer_|, and connects it directly to the
+// input pin on |file_writer_|.
+int WebmEncoderImpl::ConnectWebmMuxerToFileWriter() {
   PinFinder pin_finder;
   int status = pin_finder.Init(webm_muxer_);
   if (status) {
@@ -539,7 +575,8 @@ int WebmEncoderImpl::ConnectWebmMuxerToFileWriter()
     DBGLOG("ERROR: cannot find stream input pin on file writer!");
     return kFileWriterConnectError;
   }
-  HRESULT hr = graph_builder_->ConnectDirect(muxer_pin, writer_pin, NULL);
+  const HRESULT hr = graph_builder_->ConnectDirect(muxer_pin, writer_pin,
+                                                   NULL);
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot connect webm muxer to file writer!" << HRLOG(hr));
     return kFileWriterConnectError;
@@ -547,44 +584,51 @@ int WebmEncoderImpl::ConnectWebmMuxerToFileWriter()
   return kSuccess;
 }
 
-int WebmEncoderImpl::HandleMediaEvent()
-{
+// Checks |media_event_handle_| and reads the event from |media_event_| when
+// signaled.  Responds only to completion and error events.
+int WebmEncoderImpl::HandleMediaEvent() {
   int status = kSuccess;
   const DWORD wait_status = WaitForSingleObject(media_event_handle_, 0);
   const bool media_event_recvd = (wait_status == WAIT_OBJECT_0);
   if (media_event_recvd) {
-    long code = 0;
-    long param1 = 0;
-    long param2 = 0;
-    HRESULT hr = media_event_->GetEvent(&code, &param1, &param2, 0);
+    long code = 0;    // NOLINT
+    long param1 = 0;  // NOLINT
+    long param2 = 0;  // NOLINT
+    const HRESULT hr = media_event_->GetEvent(&code, &param1, &param2, 0);
     media_event_->FreeEventParams(code, param1, param2);
     if (SUCCEEDED(hr)) {
-        if (code == EC_ERRORABORT) {
-          DBGLOG("EC_ERRORABORT");
-          status = kGraphAborted;
-        } else if (code == EC_ERRORABORTEX) {
-          DBGLOG("EC_ERRORABORTEX");
-          status = kGraphAborted;
-        } else if (code == EC_USERABORT) {
-          DBGLOG("EC_USERABORT");
-          status = kGraphAborted;
-        } else if (code == EC_COMPLETE) {
-            DBGLOG("EC_COMPLETE");
-            status = kGraphCompleted;
-        }
+      if (code == EC_ERRORABORT) {
+        DBGLOG("EC_ERRORABORT");
+        status = kGraphAborted;
+      } else if (code == EC_ERRORABORTEX) {
+        DBGLOG("EC_ERRORABORTEX");
+        status = kGraphAborted;
+      } else if (code == EC_USERABORT) {
+        DBGLOG("EC_USERABORT");
+        status = kGraphAborted;
+      } else if (code == EC_COMPLETE) {
+        DBGLOG("EC_COMPLETE");
+        status = kGraphCompleted;
+      }
+    } else {
+      // Couldn't get the event; tell caller to abort.
+      DBGLOG("GetEvent failed: " << HRLOG(hr));
+      status = kGraphAborted;
     }
   }
   return status;
 }
 
-void WebmEncoderImpl::UpdateEncodedDuration(double current_duration)
-{
+// Obtain the lock on |mutex_| and update |encoded_duration_|.
+void WebmEncoderImpl::set_encoded_duration(double current_duration) {
   boost::mutex::scoped_lock lock(mutex_);
   encoded_duration_ = current_duration;
 }
 
-void WebmEncoderImpl::WebmEncoderThread()
-{
+// Encoder thread. Runs until one of the following is true:
+// - |StopRequested| returns true.
+// - |HandleMediaEvent| receives an error or completion event.
+void WebmEncoderImpl::WebmEncoderThread() {
   CoInitialize(NULL);
   HRESULT hr = media_control_->Run();
   if (FAILED(hr)) {
@@ -593,16 +637,16 @@ void WebmEncoderImpl::WebmEncoderThread()
     for (;;) {
       int status = HandleMediaEvent();
       bool stop_event_recvd =
-        (status == kGraphAborted || status == kGraphCompleted);
+          (status == kGraphAborted || status == kGraphCompleted);
       if (stop_event_recvd || StopRequested()) {
         break;
       }
       REFERENCE_TIME current_duration = 0;
       hr = media_seeking_->GetCurrentPosition(&current_duration);
       if (SUCCEEDED(hr)) {
-        UpdateEncodedDuration(media_time_to_seconds(current_duration));
+        set_encoded_duration(media_time_to_seconds(current_duration));
       }
-      boost::thread::yield();
+      SwitchToThread();  // yield our time slice if another thread is waiting.
     }
     hr = media_control_->Stop();
     if (FAILED(hr)) {
@@ -615,17 +659,19 @@ void WebmEncoderImpl::WebmEncoderThread()
   DBGLOG("Done.");
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// CaptureSourceLoader
+//
+
 CaptureSourceLoader::CaptureSourceLoader()
-    : source_type_(GUID_NULL)
-{
+    : source_type_(GUID_NULL) {
 }
 
-CaptureSourceLoader::~CaptureSourceLoader()
-{
+CaptureSourceLoader::~CaptureSourceLoader() {
 }
 
-int CaptureSourceLoader::Init(CLSID source_type)
-{
+// Verifies that |source_type| is known and calls |FindAllSources|.
+int CaptureSourceLoader::Init(CLSID source_type) {
   if (source_type != CLSID_AudioInputDeviceCategory &&
       source_type != CLSID_VideoInputDeviceCategory) {
     DBGLOG("ERROR: unknown device category!");
@@ -635,8 +681,9 @@ int CaptureSourceLoader::Init(CLSID source_type)
   return FindAllSources();
 }
 
-int CaptureSourceLoader::FindAllSources()
-{
+// Enumerates input devices of type |source_type_| and adds them to the map of
+// sources, |sources_|.
+int CaptureSourceLoader::FindAllSources() {
   ICreateDevEnumPtr sys_enum;
   HRESULT hr = sys_enum.CreateInstance(CLSID_SystemDeviceEnum);
   if (FAILED(hr)) {
@@ -683,8 +730,11 @@ int CaptureSourceLoader::FindAllSources()
   return kSuccess;
 }
 
-IBaseFilterPtr CaptureSourceLoader::GetSource(int index) const
-{
+// Locate the capture source stored in |sources_| map at the specified index by
+// reseting the source enumerator and walking the sources until |index| is
+// reached.  Then creates an instance of the filter by calling |BindToObject|
+// on the device moniker (|source_moniker|) returned by the enumerator.
+IBaseFilterPtr CaptureSourceLoader::GetSource(int index) const {
   if (static_cast<size_t>(index) >= sources_.size()) {
     DBGLOG("ERROR: " << index << " is not a valid source index");
     return NULL;
@@ -711,12 +761,12 @@ IBaseFilterPtr CaptureSourceLoader::GetSource(int index) const
   return filter;
 }
 
+// Utility method for extracting a string value from a |VARIANT|.
 std::wstring CaptureSourceLoader::GetStringProperty(IPropertyBagPtr &prop_bag,
-                                                     std::wstring prop_name)
-{
+                                                    std::wstring prop_name) {
   VARIANT var;
   VariantInit(&var);
-  HRESULT hr = prop_bag->Read(prop_name.c_str(), &var, NULL);
+  const HRESULT hr = prop_bag->Read(prop_name.c_str(), &var, NULL);
   std::wstring name;
   if (SUCCEEDED(hr)) {
     name = V_BSTR(&var);
@@ -725,21 +775,23 @@ std::wstring CaptureSourceLoader::GetStringProperty(IPropertyBagPtr &prop_bag,
   return name;
 }
 
-PinFinder::PinFinder()
-{
+///////////////////////////////////////////////////////////////////////////////
+// PinFinder
+//
+
+PinFinder::PinFinder() {
 }
 
-PinFinder::~PinFinder()
-{
+PinFinder::~PinFinder() {
 }
 
-int PinFinder::Init(IBaseFilterPtr& filter)
-{
+// Creates the pin enumerator, |pin_enum_|
+int PinFinder::Init(const IBaseFilterPtr& filter) {
   if (!filter) {
     DBGLOG("ERROR: NULL filter.");
     return WebmEncoder::kInvalidArg;
   }
-  HRESULT hr = filter->EnumPins(&pin_enum_);
+  const HRESULT hr = filter->EnumPins(&pin_enum_);
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot enum filter pins!" << HRLOG(hr));
     return WebmEncoder::kInitFailed;
@@ -747,12 +799,14 @@ int PinFinder::Init(IBaseFilterPtr& filter)
   return WebmEncoder::kSuccess;
 }
 
-IPinPtr PinFinder::FindAudioInputPin(int index) const
-{
+// Enumerates pins and uses |PinInfo| to find audio input pins while
+// incrementing |num_found| until |index| is reached. Returns empty |IPinPtr|
+// on failure.
+IPinPtr PinFinder::FindAudioInputPin(int index) const {
   IPinPtr pin;
   int num_found = 0;
   for (;;) {
-    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    const HRESULT hr = pin_enum_->Next(1, &pin, NULL);
     if (hr != S_OK) {
       break;
     }
@@ -763,17 +817,18 @@ IPinPtr PinFinder::FindAudioInputPin(int index) const
         break;
       }
     }
-    pin.Release();
   }
   return pin;
 }
 
-IPinPtr PinFinder::FindAudioOutputPin(int index) const
-{
+// Enumerates pins and uses |PinInfo| to find audio output pins while
+// incrementing |num_found| until |index| is reached. Returns empty |IPinPtr|
+// on failure.
+IPinPtr PinFinder::FindAudioOutputPin(int index) const {
   IPinPtr pin;
   int num_found = 0;
   for (;;) {
-    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    const HRESULT hr = pin_enum_->Next(1, &pin, NULL);
     if (hr != S_OK) {
       break;
     }
@@ -784,17 +839,18 @@ IPinPtr PinFinder::FindAudioOutputPin(int index) const
         break;
       }
     }
-    pin.Release();
   }
   return pin;
 }
 
-IPinPtr PinFinder::FindVideoInputPin(int index) const
-{
+// Enumerates pins and uses |PinInfo| to find video input pins while
+// incrementing |num_found| until |index| is reached. Returns empty |IPinPtr|
+// on failure.
+IPinPtr PinFinder::FindVideoInputPin(int index) const {
   IPinPtr pin;
   int num_found = 0;
   for (;;) {
-    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    const HRESULT hr = pin_enum_->Next(1, &pin, NULL);
     if (hr != S_OK) {
       break;
     }
@@ -805,17 +861,18 @@ IPinPtr PinFinder::FindVideoInputPin(int index) const
         break;
       }
     }
-    pin.Release();
   }
   return pin;
 }
 
-IPinPtr PinFinder::FindVideoOutputPin(int index) const
-{
+// Enumerates pins and uses |PinInfo| to find video output pins while
+// incrementing |num_found| until |index| is reached. Returns empty |IPinPtr|
+// on failure.
+IPinPtr PinFinder::FindVideoOutputPin(int index) const {
   IPinPtr pin;
   int num_found = 0;
   for (;;) {
-    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    const HRESULT hr = pin_enum_->Next(1, &pin, NULL);
     if (hr != S_OK) {
       break;
     }
@@ -826,17 +883,18 @@ IPinPtr PinFinder::FindVideoOutputPin(int index) const
         break;
       }
     }
-    pin.Release();
   }
   return pin;
 }
 
-IPinPtr PinFinder::FindStreamInputPin(int index) const
-{
+// Enumerates pins and uses |PinInfo| to find stream input pins while
+// incrementing |num_found| until |index| is reached. Returns empty |IPinPtr|
+// on failure.
+IPinPtr PinFinder::FindStreamInputPin(int index) const {
   IPinPtr pin;
   int num_found = 0;
   for (;;) {
-    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    const HRESULT hr = pin_enum_->Next(1, &pin, NULL);
     if (hr != S_OK) {
       break;
     }
@@ -847,17 +905,18 @@ IPinPtr PinFinder::FindStreamInputPin(int index) const
         break;
       }
     }
-    pin.Release();
   }
   return pin;
 }
 
-IPinPtr PinFinder::FindStreamOutputPin(int index) const
-{
+// Enumerates pins and uses |PinInfo| to find stream output pins while
+// incrementing |num_found| until |index| is reached. Returns empty |IPinPtr|
+// on failure.
+IPinPtr PinFinder::FindStreamOutputPin(int index) const {
   IPinPtr pin;
   int num_found = 0;
   for (;;) {
-    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    const HRESULT hr = pin_enum_->Next(1, &pin, NULL);
     if (hr != S_OK) {
       break;
     }
@@ -868,17 +927,17 @@ IPinPtr PinFinder::FindStreamOutputPin(int index) const
         break;
       }
     }
-    pin.Release();
   }
   return pin;
 }
 
-IPinPtr PinFinder::FindInputPin(int index) const
-{
+// Enumerates pins and uses |PinInfo| to find input pins while incrementing
+// |num_found| until |index| is reached. Returns empty |IPinPtr| on failure.
+IPinPtr PinFinder::FindInputPin(int index) const {
   IPinPtr pin;
   int num_found = 0;
   for (;;) {
-    HRESULT hr = pin_enum_->Next(1, &pin, NULL);
+    const HRESULT hr = pin_enum_->Next(1, &pin, NULL);
     if (hr != S_OK) {
       break;
     }
@@ -889,39 +948,25 @@ IPinPtr PinFinder::FindInputPin(int index) const
         break;
       }
     }
-    pin.Release();
   }
   return pin;
 }
 
-PinInfo::PinInfo(IPinPtr& ptr_pin)
-    : pin_(ptr_pin)
-{
+///////////////////////////////////////////////////////////////////////////////
+// PinInfo
+//
+
+// Construct |PinInfo| for |pin|.
+PinInfo::PinInfo(const IPinPtr& pin)
+    : pin_(pin) {
 }
 
-PinInfo::~PinInfo()
-{
+PinInfo::~PinInfo() {
 }
 
-void free_media_type(AM_MEDIA_TYPE* ptr_media_type)
-{
-  if (ptr_media_type) {
-    AM_MEDIA_TYPE& mt = *ptr_media_type;
-    if (mt.cbFormat != 0) {
-      CoTaskMemFree((PVOID)mt.pbFormat);
-      mt.cbFormat = 0;
-      mt.pbFormat = NULL;
-    }
-    if (mt.pUnk != NULL) {
-      // Unecessary because pUnk should not be used, but safest.
-      mt.pUnk->Release();
-      mt.pUnk = NULL;
-    }
-  }
-}
-
-bool PinInfo::HasMajorType(GUID major_type) const
-{
+// Enumerate media types on |pin_| until match for |major_type| is found or
+// types are exhausted.
+bool PinInfo::HasMajorType(GUID major_type) const {
   bool has_type = false;
   if (pin_) {
     IEnumMediaTypesPtr mediatype_enum;
@@ -934,7 +979,7 @@ bool PinInfo::HasMajorType(GUID major_type) const
           break;
         }
         has_type = (ptr_media_type && ptr_media_type->majortype == major_type);
-        free_media_type(ptr_media_type);
+        FreeMediaType(ptr_media_type);
         if (has_type) {
           break;
         }
@@ -944,8 +989,8 @@ bool PinInfo::HasMajorType(GUID major_type) const
   return has_type;
 }
 
-bool PinInfo::IsAudio() const
-{
+// Returns true if |HasMajorType| returns true for |MEDIATYPE_Audio|.
+bool PinInfo::IsAudio() const {
   bool is_audio_pin = false;
   if (pin_) {
     is_audio_pin = HasMajorType(MEDIATYPE_Audio);
@@ -953,30 +998,32 @@ bool PinInfo::IsAudio() const
   return is_audio_pin;
 }
 
-bool PinInfo::IsInput() const
-{
+// Returns true if |pin_->QueryDirection| succeeds and sets |direction| to
+// |PINDIR_INPUT|.
+bool PinInfo::IsInput() const {
   bool is_input = false;
   if (pin_) {
     PIN_DIRECTION direction;
-    HRESULT hr = pin_->QueryDirection(&direction);
+    const HRESULT hr = pin_->QueryDirection(&direction);
     is_input = (hr == S_OK && direction == PINDIR_INPUT);
   }
   return is_input;
 }
 
-bool PinInfo::IsOutput() const
-{
+// Returns true if |pin_->QueryDirection| succeeds and sets |direction| to
+// |PINDIR_OUTPUT|.
+bool PinInfo::IsOutput() const {
   bool is_output = false;
   if (pin_) {
     PIN_DIRECTION direction;
-    HRESULT hr = pin_->QueryDirection(&direction);
+    const HRESULT hr = pin_->QueryDirection(&direction);
     is_output = (hr == S_OK && direction == PINDIR_OUTPUT);
   }
   return is_output;
 }
 
-bool PinInfo::IsVideo() const
-{
+// Returns true if |HasMajorType| returns true for |MEDIATYPE_Video|.
+bool PinInfo::IsVideo() const {
   bool is_video_pin = false;
   if (pin_) {
     is_video_pin = HasMajorType(MEDIATYPE_Video);
@@ -984,8 +1031,8 @@ bool PinInfo::IsVideo() const
   return is_video_pin;
 }
 
-bool PinInfo::IsStream() const
-{
+// Returns true if |HasMajorType| returns true for |MEDIATYPE_Stream|.
+bool PinInfo::IsStream() const {
   bool is_stream_pin = false;
   if (pin_) {
     is_stream_pin = HasMajorType(MEDIATYPE_Stream);
@@ -993,4 +1040,16 @@ bool PinInfo::IsStream() const
   return is_stream_pin;
 }
 
-} // WebmLive
+// Utility function for proper clean up of |AM_MEDIA_TYPE| pointer resources.
+void PinInfo::FreeMediaType(AM_MEDIA_TYPE* ptr_media_type) const {
+  if (ptr_media_type) {
+    AM_MEDIA_TYPE& mt = *ptr_media_type;
+    if (mt.cbFormat != 0) {
+      CoTaskMemFree((PVOID)mt.pbFormat);
+      mt.cbFormat = 0;
+      mt.pbFormat = NULL;
+    }
+  }
+}
+
+}  // WebmLive
