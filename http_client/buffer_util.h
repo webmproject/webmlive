@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "basictypes.h"
+#include "boost/scoped_ptr.hpp"
 #include "boost/thread/mutex.hpp"
 #include "http_client_base.h"
 
@@ -40,7 +41,7 @@ class LockableBuffer {
   // Copies data into the buffer. Does nothing and returns |kLocked| if the
   // buffer is already locked.
   int Init(const uint8* const ptr_data, int32 length);
-  // Returns pointer to internal buffer.  Does nothing and return |kNotLocked|
+  // Returns pointer to internal buffer.  Does nothing and returns |kNotLocked|
   // if called with the buffer unlocked.
   int GetBuffer(uint8** ptr_buffer, int32* ptr_length);
   // Lock the buffer.  Returns |kLocked| if already locked.
@@ -56,6 +57,53 @@ class LockableBuffer {
   std::vector<uint8> buffer_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(LockableBuffer);
 };
+
+// Class for buffering unparsed WebM data that provides users with access to
+// complete WebM "chunks" for consumption of data in manageable bits. Stores
+// unparsed WebM data in a vector until a "chunk" is ready for consumption.
+//
+// A chunk in this context is one of two things:
+// * The first time |ChunkReady| returns true, the chunk is made up of the
+//   EBML header, segment info, and segment tracks elements.
+// * All subsequent chunks are complete clusters.
+class WebmBufferParser;  // Forward declare |WebmChunkBuffer|'s parser object.
+class WebmChunkBuffer {
+ public:
+  enum {
+    kUserBufferTooSmall = -3,
+    kOutOfMemory = -2,
+    kInvalidArg = -1,
+    kSuccess = 0,
+    kChunkReady = 1,
+  };
+  WebmChunkBuffer();
+  ~WebmChunkBuffer();
+  // Checks for a complete "chunk" by attempting to parse buffered data.
+  // Returns true and sets |ptr_chunk_length| if one is ready. Always returns
+  // false if |ptr_chunk_length| is NULL.
+  bool ChunkReady(int32* ptr_chunk_length);
+  // Adds data to |buffer_| and returns |kSuccess|.
+  int BufferData(const uint8* const ptr_data, int32 length);
+  // Moves "chunk" data into your buffer. The data has been from removed from
+  // |buffer_| when |kSuccess| is returned.  Returns |kUserBufferTooSmall| if
+  // |length| is less than |chunk_length|.
+  int ReadChunk(uint8* ptr_buf, int32 length);
+  // Initializes |parser_| and returns |kSuccess|.
+  int Init();
+  // Returns the length of the currently parsed and buffered chunk, or 0 if
+  // a complete chunk is not buffered.
+  int32 chunk_length() const { return chunk_length_; };
+ private:
+  typedef std::vector<uint8> Buffer;
+  // WebM data parser.
+  boost::scoped_ptr<WebmBufferParser> parser_;
+  // Length of the buffered chunk, or 0 if one is not buffered.
+  int32 chunk_length_;
+  // Data buffer.
+  Buffer buffer_;
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmChunkBuffer);
+};
+
 }  // namespace webmlive
 
 #endif  // HTTP_CLIENT_BUFFER_UTIL_H_

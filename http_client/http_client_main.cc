@@ -25,6 +25,7 @@
 #include "boost/thread/thread.hpp"
 
 #include "debug_util.h"
+#include "buffer_util.h"
 #include "file_reader.h"
 #include "http_uploader.h"
 #include "webm_encoder.h"
@@ -126,7 +127,8 @@ int client_main(webmlive::HttpUploaderSettings& settings) {
     return EXIT_FAILURE;
   }
   webmlive::HttpUploaderStats stats;
-  const size_t kReadBufferSize = 100*1024;
+  const int32 kReadBufferSize = 100*1024;
+  int32 read_buffer_size = kReadBufferSize;
   using boost::scoped_array;
   scoped_array<uint8> read_buf(new (std::nothrow) uint8[kReadBufferSize]);
   if (!read_buf) {
@@ -135,7 +137,16 @@ int client_main(webmlive::HttpUploaderSettings& settings) {
     fprintf(stderr, "out of memory, can't alloc read_buf.\n");
     return EXIT_FAILURE;
   }
+  webmlive::WebmChunkBuffer chunk_buffer;
+  status = chunk_buffer.Init();
+  if (status) {
+    uploader.Stop();
+    encoder.Stop();
+    fprintf(stderr, "can't create chunk buffer.\n");
+    return EXIT_FAILURE;
+  }
   // Loop until the user hits a key.
+  int exit_code = EXIT_SUCCESS;
   printf("\nPress the any key to quit...\n");
   while(!_kbhit()) {
     // Output current duration and upload progress
@@ -145,24 +156,45 @@ int client_main(webmlive::HttpUploaderSettings& settings) {
              stats.bytes_sent_current + stats.total_bytes_uploaded,
              static_cast<int>(stats.bytes_per_second / 1000));
     }
-    // Check if the upload thread is ready
-    if (uploader.UploadComplete()) {
-      // Read some data
-      size_t bytes_read = 0;
-      status = reader.Read(kReadBufferSize, &read_buf[0], &bytes_read);
-      if (status && status != webmlive::FileReader::kAtEOF) {
-        DBGLOG("Read failed, status=" << status);
-        //fprintf(stderr, "\nERROR: can't read from file!\n");
-        //break;
-        Sleep(100);
+    size_t bytes_read = 0;
+    status = reader.Read(read_buffer_size, &read_buf[0], &bytes_read);
+    if (bytes_read > 0) {
+      status = chunk_buffer.BufferData(&read_buf[0],
+                                       static_cast<int32>(bytes_read));
+      if (status) {
+        DBGLOG("BufferData failed, status=" << status);
+        fprintf(stderr, "\nERROR: cannot add to chunk buffer!\n");
+        break;
       }
-      if (bytes_read > 0) {
+    }
+    if (uploader.UploadComplete()) {
+      int32 chunk_length = 0;
+      if (chunk_buffer.ChunkReady(&chunk_length)) {
+        if (chunk_length > read_buffer_size) {
+          // Reallocate the read buffer-- the chunk is too large.
+          read_buf.reset(new (std::nothrow) uint8[chunk_length]);
+          if (!read_buf) {
+            DBGLOG("read buffer reallocation failed");
+            fprintf(stderr, "\nERROR: cannot reallocate read buffer!\n");
+            exit_code = EXIT_FAILURE;
+            break;
+          }
+          read_buffer_size = chunk_length;
+        }
+        status = chunk_buffer.ReadChunk(&read_buf[0], chunk_length);
+        if (status) {
+          DBGLOG("ReadChunk failed, status=" << status);
+          fprintf(stderr, "\nERROR: cannot read chunk!\n");
+          exit_code = EXIT_FAILURE;
+          break;
+        }
         // Start upload of the read buffer contents
-        DBGLOG("starting buffer upload, bytes_read=" << bytes_read);
-        status = uploader.UploadBuffer(&read_buf[0], bytes_read);
+        DBGLOG("starting buffer upload, chunk_length=" << chunk_length);
+        status = uploader.UploadBuffer(&read_buf[0], chunk_length);
         if (status) {
           DBGLOG("UploadBuffer failed, status=" << status);
           fprintf(stderr, "\nERROR: can't upload buffer!\n");
+          exit_code = EXIT_FAILURE;
           break;
         }
       }
@@ -174,7 +206,7 @@ int client_main(webmlive::HttpUploaderSettings& settings) {
   DBGLOG("stopping uploader...");
   uploader.Stop();
   printf("\nDone.\n");
-  return EXIT_SUCCESS;
+  return exit_code;
 }
 
 int _tmain(int argc, _TCHAR* argv[]) {

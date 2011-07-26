@@ -58,7 +58,7 @@ int FileReaderImpl::Read(size_t num_bytes, uint8* ptr_buffer,
     }
     bytes_read_ += num_read;
     if (num_bytes != num_read) {
-      DBGLOG("shortfall! requested=" << num_bytes << " read=" << num_read);
+      //DBGLOG("shortfall! requested=" << num_bytes << " read=" << num_read);
       return kAtEOF;
     }
   }

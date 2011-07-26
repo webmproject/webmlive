@@ -213,6 +213,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\webm_buffer_parser.cc"
+				>
+			</File>
+			<File
 				RelativePath=".\webm_encoder.cc"
 				>
 			</File>
@@ -256,6 +260,10 @@
 			</File>
 			<File
 				RelativePath=".\http_uploader.h"
+				>
+			</File>
+			<File
+				RelativePath=".\webm_buffer_parser.h"
 				>
 			</File>
 			<File
