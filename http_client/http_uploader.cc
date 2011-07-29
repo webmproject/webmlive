@@ -527,8 +527,8 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
   stats.bytes_per_second =
       (upload_current + stats.total_bytes_uploaded) /
       (ticks_elapsed / ticks_per_sec);
-  DBGLOG("total=" << int(upload_total) << " bytes_per_sec="
-         << int(stats.bytes_per_second));
+  //DBGLOG("total=" << int(upload_total) << " bytes_per_sec="
+  //       << int(stats.bytes_per_second));
   return 0;
 }
 

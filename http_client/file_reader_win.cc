@@ -80,11 +80,11 @@ int FileReaderImpl::Open(int mode) {
     return kInvalidArg;
   }
   if (ptr_file_) {
-    DBGLOG("closing");
+    //DBGLOG("closing");
     fclose(ptr_file_);
     ptr_file_ = NULL;
   }
-  DBGLOG("opening, mode=" << ptr_mode);
+  //DBGLOG("opening, mode=" << ptr_mode);
   ptr_file_ = _wfsopen(file_path_.c_str(), ptr_mode, _SH_DENYNO);
   if (!ptr_file_) {
     DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
