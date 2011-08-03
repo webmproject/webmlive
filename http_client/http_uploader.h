@@ -39,6 +39,8 @@ struct HttpUploaderStats {
   int64 total_bytes_uploaded;
 };
 
+// TODO(tomfinegan): The comments in here are far from adequate!
+
 class HttpUploaderImpl;
 
 // Pimpl idiom based HTTP uploader. The reason the implementation is hidden is
@@ -65,11 +67,12 @@ class HttpUploader {
   };
   HttpUploader();
   ~HttpUploader();
-  // Test for upload completion. Returns true when the uploader is ready to
-  // start an upload. Always true when no uploads have been attempted.
+  // Tests for upload completion. Returns true when the uploader is ready to
+  // start an upload. Always returns true when no uploads have been attempted.
   bool UploadComplete();
-  // Initialize the uploader.
-  int Init(HttpUploaderSettings* ptr_settings);
+  // Constructs |HttpUploaderImpl|, which copies |settings|. Returns |kSuccess|
+  // upon success.
+  int Init(const HttpUploaderSettings& settings);
   // Return the current upload stats. Note, obtains lock before copying stats to
   // |ptr_stats|.
   int GetStats(HttpUploaderStats* ptr_stats);

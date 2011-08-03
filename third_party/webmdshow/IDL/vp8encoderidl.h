@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0555 */
-/* at Thu May 05 17:40:13 2011
+/* at Thu Aug 04 16:37:36 2011
  */
 /* Compiler settings for ..\IDL\vp8encoder.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
@@ -62,6 +62,7 @@ typedef struct VP8Encoder VP8Encoder;
 /* header files for imported files */
 #include "oaidl.h"
 #include "ocidl.h"
+#include "strmif.h"
 
 #ifdef __cplusplus
 extern "C"{
@@ -306,6 +307,12 @@ EXTERN_C const IID IID_IVP8Encoder;
         
         virtual HRESULT STDMETHODCALLTYPE GetARNRType( 
             /* [out] */ int *pType) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE SetFixedKeyframeInterval( 
+            /* [in] */ REFERENCE_TIME interval) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE GetFixedKeyframeInterval( 
+            /* [out] */ REFERENCE_TIME *pInterval) = 0;
         
     };
     
@@ -581,6 +588,14 @@ EXTERN_C const IID IID_IVP8Encoder;
             IVP8Encoder * This,
             /* [out] */ int *pType);
         
+        HRESULT ( STDMETHODCALLTYPE *SetFixedKeyframeInterval )( 
+            IVP8Encoder * This,
+            /* [in] */ REFERENCE_TIME interval);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetFixedKeyframeInterval )( 
+            IVP8Encoder * This,
+            /* [out] */ REFERENCE_TIME *pInterval);
+        
         END_INTERFACE
     } IVP8EncoderVtbl;
 
@@ -795,6 +810,12 @@ EXTERN_C const IID IID_IVP8Encoder;
 
 #define IVP8Encoder_GetARNRType(This,pType)	\
     ( (This)->lpVtbl -> GetARNRType(This,pType) ) 
+
+#define IVP8Encoder_SetFixedKeyframeInterval(This,interval)	\
+    ( (This)->lpVtbl -> SetFixedKeyframeInterval(This,interval) ) 
+
+#define IVP8Encoder_GetFixedKeyframeInterval(This,pInterval)	\
+    ( (This)->lpVtbl -> GetFixedKeyframeInterval(This,pInterval) ) 
 
 #endif /* COBJMACROS */
 

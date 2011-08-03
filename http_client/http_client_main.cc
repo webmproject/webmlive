@@ -11,18 +11,10 @@
 #include <stdio.h>
 #include <tchar.h>
 
-#include <cstdio>
-#include <iomanip>
-#include <iostream>
 #include <string>
 #include <vector>
 
-#pragma warning(push)
-#pragma warning(disable:4512)
-#include "boost/program_options.hpp"
-#pragma warning(pop)
 #include "boost/scoped_array.hpp"
-#include "boost/thread/thread.hpp"
 
 #include "debug_util.h"
 #include "buffer_util.h"
@@ -30,23 +22,31 @@
 #include "http_uploader.h"
 #include "webm_encoder.h"
 
-void set_command_line_options(
-    boost::program_options::options_description& opts_desc) {
-  namespace po = boost::program_options;
-  opts_desc.add_options()
-      ("help", "Show this help message.")
-      ("file", po::value<std::string>(), "Path for local WebM file.")
-      ("url", po::value<std::string>(), "Destination for HTTP Post.")
-      // use of |composing| tells program_options to collect multiple --header
-      // instances into a single vector of strings
-      ("header",
-       po::value<std::vector<std::string>>()->composing(),
-       "HTTP header, must be specified as name:value.")
-      ("var",
-       po::value<std::vector<std::string>>()->composing(),
-       "Form variable, must be specified as name:value.");
+namespace {
+enum {
+  kBadFormat = -3,
+  kNoMemory = -2,
+  kInvalidArg = - 1,
+  kSuccess = 0,
+};
+const double kDefaultKeyframeInterval = 2.0;
+typedef std::vector<std::string> StringVector;
+typedef std::vector<std::wstring> WStringVector;
+}  // anonymous namespace
+
+// Prints usage.
+void usage(const wchar_t** argv) {
+  printf("Usage: %ls --file <output file name> --url <target URL>\n", argv[0]);
+  printf("  Note: file and url params are required.\n");
+  printf("Options:\n");
+  printf("  -h | -? | --help               Show this message and exit.\n");
+  printf("  --file <output file name>      Path to output WebM file.\n");
+  printf("  --keyframe_interval <seconds>  Time between keyframes.\n");
+  printf("  --url <target URL>             Target for HTTP Posts.\n");
 }
 
+// Parses name value pairs in the format name:value from |unparsed_entries|,
+// and stores results in |out_map|.
 int store_string_map_entries(const std::vector<std::string>& unparsed_entries,
                              std::map<std::string, std::string>& out_map)
 {
@@ -59,22 +59,112 @@ int store_string_map_entries(const std::vector<std::string>& unparsed_entries,
     size_t sep = entry.find(":");
     if (sep == string::npos) {
       // bad header (missing separator, no value)
-      // TODO(tomfinegan): allow empty entries?
       DBGLOG("ERROR: cannot parse entry, should be name:value, got="
              << entry.c_str());
-      return ERROR_BAD_FORMAT;
+      return kBadFormat;
     }
     out_map[entry.substr(0, sep).c_str()] = entry.substr(sep+1);
     ++entry_iter;
   }
-  return ERROR_SUCCESS;
+  return kSuccess;
 }
 
+// Converts |wstr| to a multi-byte string and stores the result in |str|.
+int convert_wstring_to_string(const std::wstring& wstr, std::string& str) {
+  // Conversion buffer for |wcstombs| calls.
+  const size_t buf_size = wstr.length() + 1;
+  boost::scoped_array<char> temp_str(new (std::nothrow) char[buf_size]);
+  if (!temp_str) {
+    fprintf(stderr, "Cannot allocate wide char conversion buffer!\n");
+    return kNoMemory;
+  }
+  memset(temp_str.get(), 0, buf_size);
+  wcstombs(temp_str.get(), wstr.c_str(), wstr.length());
+  str = temp_str.get();
+  return kSuccess;
+}
+
+// Converts |std::wstring| entries in |wstrings| to multi-byte strings via
+// |wcstombs| and stores them in |strings|.
+int convert_wstring_vector_to_string_vector(const WStringVector& wstrings,
+                                            StringVector& strings) {
+  // Convert |wstrings| vals and store them in |strings|.
+  WStringVector::const_iterator i = wstrings.begin();
+  std::string temp_str;
+  for (; i != wstrings.end(); ++i) {
+    int status = convert_wstring_to_string(*i, temp_str);
+    if (status) {
+      DBGLOG("conversion failed, status=" << status);
+      return status;
+    }
+    strings.push_back(std::string(temp_str));
+  }
+  return kSuccess;
+}
+
+// Parses command line and stores user settings.
+void parse_command_line(int argc, const wchar_t** argv,
+                        webmlive::HttpUploaderSettings& uploader_settings,
+                        webmlive::WebmEncoderSettings& encoder_settings) {
+  WStringVector unparsed_wchar_headers;
+  WStringVector unparsed_wchar_vars;
+  encoder_settings.keyframe_interval = kDefaultKeyframeInterval;
+  for (int i = 1; i < argc; ++i) {
+    if (!wcscmp(L"-h", argv[i]) || !wcscmp(L"-?", argv[i]) ||
+        !wcscmp(L"--help", argv[i])) {
+      usage(argv);
+      exit(EXIT_SUCCESS);
+    } else if (!wcscmp(L"--file", argv[i])) {
+      int status = convert_wstring_to_string(std::wstring(argv[++i]),
+                                             uploader_settings.local_file);
+      if (status) {
+        fprintf(stderr, "file name wchar->char conversion failed, status=%d\n",
+                status);
+        exit(EXIT_FAILURE);
+      }
+      encoder_settings.output_file_name = uploader_settings.local_file;
+    } else if (!wcscmp(L"--url", argv[i])) {
+      int status = convert_wstring_to_string(std::wstring(argv[++i]),
+                                             uploader_settings.target_url);
+      if (status) {
+        fprintf(stderr, "URL wchar->char conversion failed, status=%d\n",
+                status);
+        exit(EXIT_FAILURE);
+      }
+    } else if (!wcscmp(L"--header", argv[i])) {
+      unparsed_wchar_headers.push_back(argv[++i]);
+    } else if (!wcscmp(L"--var", argv[i])) {
+      unparsed_wchar_vars.push_back(argv[++i]);
+    } else if (!wcscmp(L"--keyframe_interval", argv[i])) {
+      wchar_t* ptr_end;
+      encoder_settings.keyframe_interval = wcstod(argv[++i], &ptr_end);
+    }
+  }
+  // Store user HTTP headers.
+  StringVector unparsed_headers;
+  int error = convert_wstring_vector_to_string_vector(unparsed_wchar_headers,
+                                                      unparsed_headers);
+  if (error) {
+    fprintf(stderr, "Cannot convert wchar headers to char!\n");
+    exit(EXIT_FAILURE);
+  }
+  store_string_map_entries(unparsed_headers, uploader_settings.headers);
+  // Store user form variables.
+  StringVector unparsed_vars;
+  error = convert_wstring_vector_to_string_vector(unparsed_wchar_vars,
+                                                  unparsed_vars);
+  if (error) {
+    fprintf(stderr, "Cannot convert wchar form variables to char!\n");
+    exit(EXIT_FAILURE);
+  }
+  store_string_map_entries(unparsed_vars, uploader_settings.form_variables);
+}
+
+
 // Calls |Init| and |Run| on |encoder| to start the encode of a WebM file.
-// TODO(tomfinegan): Add capture and encoder settings configuration.
 int start_encoder(webmlive::WebmEncoder& encoder,
-                  const webmlive::HttpUploaderSettings& settings) {
-  int status = encoder.Init(settings.local_file);
+                  const webmlive::WebmEncoderSettings& settings) {
+  int status = encoder.Init(settings);
   if (status) {
     DBGLOG("encoder Init failed, status=" << status);
     return status;
@@ -90,7 +180,7 @@ int start_encoder(webmlive::WebmEncoder& encoder,
 // uploads buffers when |UploadBuffer| is called on the uploader.
 int start_uploader(webmlive::HttpUploader& uploader,
                    webmlive::HttpUploaderSettings& settings) {
-  int status = uploader.Init(&settings);
+  int status = uploader.Init(settings);
   if (status) {
     DBGLOG("uploader Init failed, status=" << status);
     return status;
@@ -102,31 +192,31 @@ int start_uploader(webmlive::HttpUploader& uploader,
   return status;
 }
 
-int client_main(webmlive::HttpUploaderSettings& settings) {
+int client_main(webmlive::HttpUploaderSettings& uploader_settings,
+                const webmlive::WebmEncoderSettings& encoder_settings) {
   // Setup the file reader.  This is a little strange since |reader| actually
   // creates the output file that is used by the encoder.
   webmlive::FileReader reader;
-  int status = reader.CreateFile(settings.local_file);
+  int status = reader.CreateFile(uploader_settings.local_file);
   if (status) {
     fprintf(stderr, "file reader init failed, status=%d.\n", status);
     return EXIT_FAILURE;
   }
   // Start encoding the WebM file.
   webmlive::WebmEncoder encoder;
-  status = start_encoder(encoder, settings);
+  status = start_encoder(encoder, encoder_settings);
   if (status) {
     fprintf(stderr, "start_encoder failed, status=%d\n", status);
     return EXIT_FAILURE;
   }
   // Start the uploader thread.
   webmlive::HttpUploader uploader;
-  status = start_uploader(uploader, settings);
+  status = start_uploader(uploader, uploader_settings);
   if (status) {
     fprintf(stderr, "start_uploader failed, status=%d\n", status);
     encoder.Stop();
     return EXIT_FAILURE;
   }
-  webmlive::HttpUploaderStats stats;
   const int32 kReadBufferSize = 100*1024;
   int32 read_buffer_size = kReadBufferSize;
   using boost::scoped_array;
@@ -147,6 +237,7 @@ int client_main(webmlive::HttpUploaderSettings& settings) {
   }
   // Loop until the user hits a key.
   int exit_code = EXIT_SUCCESS;
+  webmlive::HttpUploaderStats stats;
   printf("\nPress the any key to quit...\n");
   while(!_kbhit()) {
     // Output current duration and upload progress
@@ -164,6 +255,7 @@ int client_main(webmlive::HttpUploaderSettings& settings) {
       if (status) {
         DBGLOG("BufferData failed, status=" << status);
         fprintf(stderr, "\nERROR: cannot add to chunk buffer!\n");
+        exit_code = EXIT_FAILURE;
         break;
       }
     }
@@ -209,62 +301,21 @@ int client_main(webmlive::HttpUploaderSettings& settings) {
   return exit_code;
 }
 
-int _tmain(int argc, _TCHAR* argv[]) {
-  namespace po = boost::program_options;
-  // configure our command line opts; for now we only have one group
-  // "Basic options"
-  po::options_description opts_desc("Required options");
-  set_command_line_options(opts_desc);
-  // parse and store the command line options
-  po::variables_map var_map;
-  po::store(po::parse_command_line(argc, argv, opts_desc), var_map);
-  po::notify(var_map);
-  // user asked for help
-  if (var_map.count("help")) {
-    std::ostringstream usage_string;
-    usage_string << opts_desc << "\n";
-    fprintf(stderr, "%s", usage_string.str().c_str());
-    return EXIT_FAILURE;
-  }
+int _tmain(int argc, const wchar_t** argv) {
+  webmlive::HttpUploaderSettings uploader_settings;
+  webmlive::WebmEncoderSettings encoder_settings;
+  parse_command_line(argc, argv, uploader_settings, encoder_settings);
   // validate params
-  // TODO(tomfinegan): can probably make program options enforce this for me...
-  if (!var_map.count("file") || !var_map.count("url")) {
+  if (uploader_settings.target_url.empty() ||
+      encoder_settings.output_file_name.empty()) {
     fprintf(stderr, "file and url params are required!\n");
-    std::ostringstream usage_string;
-    usage_string << opts_desc << "\n";
-    fprintf(stderr, "%ls", usage_string.str().c_str());
+    usage(argv);
     return EXIT_FAILURE;
   }
-  DBGLOG("file: " << var_map["file"].as<std::string>().c_str());
-  DBGLOG("url: " << var_map["url"].as<std::string>().c_str());
-  // TODO(tomfinegan): Need to add capture and encoder settings...
-  webmlive::HttpUploaderSettings settings;
-  settings.local_file = var_map["file"].as<std::string>();
-  settings.target_url = var_map["url"].as<std::string>();
-  // Parse and store any HTTP header name:value pairs passed via command line.
-  if (var_map.count("header")) {
-    using std::string;
-    using std::vector;
-    const vector<string>& headers = var_map["header"].as<vector<string>>();
-    if (store_string_map_entries(headers, settings.headers)) {
-      fprintf(stderr, "ERROR: command line HTTP header parse failed!");
-      return EXIT_FAILURE;
-    }
-  }
-  // Parse and store any form variable name:value pairs passed via command
-  // line.
-  if (var_map.count("var")) {
-    using std::string;
-    using std::vector;
-    const vector<string>& form_vars = var_map["var"].as<vector<string>>();
-    if (store_string_map_entries(form_vars, settings.form_variables)) {
-      fprintf(stderr, "ERROR: command line form variable parse failed!");
-      return EXIT_FAILURE;
-    }
-  }
-  return client_main(settings);
+  DBGLOG("file: " << encoder_settings.output_file_name.c_str());
+  DBGLOG("url: " << uploader_settings.target_url.c_str());
+  return client_main(uploader_settings, encoder_settings);
 }
-
 
 // We build with BOOST_NO_EXCEPTIONS defined; boost will call this function
 // instead of throwing.  We must stop execution here.

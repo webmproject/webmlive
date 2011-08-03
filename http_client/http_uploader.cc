@@ -54,21 +54,21 @@ class HttpUploaderImpl {
   };
   HttpUploaderImpl();
   ~HttpUploaderImpl();
-  // Returns true when the uploader is ready to start an upload. Always true
-  // when no uploads have been attempted.
+  // Returns true when the uploader is ready to start an upload. Always returns
+  // true when no uploads have been attempted.
   bool UploadComplete();
-  // Initialize the uploader with user settings.
-  int Init(HttpUploaderSettings* ptr_settings);
+  // Copies user settings and configures libcurl.
+  int Init(const HttpUploaderSettings& settings);
   // Locks |mutex_| and copies current stats to |ptr_stats|.
   int GetStats(HttpUploaderStats* ptr_stats);
-  // Run |UploadThread|, and start waiting for user data.
+  // Runs |UploadThread|, and starts waiting for user data.
   int Run();
-  // Upload user data.
+  // Uploads user data.
   int UploadBuffer(const uint8* const ptr_buffer, int32 length);
-  // Stop the uploader.
+  // Stops the uploader.
   int Stop();
  private:
-  // Used by |UploadThread|. Returns true if user called |Stop|.
+  // Used by |UploadThread|. Returns true if user has called |Stop|.
   bool StopRequested();
   // Pass our callbacks, |ProgressCallback| and |WriteCallback|, to libcurl.
   CURLcode SetCurlCallbacks();
@@ -152,17 +152,13 @@ bool HttpUploader::UploadComplete()
 }
 
 // Copy user settings, and setup the internal uploader object.
-int HttpUploader::Init(HttpUploaderSettings* ptr_settings) {
-  if (!ptr_settings) {
-    DBGLOG("ERROR: null ptr_settings");
-    return kInvalidArg;
-  }
+int HttpUploader::Init(const HttpUploaderSettings& settings) {
   ptr_uploader_.reset(new (std::nothrow) HttpUploaderImpl());
   if (!ptr_uploader_) {
     DBGLOG("ERROR: can't construct HttpUploaderImpl.");
     return kInitFailed;
   }
-  int status = ptr_uploader_->Init(ptr_settings);
+  int status = ptr_uploader_->Init(settings);
   if (status) {
     DBGLOG("ERROR: uploader init failed. " << status);
     return kInitFailed;
@@ -229,13 +225,13 @@ bool HttpUploaderImpl::UploadComplete() {
   return complete;
 }
 
-// Initialize the upload
-// - set basic libcurl settings (progress, read, and write callbacks)
-// - call SetupForm to prepare for form/multipart upload, and pass user vars
-// - call SetHeaders to pass user headers
-int HttpUploaderImpl::Init(HttpUploaderSettings* settings) {
+// Initializes the upload:
+// - copies user settings
+// - sets basic libcurl settings (progress and write callbacks)
+// - calls SetHeaders to pass user headers to libcurl
+int HttpUploaderImpl::Init(const HttpUploaderSettings& settings) {
   // copy user settings
-  settings_ = *settings;
+  settings_ = settings;
   // init libcurl
   ptr_curl_ = curl_easy_init();
   if (!ptr_curl_)

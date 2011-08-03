@@ -16,6 +16,13 @@
 
 namespace webmlive {
 
+struct WebmEncoderSettings {
+  // Time between keyframes, in seconds.
+  double keyframe_interval;
+  // Output file name.
+  std::string output_file_name;
+};
+
 class WebmEncoderImpl;
 
 // Basic encoder interface class intended to hide platform specific encoder
@@ -53,10 +60,7 @@ class WebmEncoder {
   ~WebmEncoder();
   // Initializes the encoder. Returns |kSuccess| upon success, or one of the
   // above status codes upon failure.
-  int Init(const std::string& out_file_name);
-  // Initializes the encoder. Returns |kSuccess| upon success, or one of the
-  // above status codes upon failure.
-  int Init(const std::wstring& out_file_name);
+  int Init(const WebmEncoderSettings& settings);
   // Runs the encoder. Returns |kSuccess| when successful, or one of the above
   // status codes upon failure.
   int Run();

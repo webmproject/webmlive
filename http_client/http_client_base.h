@@ -14,6 +14,10 @@
 #  define _WIN32_WINNT 0x0501  // WinXP
 #endif
 
+// Disable Microsoft's "safety" warnings.  "Fixing" them results non-portable
+// code that is no safer.
+#pragma warning(disable:4996)
+
 #include "windows.h"
 
 #endif  // _WIN32

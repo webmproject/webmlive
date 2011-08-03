@@ -7,6 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "webm_encoder_dshow.h"
 
+#include <dvdmedia.h>  // Needed for |VIDEOINFOHEADER2|.
 #include <vfwmsgs.h>
 
 #include <sstream>
@@ -29,17 +30,24 @@ const wchar_t* const kWebmMuxerName = L"WebmMuxer";
 const wchar_t* const kFileWriterName = L"FileWriter";
 // Default VP8 encode bitrate.
 const int kVpxEncoderBitrate = 500;
-}  // namespace
 
-// Convert media time (100 nanosecond ticks) to seconds.
+// Converts media time (100 nanosecond ticks) to seconds.
 double media_time_to_seconds(REFERENCE_TIME media_time) {
   return media_time / 10000000.0;
 }
 
+// Converts seconds to media time (100 nanosecond ticks).
+REFERENCE_TIME seconds_to_media_time(double seconds) {
+  return static_cast<REFERENCE_TIME>(seconds * 10000000);
+}
+
+}  // anonymous namespace
+
 WebmEncoderImpl::WebmEncoderImpl()
     : stop_(false),
       encoded_duration_(0.0),
-      media_event_handle_(INVALID_HANDLE_VALUE) {
+      media_event_handle_(INVALID_HANDLE_VALUE),
+      keyframe_interval_(3.0) {
 }
 
 WebmEncoderImpl::~WebmEncoderImpl() {
@@ -65,7 +73,7 @@ WebmEncoderImpl::~WebmEncoderImpl() {
 // video source -> vp8 encoder    ->
 //                                   webm muxer -> file writer
 // audio source -> vorbis encoder ->
-int WebmEncoderImpl::Init(const std::wstring& out_file_name) {
+int WebmEncoderImpl::Init(const WebmEncoderSettings& settings) {
   const HRESULT hr = CoInitialize(NULL);
   if (FAILED(hr)) {
     DBGLOG("CoInitialize failed: " << HRLOG(hr));
@@ -90,6 +98,12 @@ int WebmEncoderImpl::Init(const std::wstring& out_file_name) {
   status = ConnectVideoSourceToVpxEncoder();
   if (status) {
     DBGLOG("ConnectVideoSourceToVpxEncoder failed: " << status);
+    return WebmEncoder::kVideoEncoderError;
+  }
+  keyframe_interval_ = settings.keyframe_interval;
+  status = ConfigureVpxEncoder();
+  if (status) {
+    DBGLOG("ConfigureVpxEncoder failed: " << status);
     return WebmEncoder::kVideoEncoderError;
   }
   std::wstring audio_src;
@@ -118,7 +132,7 @@ int WebmEncoderImpl::Init(const std::wstring& out_file_name) {
     DBGLOG("ConnectEncodersToWebmMuxer failed: " << status);
     return WebmEncoder::kWebmMuxerError;
   }
-  out_file_name_ = out_file_name;
+  out_file_name_ = settings.output_file_name;
   status = CreateFileWriter();
   if (status) {
     DBGLOG("CreateFileWriter failed: " << status);
@@ -256,8 +270,7 @@ int WebmEncoderImpl::CreateVideoSource(std::wstring video_src) {
   return kSuccess;
 }
 
-// Creates the VP8 encoder filter, adds it to the graph, and sets applies
-// minimal settings required for a realtime encode.
+// Creates the VP8 encoder filter and adds it to the graph.
 int WebmEncoderImpl::CreateVpxEncoder() {
   HRESULT hr = vpx_encoder_.CreateInstance(CLSID_VP8Encoder);
   if (FAILED(hr)) {
@@ -269,34 +282,11 @@ int WebmEncoderImpl::CreateVpxEncoder() {
     DBGLOG("ERROR: cannot add VP8 encoder to graph." << HRLOG(hr));
     return kCannotAddFilter;
   }
-  _COM_SMARTPTR_TYPEDEF(IVP8Encoder, __uuidof(IVP8Encoder));
-  IVP8EncoderPtr vp8_config(vpx_encoder_);
-  if (!vp8_config) {
-    DBGLOG("ERROR: cannot create VP8 encoder interface.");
-    return kCannotConfigureVpxEncoder;
-  }
-  // TODO(tomfinegan): Obtain VP8 encoder settings from user.
-  // Set minimal defaults for a live encode...
-  hr = vp8_config->SetDeadline(kDeadlineRealtime);
-  if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set VP8 encoder deadline." << HRLOG(hr));
-    return kVpxConfigureError;
-  }
-  hr = vp8_config->SetEndUsage(kEndUsageCBR);
-  if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set VP8 encoder bitrate mode." << HRLOG(hr));
-    return kVpxConfigureError;
-  }
-  hr = vp8_config->SetTargetBitrate(kVpxEncoderBitrate);
-  if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set VP8 encoder bitrate." << HRLOG(hr));
-    return kVpxConfigureError;
-  }
   return kSuccess;
 }
 
 // Locates the output pin on |video_source_| and the input pin on
-// |vpx_encoder_|, and connects them directly.
+// |vpx_encoder_|, connects them directly.
 int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
   PinFinder pin_finder;
   int status = pin_finder.Init(video_source_);
@@ -327,6 +317,47 @@ int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot connect video source to VP8 encoder." << HRLOG(hr));
     return kVideoConnectError;
+  }
+  return kSuccess;
+}
+
+// Sets minimal settings required for a realtime encode.
+int WebmEncoderImpl::ConfigureVpxEncoder() {
+  _COM_SMARTPTR_TYPEDEF(IVP8Encoder, __uuidof(IVP8Encoder));
+  IVP8EncoderPtr vp8_config(vpx_encoder_);
+  if (!vp8_config) {
+    DBGLOG("ERROR: cannot create VP8 encoder interface.");
+    return kCannotConfigureVpxEncoder;
+  }
+  // TODO(tomfinegan): Extend user VP8 encoder settings.
+  // Set minimal defaults for a live encode...
+  HRESULT hr = vp8_config->SetDeadline(kDeadlineRealtime);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set VP8 encoder deadline." << HRLOG(hr));
+    return kVpxConfigureError;
+  }
+  hr = vp8_config->SetEndUsage(kEndUsageCBR);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set VP8 encoder bitrate mode." << HRLOG(hr));
+    return kVpxConfigureError;
+  }
+  hr = vp8_config->SetTargetBitrate(kVpxEncoderBitrate);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set VP8 encoder bitrate." << HRLOG(hr));
+    return kVpxConfigureError;
+  }
+  // Set keyframe interval.
+  hr = vp8_config->SetKeyframeMode(kKeyframeModeDisabled);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set VP8 keyframe mode." << HRLOG(hr));
+    return kVpxConfigureError;
+  }
+  const REFERENCE_TIME keyframe_interval =
+      seconds_to_media_time(keyframe_interval_);
+  hr = vp8_config->SetFixedKeyframeInterval(keyframe_interval);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set VP8 keyframe interval." << HRLOG(hr));
+    return kVpxConfigureError;
   }
   return kSuccess;
 }
@@ -541,7 +572,9 @@ int WebmEncoderImpl::CreateFileWriter() {
     DBGLOG("ERROR: cannot create file writer sink interface.");
     return kCannotCreateFileWriter;
   }
-  hr = writer_config->SetFileName(out_file_name_.c_str(), NULL);
+  std::wostringstream out_file_name_stream;
+  out_file_name_stream << out_file_name_.c_str();
+  hr = writer_config->SetFileName(out_file_name_stream.str().c_str(), NULL);
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot set output file name." << HRLOG(hr));
     return kCannotCreateFileWriter;
@@ -977,7 +1010,7 @@ bool PinInfo::HasMajorType(GUID major_type) const {
           break;
         }
         has_type = (ptr_media_type && ptr_media_type->majortype == major_type);
-        FreeMediaType(ptr_media_type);
+        FreeMediaTypeData(ptr_media_type);
         if (has_type) {
           break;
         }
@@ -1038,8 +1071,9 @@ bool PinInfo::IsStream() const {
   return is_stream_pin;
 }
 
-// Utility function for proper clean up of |AM_MEDIA_TYPE| pointer resources.
-void PinInfo::FreeMediaType(AM_MEDIA_TYPE* ptr_media_type) const {
+// Utility function for proper clean up of resources owned by |AM_MEDIA_TYPE|
+// pointers.
+void PinInfo::FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type) {
   if (ptr_media_type) {
     AM_MEDIA_TYPE& mt = *ptr_media_type;
     if (mt.cbFormat != 0) {
@@ -1047,7 +1081,82 @@ void PinInfo::FreeMediaType(AM_MEDIA_TYPE* ptr_media_type) const {
       mt.cbFormat = 0;
       mt.pbFormat = NULL;
     }
+    if (mt.pUnk != NULL) {
+      // |pUnk| should not be used, but because the Microsoft example code
+      // has this section, it's included here-- leaking is never OK. (The
+      // example also includes the note "pUnk should not be used").
+      mt.pUnk->Release();
+      mt.pUnk = NULL;
+    }
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// VideoPinInfo
+//
+
+VideoPinInfo::VideoPinInfo() {
+}
+
+VideoPinInfo::~VideoPinInfo() {
+}
+
+// Copies |pin| to |pin_| (results in an AddRef), and:
+// - confirms that |pin| is a video pin using |PinInfo::IsVideo|, and
+// - confirms that |pin| is connected.
+int VideoPinInfo::Init(const IPinPtr& pin) {
+  if (!pin) {
+    DBGLOG("ERROR: empty pin.");
+    return kInvalidArg;
+  }
+  PinInfo info(pin);
+  if (info.IsVideo() == false) {
+    DBGLOG("ERROR: Not a video pin.");
+    return kNotVideo;
+  }
+  // Confirm that |pin| is connected.
+  IPinPtr pin_peer;
+  HRESULT hr = pin->ConnectedTo(&pin_peer);
+  if (hr != S_OK || !pin_peer) {
+    DBGLOG("ERROR: pin not connected.");
+    return kNotConnected;
+  }
+  pin_ = pin;
+  return kSuccess;
+}
+
+// Grabs the pin media type, extracts the |VIDEOINFOHEADER|, calculates frame
+// rate using |AvgTimePerFrame|, and returns the value.  Returns a rate <0 on
+// failure. Note that an |AvgTimePerFrame| of 0 is interpreted as an error.
+double VideoPinInfo::frames_per_second() const {
+  double frames_per_second = -1.0;
+  // Validate |pin_| again; |_com_ptr_t| throws when empty.
+  if (pin_) {
+    AM_MEDIA_TYPE ptr_media_type;
+    HRESULT hr = pin_->ConnectionMediaType(&ptr_media_type);
+    if (hr == S_OK) {
+      int64 media_time_ticks_per_frame = 0;
+      const GUID& format = ptr_media_type.formattype;
+      if (format == FORMAT_MPEGVideo || format == FORMAT_VideoInfo) {
+        // |FORMAT_MPEGVideo| and |FORMAT_VideoInfo| use |VIDEOINFOHEADER|.
+        VIDEOINFOHEADER* ptr_video_info_header =
+            reinterpret_cast<VIDEOINFOHEADER*>(ptr_media_type.pbFormat);
+        media_time_ticks_per_frame = ptr_video_info_header->AvgTimePerFrame;
+      } else if (format == FORMAT_MPEG2Video || format == FORMAT_VideoInfo2) {
+        // |FORMAT_MPEG2Video| and |FORMAT_VideoInfo2| use |VIDEOINFOHEADER2|.
+        VIDEOINFOHEADER2* ptr_video_info_header =
+            reinterpret_cast<VIDEOINFOHEADER2*>(ptr_media_type.pbFormat);
+        media_time_ticks_per_frame = ptr_video_info_header->AvgTimePerFrame;
+      }
+      if (media_time_ticks_per_frame != 0) {
+        const double seconds_per_frame =
+            media_time_to_seconds(media_time_ticks_per_frame);
+        frames_per_second = 1.0/seconds_per_frame;
+      }
+      PinInfo::FreeMediaTypeData(&ptr_media_type);
+    }
+  }
+  return frames_per_second;
 }
 
 }  // namespace webmlive

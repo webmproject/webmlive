@@ -23,21 +23,14 @@ WebmEncoder::WebmEncoder() {
 WebmEncoder::~WebmEncoder() {
 }
 
-// Convert |out_file_name| to a |std::wstring| and call |Init|.
-int WebmEncoder::Init(const std::string& out_file_name) {
-  std::wostringstream fname_cnv;
-  fname_cnv << out_file_name.c_str();
-  return Init(fname_cnv.str());
-}
-
 // Create the encoder object and call its |Init| method.
-int WebmEncoder::Init(const std::wstring& out_file_name) {
+int WebmEncoder::Init(const WebmEncoderSettings& settings) {
   ptr_encoder_.reset(new (std::nothrow) WebmEncoderImpl());
   if (!ptr_encoder_) {
     DBGLOG("ERROR: cannot construct WebmEncoderImpl.");
     return kInitFailed;
   }
-  return ptr_encoder_->Init(out_file_name);
+  return ptr_encoder_->Init(settings);
 }
 
 // Return result of encoder object's |Run| method.
