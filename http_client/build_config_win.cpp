@@ -18,9 +18,9 @@
 #pragma comment(lib, "../third_party/curl/win/x86/libcurldll.a")
 
 #ifdef _DEBUG
-#pragma comment(lib, "../third_party/libwebm/win/x86/debug/mkvparser.lib")
+#pragma comment(lib, "../third_party/libwebm/win/x86/debug/libwebm.lib")
 #else
-#pragma comment(lib, "../third_party/libwebm/win/x86/release/mkvparser.lib")
+#pragma comment(lib, "../third_party/libwebm/win/x86/release/libwebm.lib")
 #endif
 
 // Windows API libraries
