@@ -189,19 +189,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\build_config_win.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\file_reader.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\file_reader_win.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\file_util_win.cc"
 				>
 			</File>
 			<File
@@ -220,10 +208,26 @@
 				RelativePath=".\webm_encoder.cc"
 				>
 			</File>
-			<File
-				RelativePath=".\webm_encoder_dshow.cc"
+			<Filter
+				Name="win"
 				>
-			</File>
+				<File
+					RelativePath=".\win\build_config_win.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\file_reader_win.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\file_util_win.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\webm_encoder_dshow.cc"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -247,10 +251,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\file_reader_win.h"
-				>
-			</File>
-			<File
 				RelativePath=".\file_util.h"
 				>
 			</File>
@@ -270,10 +270,18 @@
 				RelativePath=".\webm_encoder.h"
 				>
 			</File>
-			<File
-				RelativePath=".\webm_encoder_dshow.h"
+			<Filter
+				Name="win"
 				>
-			</File>
+				<File
+					RelativePath=".\win\file_reader_win.h"
+					>
+				</File>
+				<File
+					RelativePath=".\win\webm_encoder_dshow.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

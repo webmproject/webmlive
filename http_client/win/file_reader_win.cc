@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "file_reader_win.h"
+#include "win/file_reader_win.h"
 
 #include <share.h>  // defines _SH_DENYNO, used with _wfsopen
 

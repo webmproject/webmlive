@@ -13,7 +13,7 @@
 
 #include "debug_util.h"
 #ifdef _WIN32
-#include "file_reader_win.h"
+#include "win/file_reader_win.h"
 #endif
 
 namespace webmlive {

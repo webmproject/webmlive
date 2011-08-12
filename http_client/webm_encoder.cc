@@ -12,7 +12,7 @@
 
 #include "debug_util.h"
 #ifdef _WIN32
-#include "webm_encoder_dshow.h"
+#include "win/webm_encoder_dshow.h"
 #endif
 
 namespace webmlive {
