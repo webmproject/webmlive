@@ -144,7 +144,7 @@ int WebmChunkBuffer::ReadChunk(uint8* ptr_buf, int32 length) {
     return kUserBufferTooSmall;
   }
   memcpy(ptr_buf, &buffer_[0], chunk_length_);
-  Buffer::const_iterator erase_end_pos = buffer_.begin() + chunk_length_;
+  Buffer::iterator erase_end_pos = buffer_.begin() + chunk_length_;
   buffer_.erase(buffer_.begin(), erase_end_pos);
   chunk_length_ = 0;
   return kSuccess;
