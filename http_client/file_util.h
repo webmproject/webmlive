@@ -15,8 +15,8 @@
 namespace webmlive {
 namespace FileUtil {
 
-bool file_exists(std::wstring path);
-uint64 get_file_size(std::wstring path);
+bool file_exists(std::string path);
+uint64 get_file_size(std::string path);
 
 }  // FileUtil
 }  // webmlive

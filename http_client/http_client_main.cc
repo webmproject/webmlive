@@ -31,11 +31,10 @@ enum {
 };
 const double kDefaultKeyframeInterval = 2.0;
 typedef std::vector<std::string> StringVector;
-typedef std::vector<std::wstring> WStringVector;
 }  // anonymous namespace
 
 // Prints usage.
-void usage(const wchar_t** argv) {
+void usage(const char** argv) {
   printf("Usage: %ls --file <output file name> --url <target URL>\n", argv[0]);
   printf("  Note: file and url params are required.\n");
   printf("Options:\n");
@@ -69,97 +68,37 @@ int store_string_map_entries(const std::vector<std::string>& unparsed_entries,
   return kSuccess;
 }
 
-// Converts |wstr| to a multi-byte string and stores the result in |str|.
-int convert_wstring_to_string(const std::wstring& wstr, std::string& str) {
-  // Conversion buffer for |wcstombs| calls.
-  const size_t buf_size = wstr.length() + 1;
-  boost::scoped_array<char> temp_str(new (std::nothrow) char[buf_size]);
-  if (!temp_str) {
-    fprintf(stderr, "Cannot allocate wide char conversion buffer!\n");
-    return kNoMemory;
-  }
-  memset(temp_str.get(), 0, buf_size);
-  wcstombs(temp_str.get(), wstr.c_str(), wstr.length());
-  str = temp_str.get();
-  return kSuccess;
-}
-
-// Converts |std::wstring| entries in |wstrings| to multi-byte strings via
-// |wcstombs| and stores them in |strings|.
-int convert_wstring_vector_to_string_vector(const WStringVector& wstrings,
-                                            StringVector& strings) {
-  // Convert |wstrings| vals and store them in |strings|.
-  WStringVector::const_iterator i = wstrings.begin();
-  std::string temp_str;
-  for (; i != wstrings.end(); ++i) {
-    int status = convert_wstring_to_string(*i, temp_str);
-    if (status) {
-      DBGLOG("conversion failed, status=" << status);
-      return status;
-    }
-    strings.push_back(std::string(temp_str));
-  }
-  return kSuccess;
-}
-
 // Parses command line and stores user settings.
-void parse_command_line(int argc, const wchar_t** argv,
+void parse_command_line(int argc, const char** argv,
                         webmlive::HttpUploaderSettings& uploader_settings,
                         webmlive::WebmEncoderSettings& encoder_settings) {
-  WStringVector unparsed_wchar_headers;
-  WStringVector unparsed_wchar_vars;
   encoder_settings.keyframe_interval = kDefaultKeyframeInterval;
+  StringVector unparsed_headers;
+  StringVector unparsed_vars;
   for (int i = 1; i < argc; ++i) {
-    if (!wcscmp(L"-h", argv[i]) || !wcscmp(L"-?", argv[i]) ||
-        !wcscmp(L"--help", argv[i])) {
+    if (!strcmp("-h", argv[i]) || !strcmp("-?", argv[i]) ||
+        !strcmp("--help", argv[i])) {
       usage(argv);
       exit(EXIT_SUCCESS);
-    } else if (!wcscmp(L"--file", argv[i])) {
-      int status = convert_wstring_to_string(std::wstring(argv[++i]),
-                                             uploader_settings.local_file);
-      if (status) {
-        fprintf(stderr, "file name wchar->char conversion failed, status=%d\n",
-                status);
-        exit(EXIT_FAILURE);
-      }
+    } else if (!strcmp("--file", argv[i])) {
+      uploader_settings.local_file = argv[++i];
       encoder_settings.output_file_name = uploader_settings.local_file;
-    } else if (!wcscmp(L"--url", argv[i])) {
-      int status = convert_wstring_to_string(std::wstring(argv[++i]),
-                                             uploader_settings.target_url);
-      if (status) {
-        fprintf(stderr, "URL wchar->char conversion failed, status=%d\n",
-                status);
-        exit(EXIT_FAILURE);
-      }
-    } else if (!wcscmp(L"--header", argv[i])) {
-      unparsed_wchar_headers.push_back(argv[++i]);
-    } else if (!wcscmp(L"--var", argv[i])) {
-      unparsed_wchar_vars.push_back(argv[++i]);
-    } else if (!wcscmp(L"--keyframe_interval", argv[i])) {
-      wchar_t* ptr_end;
-      encoder_settings.keyframe_interval = wcstod(argv[++i], &ptr_end);
+    } else if (!strcmp("--url", argv[i])) {
+      uploader_settings.target_url = argv[++i];
+    } else if (!strcmp("--header", argv[i])) {
+      unparsed_headers.push_back(argv[++i]);
+    } else if (!strcmp("--var", argv[i])) {
+      unparsed_vars.push_back(argv[++i]);
+    } else if (!strcmp("--keyframe_interval", argv[i])) {
+      char* ptr_end;
+      encoder_settings.keyframe_interval = strtod(argv[++i], &ptr_end);
     }
   }
   // Store user HTTP headers.
-  StringVector unparsed_headers;
-  int error = convert_wstring_vector_to_string_vector(unparsed_wchar_headers,
-                                                      unparsed_headers);
-  if (error) {
-    fprintf(stderr, "Cannot convert wchar headers to char!\n");
-    exit(EXIT_FAILURE);
-  }
   store_string_map_entries(unparsed_headers, uploader_settings.headers);
   // Store user form variables.
-  StringVector unparsed_vars;
-  error = convert_wstring_vector_to_string_vector(unparsed_wchar_vars,
-                                                  unparsed_vars);
-  if (error) {
-    fprintf(stderr, "Cannot convert wchar form variables to char!\n");
-    exit(EXIT_FAILURE);
-  }
   store_string_map_entries(unparsed_vars, uploader_settings.form_variables);
 }
-
 
 // Calls |Init| and |Run| on |encoder| to start the encode of a WebM file.
 int start_encoder(webmlive::WebmEncoder& encoder,
@@ -301,7 +240,7 @@ int client_main(webmlive::HttpUploaderSettings& uploader_settings,
   return exit_code;
 }
 
-int _tmain(int argc, const wchar_t** argv) {
+int main(int argc, const char** argv) {
   webmlive::HttpUploaderSettings uploader_settings;
   webmlive::WebmEncoderSettings encoder_settings;
   parse_command_line(argc, argv, uploader_settings, encoder_settings);
