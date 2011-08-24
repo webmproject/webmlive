@@ -180,62 +180,16 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Source Files"
+			Name="sources"
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\buffer_util.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\file_reader.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\http_client_main.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\http_uploader.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\webm_buffer_parser.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\webm_encoder.cc"
-				>
-			</File>
-			<Filter
-				Name="win"
-				>
-				<File
-					RelativePath=".\win\build_config_win.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\win\file_reader_win.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\win\file_util_win.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\win\webm_encoder_dshow.cc"
-					>
-				</File>
-			</Filter>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
-			<File
 				RelativePath=".\basictypes.h"
+				>
+			</File>
+			<File
+				RelativePath=".\buffer_util.cc"
 				>
 			</File>
 			<File
@@ -244,6 +198,10 @@
 			</File>
 			<File
 				RelativePath=".\debug_util.h"
+				>
+			</File>
+			<File
+				RelativePath=".\file_reader.cc"
 				>
 			</File>
 			<File
@@ -259,11 +217,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\http_client_main.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\http_uploader.cc"
+				>
+			</File>
+			<File
 				RelativePath=".\http_uploader.h"
 				>
 			</File>
 			<File
+				RelativePath=".\webm_buffer_parser.cc"
+				>
+			</File>
+			<File
 				RelativePath=".\webm_buffer_parser.h"
+				>
+			</File>
+			<File
+				RelativePath=".\webm_encoder.cc"
 				>
 			</File>
 			<File
@@ -274,7 +248,23 @@
 				Name="win"
 				>
 				<File
+					RelativePath=".\win\build_config_win.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\file_reader_win.cc"
+					>
+				</File>
+				<File
 					RelativePath=".\win\file_reader_win.h"
+					>
+				</File>
+				<File
+					RelativePath=".\win\file_util_win.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\webm_encoder_dshow.cc"
 					>
 				</File>
 				<File
@@ -282,12 +272,6 @@
 					>
 				</File>
 			</Filter>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 		<Filter
 			Name="third_party"
