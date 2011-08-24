@@ -220,8 +220,10 @@ class CaptureSourceLoader {
   int GetNumSources() const { return sources_.size(); };
   // Return source name for specified index.
   std::wstring GetSourceName(int index) { return sources_[index]; };
-  // Return filter for capture source at specified index.
-  IBaseFilterPtr GetSource(int index) const;
+  // Returns filter for capture source at specified |index|.
+  IBaseFilterPtr GetSource(int index);
+  // Returns filter for capture source specified by |name|.
+  IBaseFilterPtr GetSource(const std::wstring name);
  private:
   // Finds and stores all source devices of |source_type_| in |sources_|.
   int FindAllSources();
@@ -229,6 +231,8 @@ class CaptureSourceLoader {
   // in |prop_bag|.
   std::wstring GetStringProperty(IPropertyBagPtr& prop_bag,
                                  std::wstring prop_name);
+  // Returns the value of |moniker|'s friendly name property.
+  std::wstring GetMonikerFriendlyName(const IMonikerPtr& moniker);
   // Type of sources to find.
   CLSID source_type_;
   // System input device enumerator.

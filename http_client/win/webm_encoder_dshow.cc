@@ -733,21 +733,12 @@ int CaptureSourceLoader::FindAllSources() {
     IMonikerPtr source_moniker;
     hr = source_enum_->Next(1, &source_moniker, NULL);
     if (FAILED(hr) || hr == S_FALSE || !source_moniker) {
-      DBGLOG("Done enumerating sources, found " << source_index << ".");
+      DBGLOG("Done enumerating sources, found " << source_index << " sources.");
       break;
     }
-    IPropertyBagPtr props;
-    hr = source_moniker->BindToStorage(0, 0, IID_IPropertyBag,
-                                       reinterpret_cast<void**>(&props));
-    if (FAILED(hr) || hr == S_FALSE) {
-      DBGLOG("source=" << source_index << " has no property bag, skipping.");
-      continue;
-    }
-    const wchar_t* const kFriendlyName = L"FriendlyName";
-    std::wstring name = GetStringProperty(props, kFriendlyName);
+    std::wstring name = GetMonikerFriendlyName(source_moniker);
     if (name.empty()) {
-      DBGLOG("source=" << source_index << " has no " << kFriendlyName
-             << " property, skipping.");
+      DBGLOG("source=" << source_index << " has no name, skipping.");
       continue;
     }
     DBGLOG("source=" << source_index << " name=" << name.c_str());
@@ -761,13 +752,23 @@ int CaptureSourceLoader::FindAllSources() {
   return kSuccess;
 }
 
-// Locate the capture source stored in |sources_| map at the specified index by
-// reseting the source enumerator and walking the sources until |index| is
-// reached.  Then creates an instance of the filter by calling |BindToObject|
-// on the device moniker (|source_moniker|) returned by the enumerator.
-IBaseFilterPtr CaptureSourceLoader::GetSource(int index) const {
+// Obtains source name for |index| and returns result of
+// |GetSource(std::wstring)|.
+IBaseFilterPtr CaptureSourceLoader::GetSource(int index) {
   if (static_cast<size_t>(index) >= sources_.size()) {
     DBGLOG("ERROR: " << index << " is not a valid source index");
+    return NULL;
+  }
+  return GetSource(GetSourceName(index));
+}
+
+// Resets |source_enum_| and enumerates video input sources until one matching
+// |name| is found. Then creates an instance of the filter by calling
+// |BindToObject| on the device moniker (|source_moniker|) returned by the
+// enumerator.
+IBaseFilterPtr CaptureSourceLoader::GetSource(const std::wstring name) {
+  if (name.empty()) {
+    DBGLOG("ERROR: empty source name.");
     return NULL;
   }
   HRESULT hr = source_enum_->Reset();
@@ -776,11 +777,15 @@ IBaseFilterPtr CaptureSourceLoader::GetSource(int index) const {
     return NULL;
   }
   IMonikerPtr source_moniker;
-  for (int i = 0; i <= index; ++i) {
+  for (;;) {
     hr = source_enum_->Next(1, &source_moniker, NULL);
     if (FAILED(hr) || hr == S_FALSE || !source_moniker) {
       DBGLOG("ERROR: ran out of devices before reaching requested index!");
       return NULL;
+    }
+    std::wstring source_name = GetMonikerFriendlyName(source_moniker);
+    if (source_name == name) {
+      break;
     }
   }
   IBaseFilterPtr filter = NULL;
@@ -792,7 +797,7 @@ IBaseFilterPtr CaptureSourceLoader::GetSource(int index) const {
   return filter;
 }
 
-// Utility method for extracting a string value from a |VARIANT|.
+// Extracts a string value from a |VARIANT|.  Returns emptry string on failure.
 std::wstring CaptureSourceLoader::GetStringProperty(IPropertyBagPtr &prop_bag,
                                                     std::wstring prop_name) {
   VARIANT var;
@@ -803,6 +808,26 @@ std::wstring CaptureSourceLoader::GetStringProperty(IPropertyBagPtr &prop_bag,
     name = V_BSTR(&var);
   }
   VariantClear(&var);
+  return name;
+}
+
+// Returns the value of |moniker|'s friendly name property.  Returns an empty
+// std::wstring on failure.
+std::wstring CaptureSourceLoader::GetMonikerFriendlyName(
+    const IMonikerPtr& moniker) {
+  std::wstring name;
+  if (moniker) {
+    IPropertyBagPtr props;
+    HRESULT hr = moniker->BindToStorage(0, 0, IID_IPropertyBag,
+                                        reinterpret_cast<void**>(&props));
+    if (hr == S_OK) {
+      const wchar_t* const kFriendlyName = L"FriendlyName";
+      name = GetStringProperty(props, kFriendlyName);
+      if (name.empty()) {
+        DBGLOG("moniker has no friendly name property, or it's empty.");
+      }
+    }
+  }
   return name;
 }
 
