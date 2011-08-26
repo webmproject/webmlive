@@ -84,8 +84,12 @@ int WebmEncoderImpl::Init(const WebmEncoderSettings& settings) {
     DBGLOG("CreateGraphInterfaces failed: " << status);
     return WebmEncoder::kInitFailed;
   }
-  std::wstring video_src;
-  status = CreateVideoSource(video_src);
+  if (!settings.video_device_name.empty()) {
+    std::wostringstream video_device_name;
+    video_device_name << settings.video_device_name.c_str();
+    video_device_name_ = video_device_name.str();
+  }
+  status = CreateVideoSource();
   if (status) {
     DBGLOG("CreateVideoSource failed: " << status);
     return WebmEncoder::kNoVideoSource;
@@ -106,8 +110,12 @@ int WebmEncoderImpl::Init(const WebmEncoderSettings& settings) {
     DBGLOG("ConfigureVpxEncoder failed: " << status);
     return WebmEncoder::kVideoEncoderError;
   }
-  std::wstring audio_src;
-  status = CreateAudioSource(audio_src);
+  if (!settings.audio_device_name.empty()) {
+    std::wostringstream audio_device_name;
+    audio_device_name << settings.audio_device_name.c_str();
+    audio_device_name_ = audio_device_name.str();
+  }
+  status = CreateAudioSource();
   if (status) {
     DBGLOG("CreateAudioSource failed: " << status);
     return WebmEncoder::kNoAudioSource;
@@ -239,11 +247,7 @@ int WebmEncoderImpl::CreateGraph() {
 // Uses |CaptureSourceLoader| to find a video capture source.  If successful
 // an instance of the source filter is created and added to the filter graph.
 // Note: the first device found is used unconditionally.
-int WebmEncoderImpl::CreateVideoSource(std::wstring video_src) {
-  if (!video_src.empty()) {
-    DBGLOG("ERROR: specifying video source externally is not implemented.");
-    return WebmEncoder::kNotImplemented;
-  }
+int WebmEncoderImpl::CreateVideoSource() {
   CaptureSourceLoader loader;
   int status = loader.Init(CLSID_VideoInputDeviceCategory);
   if (status) {
@@ -253,9 +257,11 @@ int WebmEncoderImpl::CreateVideoSource(std::wstring video_src) {
   for (int i = 0; i < loader.GetNumSources(); ++i) {
     DBGLOG("[" << i+1 << "] " << loader.GetSourceName(i).c_str());
   }
-  // TODO(tomfinegan): Add device selection.
-  // For now, use the first device found.
-  video_source_ = loader.GetSource(0);
+  if (video_device_name_.empty()) {
+    video_source_ = loader.GetSource(0);
+  } else {
+    video_source_ = loader.GetSource(video_device_name_);
+  }
   if (!video_source_) {
     DBGLOG("ERROR: cannot create video source!");
     return WebmEncoder::kNoVideoSource;
@@ -369,11 +375,7 @@ int WebmEncoderImpl::ConfigureVpxEncoder() {
 // created and added to the filter graph.
 // Note: in the |CaptureSourceLoader| case, the first device found is used
 // unconditionally.
-int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src) {
-  if (!audio_src.empty()) {
-    DBGLOG("ERROR: specifying audio source externally is not implemented.");
-    return WebmEncoder::kNotImplemented;
-  }
+int WebmEncoderImpl::CreateAudioSource() {
   // Check for an audio pin on the video source.
   // TODO(tomfinegan): We assume that the user wants to use the audio feed
   //                   exposed by the video capture source.  This behavior
@@ -400,9 +402,11 @@ int WebmEncoderImpl::CreateAudioSource(std::wstring audio_src) {
     for (int i = 0; i < loader.GetNumSources(); ++i) {
       DBGLOG("[" << i+1 << "] " << loader.GetSourceName(i).c_str());
     }
-    // TODO(tomfinegan): Add device selection.
-    // For now, use the first device found.
-    audio_source_ = loader.GetSource(0);
+    if (audio_device_name_.empty()) {
+      audio_source_ = loader.GetSource(0);
+    } else {
+      audio_source_ = loader.GetSource(audio_device_name_);
+    }
     if (!audio_source_) {
       DBGLOG("ERROR: cannot create audio source!");
       return WebmEncoder::kNoAudioSource;

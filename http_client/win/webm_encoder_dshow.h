@@ -143,7 +143,7 @@ class WebmEncoderImpl {
   // Creates filter graph and graph builder interfaces.
   int CreateGraph();
   // Loads first available video capture source and adds it to the graph.
-  int CreateVideoSource(std::wstring video_src);
+  int CreateVideoSource();
   // Loads the VP8 encoder and adds it to the graph.
   int CreateVpxEncoder();
   // Connects video source to VP8 encoder.
@@ -151,7 +151,7 @@ class WebmEncoderImpl {
   // Configures |vpx_encoder_|.
   int ConfigureVpxEncoder();
   // Loads first available audio capture source and adds it to the graph.
-  int CreateAudioSource(std::wstring video_src);
+  int CreateAudioSource();
   // Loads the Vorbis encoder and adds it to the graph.
   int CreateVorbisEncoder();
   // Connects audio source to Vorbis encoder.
@@ -200,6 +200,10 @@ class WebmEncoderImpl {
   std::string out_file_name_;
   // Keyframe interval.
   double keyframe_interval_;
+  // Audio device friendly name.
+  std::wstring audio_device_name_;
+  // Video device friendly name.
+  std::wstring video_device_name_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoderImpl);
 };
 

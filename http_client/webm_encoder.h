@@ -21,6 +21,10 @@ struct WebmEncoderSettings {
   double keyframe_interval;
   // Output file name.
   std::string output_file_name;
+  // Name of the audio device.  Leave empty to use system default.
+  std::string audio_device_name;
+  // Name of the video device.  Leave empty to use system default.
+  std::string video_device_name;
 };
 
 class WebmEncoderImpl;

@@ -36,12 +36,15 @@ typedef std::vector<std::string> StringVector;
 // Prints usage.
 void usage(const char** argv) {
   printf("Usage: %ls --file <output file name> --url <target URL>\n", argv[0]);
-  printf("  Note: file and url params are required.\n");
-  printf("Options:\n");
-  printf("  -h | -? | --help               Show this message and exit.\n");
-  printf("  --file <output file name>      Path to output WebM file.\n");
-  printf("  --keyframe_interval <seconds>  Time between keyframes.\n");
-  printf("  --url <target URL>             Target for HTTP Posts.\n");
+  printf("  Notes: \n");
+  printf("    The file and url params are always required.\n");
+  printf("  Options:\n");
+  printf("    -h | -? | --help               Show this message and exit.\n");
+  printf("    --adev <audio source name>     Audio capture device name.\n");
+  printf("    --file <output file name>      Path to output WebM file.\n");
+  printf("    --keyframe_interval <seconds>  Time between keyframes.\n");
+  printf("    --url <target URL>             Target for HTTP Posts.\n");
+  printf("    --vdev <video source name>     Video capture device name.\n");
 }
 
 // Parses name value pairs in the format name:value from |unparsed_entries|,
@@ -92,6 +95,10 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--keyframe_interval", argv[i])) {
       char* ptr_end;
       encoder_settings.keyframe_interval = strtod(argv[++i], &ptr_end);
+    } else if (!strcmp("--adev", argv[i])) {
+      encoder_settings.audio_device_name = argv[++i];
+    } else if (!strcmp("--vdev", argv[i])) {
+      encoder_settings.video_device_name = argv[++i];
     }
   }
   // Store user HTTP headers.
