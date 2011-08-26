@@ -30,7 +30,19 @@ enum {
   kSuccess = 0,
 };
 const double kDefaultKeyframeInterval = 2.0;
+const std::string kMetadataQueryFragment = "&metadata=1";
+const std::string kWebmItagQueryFragment = "&itag=43";
 typedef std::vector<std::string> StringVector;
+
+struct WebmEncoderClientConfig {
+  // Target for HTTP POSTs.
+  std::string target_url;
+  // Uploader settings.
+  webmlive::HttpUploaderSettings uploader_settings;
+  // WebM encoder settings.
+  webmlive::WebmEncoderSettings encoder_settings;
+};
+
 }  // anonymous namespace
 
 // Prints usage.
@@ -38,23 +50,29 @@ void usage(const char** argv) {
   printf("Usage: %ls --file <output file name> --url <target URL>\n", argv[0]);
   printf("  Notes: \n");
   printf("    The file and url params are always required.\n");
+  printf("    The stream_id and stream_name params are required when the\n");
+  printf("    url lacks a query string.\n");
   printf("  Options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
   printf("    --file <output file name>      Path to output WebM file.\n");
   printf("    --keyframe_interval <seconds>  Time between keyframes.\n");
+  printf("    --stream_id <stream ID>        Stream ID to include in POST");
+  printf("                                   query string.\n" );
+  printf("    --stream_name <stream name>    Stream name to include in POST");
+  printf("                                   query string.\n" );
   printf("    --url <target URL>             Target for HTTP Posts.\n");
   printf("    --vdev <video source name>     Video capture device name.\n");
 }
 
 // Parses name value pairs in the format name:value from |unparsed_entries|,
 // and stores results in |out_map|.
-int store_string_map_entries(const std::vector<std::string>& unparsed_entries,
+int store_string_map_entries(const StringVector& unparsed_entries,
                              std::map<std::string, std::string>& out_map)
 {
   using std::string;
   using std::vector;
-  vector<string>::const_iterator entry_iter = unparsed_entries.begin();
+  StringVector::const_iterator entry_iter = unparsed_entries.begin();
   while (entry_iter != unparsed_entries.end()) {
     // TODO(tomfinegan): support empty headers?
     const string& entry = *entry_iter;
@@ -73,11 +91,12 @@ int store_string_map_entries(const std::vector<std::string>& unparsed_entries,
 
 // Parses command line and stores user settings.
 void parse_command_line(int argc, const char** argv,
-                        webmlive::HttpUploaderSettings& uploader_settings,
-                        webmlive::WebmEncoderSettings& encoder_settings) {
-  encoder_settings.keyframe_interval = kDefaultKeyframeInterval;
+                        WebmEncoderClientConfig& config) {
   StringVector unparsed_headers;
   StringVector unparsed_vars;
+  webmlive::HttpUploaderSettings& uploader_settings = config.uploader_settings;
+  webmlive::WebmEncoderSettings& encoder_settings = config.encoder_settings;
+  encoder_settings.keyframe_interval = kDefaultKeyframeInterval;
   for (int i = 1; i < argc; ++i) {
     if (!strcmp("-h", argv[i]) || !strcmp("-?", argv[i]) ||
         !strcmp("--help", argv[i])) {
@@ -87,7 +106,7 @@ void parse_command_line(int argc, const char** argv,
       uploader_settings.local_file = argv[++i];
       encoder_settings.output_file_name = uploader_settings.local_file;
     } else if (!strcmp("--url", argv[i])) {
-      uploader_settings.target_url = argv[++i];
+      config.target_url = argv[++i];
     } else if (!strcmp("--header", argv[i])) {
       unparsed_headers.push_back(argv[++i]);
     } else if (!strcmp("--var", argv[i])) {
@@ -99,6 +118,10 @@ void parse_command_line(int argc, const char** argv,
       encoder_settings.audio_device_name = argv[++i];
     } else if (!strcmp("--vdev", argv[i])) {
       encoder_settings.video_device_name = argv[++i];
+    } else if (!strcmp("--stream_name", argv[i])) {
+      uploader_settings.stream_name = argv[++i];
+    } else if (!strcmp("--stream_id", argv[i])) {
+      uploader_settings.stream_id = argv[++i];
     }
   }
   // Store user HTTP headers.
@@ -125,8 +148,23 @@ int start_encoder(webmlive::WebmEncoder& encoder,
 // Calls |Init| and |Run| on |uploader| to start the uploader thread, which
 // uploads buffers when |UploadBuffer| is called on the uploader.
 int start_uploader(webmlive::HttpUploader& uploader,
-                   webmlive::HttpUploaderSettings& settings) {
-  int status = uploader.Init(settings);
+                   WebmEncoderClientConfig& config) {
+  if (config.target_url.find('?') == std::string::npos) {
+    // No query string-- reconstruct the URL.
+    std::ostringstream url;
+    // rebuild the url with query params included
+    url << config.target_url << "?ns=" << config.uploader_settings.stream_name
+        << "&id=" << config.uploader_settings.stream_id
+        << kWebmItagQueryFragment
+        << kMetadataQueryFragment;
+    config.target_url = url.str();
+  } else {
+    // The user specified a query string; assume that the user knows what
+    // they're doing, and append |kMetadataQueryFragment|.
+    config.target_url.append(kMetadataQueryFragment);
+  }
+
+  int status = uploader.Init(config.uploader_settings);
   if (status) {
     DBGLOG("uploader Init failed, status=" << status);
     return status;
@@ -138,10 +176,10 @@ int start_uploader(webmlive::HttpUploader& uploader,
   return status;
 }
 
-int client_main(webmlive::HttpUploaderSettings& uploader_settings,
-                const webmlive::WebmEncoderSettings& encoder_settings) {
+int client_main(WebmEncoderClientConfig& config) {
   // Setup the file reader.  This is a little strange since |reader| actually
   // creates the output file that is used by the encoder.
+  webmlive::HttpUploaderSettings& uploader_settings = config.uploader_settings;
   webmlive::FileReader reader;
   int status = reader.CreateFile(uploader_settings.local_file);
   if (status) {
@@ -149,6 +187,7 @@ int client_main(webmlive::HttpUploaderSettings& uploader_settings,
     return EXIT_FAILURE;
   }
   // Start encoding the WebM file.
+  webmlive::WebmEncoderSettings& encoder_settings = config.encoder_settings;
   webmlive::WebmEncoder encoder;
   status = start_encoder(encoder, encoder_settings);
   if (status) {
@@ -157,7 +196,7 @@ int client_main(webmlive::HttpUploaderSettings& uploader_settings,
   }
   // Start the uploader thread.
   webmlive::HttpUploader uploader;
-  status = start_uploader(uploader, uploader_settings);
+  status = start_uploader(uploader, config);
   if (status) {
     fprintf(stderr, "start_uploader failed, status=%d\n", status);
     encoder.Stop();
@@ -182,6 +221,7 @@ int client_main(webmlive::HttpUploaderSettings& uploader_settings,
     return EXIT_FAILURE;
   }
   // Loop until the user hits a key.
+  int num_posts = 0;
   int exit_code = EXIT_SUCCESS;
   webmlive::HttpUploaderStats stats;
   printf("\nPress the any key to quit...\n");
@@ -226,15 +266,26 @@ int client_main(webmlive::HttpUploaderSettings& uploader_settings,
           exit_code = EXIT_FAILURE;
           break;
         }
+        if (num_posts == 1) {
+          // Remove the metadata query fragment from the URL after the first
+          // post.  It is only present for the first post, which includes
+          // the EBML header, MKV segment Info, and MKV segment tracks
+          // elements.
+          std::string& url = config.target_url;
+          url.erase(url.find(kMetadataQueryFragment),
+                    kMetadataQueryFragment.length());
+        }
         // Start upload of the read buffer contents
         DBGLOG("starting buffer upload, chunk_length=" << chunk_length);
-        status = uploader.UploadBuffer(&read_buf[0], chunk_length);
+        status = uploader.UploadBuffer(&read_buf[0], chunk_length,
+                                       config.target_url);
         if (status) {
           DBGLOG("UploadBuffer failed, status=" << status);
           fprintf(stderr, "\nERROR: can't upload buffer!\n");
           exit_code = EXIT_FAILURE;
           break;
         }
+        ++num_posts;
       }
     }
     Sleep(100);
@@ -248,19 +299,25 @@ int client_main(webmlive::HttpUploaderSettings& uploader_settings,
 }
 
 int main(int argc, const char** argv) {
-  webmlive::HttpUploaderSettings uploader_settings;
-  webmlive::WebmEncoderSettings encoder_settings;
-  parse_command_line(argc, argv, uploader_settings, encoder_settings);
+  WebmEncoderClientConfig config;
+  parse_command_line(argc, argv, config);
   // validate params
-  if (uploader_settings.target_url.empty() ||
-      encoder_settings.output_file_name.empty()) {
+  if (config.target_url.empty() ||
+      config.encoder_settings.output_file_name.empty()) {
     fprintf(stderr, "file and url params are required!\n");
     usage(argv);
     return EXIT_FAILURE;
   }
-  DBGLOG("file: " << encoder_settings.output_file_name.c_str());
-  DBGLOG("url: " << uploader_settings.target_url.c_str());
-  return client_main(uploader_settings, encoder_settings);
+  if ((config.uploader_settings.stream_id.empty() ||
+      config.uploader_settings.stream_name.empty()) &&
+      config.target_url.find('?') == std::string::npos) {
+    fprintf(stderr, "stream_id and stream_name are required when the target "
+            "url lacks a query string!\n");
+    return EXIT_FAILURE;
+  }
+  DBGLOG("file: " << config.encoder_settings.output_file_name.c_str());
+  DBGLOG("url: " << config.target_url.c_str());
+  return client_main(config);
 }
 
 // We build with BOOST_NO_EXCEPTIONS defined; boost will call this function

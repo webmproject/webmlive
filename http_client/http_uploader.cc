@@ -64,7 +64,8 @@ class HttpUploaderImpl {
   // Runs |UploadThread|, and starts waiting for user data.
   int Run();
   // Uploads user data.
-  int UploadBuffer(const uint8* const ptr_buffer, int32 length);
+  int UploadBuffer(const uint8* const ptr_buffer, int32 length,
+                   const std::string& target_url);
   // Stops the uploader.
   int Stop();
  private:
@@ -132,6 +133,8 @@ class HttpUploaderImpl {
   // it's information included within the form data contained within the HTTP
   // post.
   std::string local_file_name_;
+  // Target URL for HTTP POSTs
+  std::string target_url_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
 
@@ -182,8 +185,9 @@ int HttpUploader::Stop() {
 }
 
 // Return result of |UploadBuffer| on |ptr_uploader_|.
-int HttpUploader::UploadBuffer(const uint8* const ptr_buffer, int32 length) {
-  return ptr_uploader_->UploadBuffer(ptr_buffer, length);
+int HttpUploader::UploadBuffer(const uint8* const ptr_buffer, int32 length,
+                               const std::string& target_url) {
+  return ptr_uploader_->UploadBuffer(ptr_buffer, length, target_url);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -239,14 +243,8 @@ int HttpUploaderImpl::Init(const HttpUploaderSettings& settings) {
     DBGLOG("curl_easy_init failed!");
     return kLibCurlError;
   }
-  CURLcode curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_URL,
-                                       settings_.target_url.c_str());
-  if (curl_ret != CURLE_OK) {
-    LOG_CURL_ERR(curl_ret, "could not pass URL to curl.");
-    return HttpUploader::kUrlConfigError;
-  }
   // enable progress reports
-  curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_NOPROGRESS, FALSE);
+  CURLcode curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_NOPROGRESS, FALSE);
   if (curl_ret != CURLE_OK) {
     LOG_CURL_ERR(curl_ret, "curl progress enable failed.");
     return kLibCurlError;
@@ -298,10 +296,14 @@ int HttpUploaderImpl::Run() {
 // buffer is unlocked, |UploadBuffer| locks the buffer and notifies the upload
 // thread through call to |notify_one| on the |buffer_ready_| condition
 // variable.
-int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length) {
+int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length,
+                                   const std::string& target_url) {
   int status = HttpUploader::kUploadInProgress;
   boost::mutex::scoped_try_lock lock(mutex_);
   if (lock.owns_lock() && !upload_buffer_.IsLocked()) {
+    if (!target_url.empty()) {
+      target_url_ = target_url;
+    }
     // Lock obtained; (re)initialize |upload_buffer_| with the user data...
     status = upload_buffer_.Init(ptr_buf, length);
     if (status) {
@@ -468,11 +470,17 @@ int HttpUploaderImpl::Upload() {
     return HttpUploader::kRunFailed;
   }
   DBGLOG("upload buffer size=" << length);
+  CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_URL,
+                                  target_url_.c_str());
+  if (err != CURLE_OK) {
+    LOG_CURL_ERR(err, "could not pass URL to curl.");
+    return HttpUploader::kUrlConfigError;
+  }
   if (SetupFormPost(ptr_data, length)) {
     DBGLOG("ERROR: SetUploadBuffer failed!");
     return HttpUploader::kRunFailed;
   }
-  CURLcode err = curl_easy_perform(ptr_curl_);
+  err = curl_easy_perform(ptr_curl_);
   if (err != CURLE_OK) {
     LOG_CURL_ERR(err, "curl_easy_perform failed.");
   } else {

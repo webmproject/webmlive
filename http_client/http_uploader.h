@@ -17,17 +17,21 @@
 namespace webmlive {
 
 struct HttpUploaderSettings {
+  // Form variables and HTTP headers are stored within
+  // map<std::string,std::string>.
+  typedef std::map<std::string, std::string> StringMap;
   // |local_file| is what the HTTP server sees as the local file name.
   // Assigning a path to a local file and passing the settings struct to
   // |HttpUploader::Init| will not upload an existing file.
   std::string local_file;
-  // Target for HTTP POST.
-  std::string target_url;
-  typedef std::map<std::string, std::string> StringMap;
   // User form variables.
   StringMap form_variables;
   // User HTTP headers.
   StringMap headers;
+  // HTTP post data stream name.
+  std::string stream_name;
+  // Data stream ID.
+  std::string stream_id;
 };
 
 struct HttpUploaderStats {
@@ -73,15 +77,17 @@ class HttpUploader {
   // Constructs |HttpUploaderImpl|, which copies |settings|. Returns |kSuccess|
   // upon success.
   int Init(const HttpUploaderSettings& settings);
-  // Return the current upload stats. Note, obtains lock before copying stats to
+  // Returns the current upload stats. Note, obtains lock before copying stats to
   // |ptr_stats|.
   int GetStats(HttpUploaderStats* ptr_stats);
-  // Run the uploader thread.
+  // Runs the uploader thread.
   int Run();
-  // Stop the uploader thread.
+  // Stops the uploader thread.
   int Stop();
-  // Send a buffer to the uploader thread.
-  int UploadBuffer(const uint8* const ptr_buffer, int32 length);
+  // Sends a buffer to the uploader thread, and updates the POST target if
+  // |target_url| is non-empty.
+  int UploadBuffer(const uint8* const ptr_buffer, int32 length,
+                   const std::string& target_url);
  private:
   // Pointer to uploader implementation.
   boost::scoped_ptr<HttpUploaderImpl> ptr_uploader_;
