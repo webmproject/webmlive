@@ -304,6 +304,10 @@ int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length,
     if (!target_url.empty()) {
       target_url_ = target_url;
     }
+    if (target_url_.empty()) {
+      DBGLOG("ERROR: No target URL!");
+      return HttpUploader::kUrlConfigError;
+    }
     // Lock obtained; (re)initialize |upload_buffer_| with the user data...
     status = upload_buffer_.Init(ptr_buf, length);
     if (status) {
