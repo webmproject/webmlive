@@ -29,7 +29,7 @@ enum {
   kInvalidArg = - 1,
   kSuccess = 0,
 };
-const double kDefaultKeyframeInterval = 2.0;
+
 const std::string kMetadataQueryFragment = "&metadata=1";
 const std::string kWebmItagQueryFragment = "&itag=43";
 typedef std::vector<std::string> StringVector;
@@ -40,7 +40,7 @@ struct WebmEncoderClientConfig {
   // Uploader settings.
   webmlive::HttpUploaderSettings uploader_settings;
   // WebM encoder settings.
-  webmlive::WebmEncoderSettings encoder_settings;
+  webmlive::WebmEncoderConfig enc_config;
 };
 
 }  // anonymous namespace
@@ -52,19 +52,28 @@ void usage(const char** argv) {
   printf("    The file and url params are always required.\n");
   printf("    The stream_id and stream_name params are required when the\n");
   printf("    url lacks a query string.\n");
-  printf("  Options:\n");
+  printf("  General Options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
   printf("    --file <output file name>      Path to output WebM file.\n");
   printf("    --form_post                    Send WebM chunks as file data\n");
   printf("                                   in an form (a la RFC 1867).\n");
-  printf("    --keyframe_interval <seconds>  Time between keyframes.\n");
   printf("    --stream_id <stream ID>        Stream ID to include in POST");
   printf("                                   query string.\n" );
   printf("    --stream_name <stream name>    Stream name to include in POST");
   printf("                                   query string.\n" );
   printf("    --url <target URL>             Target for HTTP Posts.\n");
   printf("    --vdev <video source name>     Video capture device name.\n");
+  printf("  VPX Encoder options:\n");
+  printf("    --vpx_bitrate <kbps>               Video bitrate.\n");
+  printf("    --vpx_keyframe_interval <seconds>  Time between keyframes.\n");
+  printf("    --vpx_min_q <min q value>          Quantizer minimum.\n");
+  printf("    --vpx_max_q <max q value>          Quantizer maximum.\n");
+  printf("    --vpx_speed <speed value>          Speed.\n");
+  printf("    --vpx_static_threshold <threshold> Static threshold.\n");
+  printf("    --vpx_speed <speed value>          Speed.\n");
+  printf("    --vpx_threads <num threads>        Number of encode threads.\n");
+  printf("    --vpx_undershoot <undershoot>      Undershoot value.\n");
 }
 
 // Parses name value pairs in the format name:value from |unparsed_entries|,
@@ -97,9 +106,8 @@ void parse_command_line(int argc, const char** argv,
   StringVector unparsed_headers;
   StringVector unparsed_vars;
   webmlive::HttpUploaderSettings& uploader_settings = config.uploader_settings;
-  webmlive::WebmEncoderSettings& encoder_settings = config.encoder_settings;
+  webmlive::WebmEncoderConfig& enc_config = config.enc_config;
   config.uploader_settings.post_mode = webmlive::HTTP_POST;
-  encoder_settings.keyframe_interval = kDefaultKeyframeInterval;
   for (int i = 1; i < argc; ++i) {
     if (!strcmp("-h", argv[i]) || !strcmp("-?", argv[i]) ||
         !strcmp("--help", argv[i])) {
@@ -107,26 +115,47 @@ void parse_command_line(int argc, const char** argv,
       exit(EXIT_SUCCESS);
     } else if (!strcmp("--file", argv[i])) {
       uploader_settings.local_file = argv[++i];
-      encoder_settings.output_file_name = uploader_settings.local_file;
+      enc_config.output_file_name = uploader_settings.local_file;
     } else if (!strcmp("--url", argv[i])) {
       config.target_url = argv[++i];
     } else if (!strcmp("--header", argv[i])) {
       unparsed_headers.push_back(argv[++i]);
     } else if (!strcmp("--var", argv[i])) {
       unparsed_vars.push_back(argv[++i]);
-    } else if (!strcmp("--keyframe_interval", argv[i])) {
-      char* ptr_end;
-      encoder_settings.keyframe_interval = strtod(argv[++i], &ptr_end);
     } else if (!strcmp("--adev", argv[i])) {
-      encoder_settings.audio_device_name = argv[++i];
+      enc_config.audio_device_name = argv[++i];
     } else if (!strcmp("--vdev", argv[i])) {
-      encoder_settings.video_device_name = argv[++i];
+      enc_config.video_device_name = argv[++i];
     } else if (!strcmp("--stream_name", argv[i])) {
       uploader_settings.stream_name = argv[++i];
     } else if (!strcmp("--stream_id", argv[i])) {
       uploader_settings.stream_id = argv[++i];
     } else if (!strcmp("--form_post", argv[i])) {
       uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
+    } else if (!strcmp("--vpx_keyframe_interval", argv[i])) {
+      char* ptr_end;
+      enc_config.vpx_config.keyframe_interval = strtod(argv[++i], &ptr_end);
+    } else if (!strcmp("--vpx_bitrate", argv[i])) {
+      char* ptr_end;
+      enc_config.vpx_config.bitrate = strtol(argv[++i], &ptr_end, 10);
+    } else if (!strcmp("--vpx_min_q", argv[i])) {
+      char* ptr_end;
+      enc_config.vpx_config.min_quantizer = strtol(argv[++i], &ptr_end, 10);
+    } else if (!strcmp("--vpx_max_q", argv[i])) {
+      char* ptr_end;
+      enc_config.vpx_config.max_quantizer = strtol(argv[++i], &ptr_end, 10);
+    } else if (!strcmp("--vpx_speed", argv[i])) {
+      char* ptr_end;
+      enc_config.vpx_config.speed = strtol(argv[++i], &ptr_end, 10);
+    } else if (!strcmp("--vpx_static_threshold", argv[i])) {
+      char* ptr_end;
+      enc_config.vpx_config.static_threshold = strtol(argv[++i], &ptr_end, 10);
+    } else if (!strcmp("--vpx_undershoot", argv[i])) {
+      char* ptr_end;
+      enc_config.vpx_config.undershoot = strtol(argv[++i], &ptr_end, 10);
+    } else if (!strcmp("--vpx_threads", argv[i])) {
+      char* ptr_end;
+      enc_config.vpx_config.thread_count = strtol(argv[++i], &ptr_end, 10);
     }
   }
   // Store user HTTP headers.
@@ -137,7 +166,7 @@ void parse_command_line(int argc, const char** argv,
 
 // Calls |Init| and |Run| on |encoder| to start the encode of a WebM file.
 int start_encoder(webmlive::WebmEncoder& encoder,
-                  const webmlive::WebmEncoderSettings& settings) {
+                  const webmlive::WebmEncoderConfig& settings) {
   int status = encoder.Init(settings);
   if (status) {
     DBGLOG("encoder Init failed, status=" << status);
@@ -192,9 +221,9 @@ int client_main(WebmEncoderClientConfig& config) {
     return EXIT_FAILURE;
   }
   // Start encoding the WebM file.
-  webmlive::WebmEncoderSettings& encoder_settings = config.encoder_settings;
+  webmlive::WebmEncoderConfig& enc_config = config.enc_config;
   webmlive::WebmEncoder encoder;
-  status = start_encoder(encoder, encoder_settings);
+  status = start_encoder(encoder, enc_config);
   if (status) {
     fprintf(stderr, "start_encoder failed, status=%d\n", status);
     return EXIT_FAILURE;
@@ -305,10 +334,11 @@ int client_main(WebmEncoderClientConfig& config) {
 
 int main(int argc, const char** argv) {
   WebmEncoderClientConfig config;
+  config.enc_config = webmlive::WebmEncoder::DefaultConfig();
   parse_command_line(argc, argv, config);
   // validate params
   if (config.target_url.empty() ||
-      config.encoder_settings.output_file_name.empty()) {
+      config.enc_config.output_file_name.empty()) {
     fprintf(stderr, "file and url params are required!\n");
     usage(argv);
     return EXIT_FAILURE;
@@ -320,7 +350,7 @@ int main(int argc, const char** argv) {
             "url lacks a query string!\n");
     return EXIT_FAILURE;
   }
-  DBGLOG("file: " << config.encoder_settings.output_file_name.c_str());
+  DBGLOG("file: " << config.enc_config.output_file_name.c_str());
   DBGLOG("url: " << config.target_url.c_str());
   return client_main(config);
 }

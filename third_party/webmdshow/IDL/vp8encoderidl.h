@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0555 */
-/* at Thu Aug 04 16:37:36 2011
+/* at Tue Aug 30 23:39:36 2011
  */
 /* Compiler settings for ..\IDL\vp8encoder.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
@@ -114,7 +114,7 @@ EXTERN_C const IID IID_IVP8Encoder;
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
-    MIDL_INTERFACE("ED3110FE-5211-11DF-94AF-0026B977EEAA")
+    MIDL_INTERFACE("ED311150-5211-11DF-94AF-0026B977EEAA")
     IVP8Encoder : public IUnknown
     {
     public:
@@ -309,10 +309,22 @@ EXTERN_C const IID IID_IVP8Encoder;
             /* [out] */ int *pType) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE SetFixedKeyframeInterval( 
-            /* [in] */ REFERENCE_TIME interval) = 0;
+            /* [in] */ REFERENCE_TIME Interval) = 0;
         
         virtual HRESULT STDMETHODCALLTYPE GetFixedKeyframeInterval( 
             /* [out] */ REFERENCE_TIME *pInterval) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE SetCPUUsed( 
+            /* [in] */ int CPUUsed) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE GetCPUUsed( 
+            /* [out] */ int *pCPUUsed) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE SetStaticThreshold( 
+            /* [in] */ int StaticThreshold) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE GetStaticThreshold( 
+            /* [out] */ int *pStaticThreshold) = 0;
         
     };
     
@@ -590,11 +602,27 @@ EXTERN_C const IID IID_IVP8Encoder;
         
         HRESULT ( STDMETHODCALLTYPE *SetFixedKeyframeInterval )( 
             IVP8Encoder * This,
-            /* [in] */ REFERENCE_TIME interval);
+            /* [in] */ REFERENCE_TIME Interval);
         
         HRESULT ( STDMETHODCALLTYPE *GetFixedKeyframeInterval )( 
             IVP8Encoder * This,
             /* [out] */ REFERENCE_TIME *pInterval);
+        
+        HRESULT ( STDMETHODCALLTYPE *SetCPUUsed )( 
+            IVP8Encoder * This,
+            /* [in] */ int CPUUsed);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetCPUUsed )( 
+            IVP8Encoder * This,
+            /* [out] */ int *pCPUUsed);
+        
+        HRESULT ( STDMETHODCALLTYPE *SetStaticThreshold )( 
+            IVP8Encoder * This,
+            /* [in] */ int StaticThreshold);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetStaticThreshold )( 
+            IVP8Encoder * This,
+            /* [out] */ int *pStaticThreshold);
         
         END_INTERFACE
     } IVP8EncoderVtbl;
@@ -811,11 +839,23 @@ EXTERN_C const IID IID_IVP8Encoder;
 #define IVP8Encoder_GetARNRType(This,pType)	\
     ( (This)->lpVtbl -> GetARNRType(This,pType) ) 
 
-#define IVP8Encoder_SetFixedKeyframeInterval(This,interval)	\
-    ( (This)->lpVtbl -> SetFixedKeyframeInterval(This,interval) ) 
+#define IVP8Encoder_SetFixedKeyframeInterval(This,Interval)	\
+    ( (This)->lpVtbl -> SetFixedKeyframeInterval(This,Interval) ) 
 
 #define IVP8Encoder_GetFixedKeyframeInterval(This,pInterval)	\
     ( (This)->lpVtbl -> GetFixedKeyframeInterval(This,pInterval) ) 
+
+#define IVP8Encoder_SetCPUUsed(This,CPUUsed)	\
+    ( (This)->lpVtbl -> SetCPUUsed(This,CPUUsed) ) 
+
+#define IVP8Encoder_GetCPUUsed(This,pCPUUsed)	\
+    ( (This)->lpVtbl -> GetCPUUsed(This,pCPUUsed) ) 
+
+#define IVP8Encoder_SetStaticThreshold(This,StaticThreshold)	\
+    ( (This)->lpVtbl -> SetStaticThreshold(This,StaticThreshold) ) 
+
+#define IVP8Encoder_GetStaticThreshold(This,pStaticThreshold)	\
+    ( (This)->lpVtbl -> GetStaticThreshold(This,pStaticThreshold) ) 
 
 #endif /* COBJMACROS */
 

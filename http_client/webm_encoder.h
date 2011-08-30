@@ -16,15 +16,46 @@
 
 namespace webmlive {
 
-struct WebmEncoderSettings {
-  // Time between keyframes, in seconds.
-  double keyframe_interval;
+// Special value interpreted by |WebmEncoder| as "use implementation default".
+static const int kUseEncoderDefault = -200;
+
+// Defaults for live encodes.
+static const double kDefaultVpxKeyframeInterval = 1.0;
+static const int kDefaultVpxBitrate = 500;
+static const int kDefaultVpxMinQ = 10;
+static const int kDefaultVpxMaxQ = 46;
+static const int kDefaultVpxSpeed = kUseEncoderDefault;
+static const int kDefaultVpxStaticThreshold = kUseEncoderDefault;
+static const int kDefaultVpxUndershoot = kUseEncoderDefault;
+static const int kDefaultVpxThreadCount = kUseEncoderDefault;
+
+struct WebmEncoderConfig {
+  struct VpxConfig {
+    // Time between keyframes, in seconds.
+    double keyframe_interval;
+    // Video bitrate, in kilobits.
+    int bitrate;
+    // Minimum quantizer value.
+    int min_quantizer;
+    // Maxium quantizer value.
+    int max_quantizer;
+    // Encoder complexity.
+    int speed;
+    // Threshold at which a macroblock is considered static.
+    int static_threshold;
+    // Percentage to undershoot the requested datarate.
+    int undershoot;
+    // Encoder thead count.
+    int thread_count;
+  };
   // Output file name.
   std::string output_file_name;
   // Name of the audio device.  Leave empty to use system default.
   std::string audio_device_name;
   // Name of the video device.  Leave empty to use system default.
   std::string video_device_name;
+  // VP8 encoder settings.
+  VpxConfig vpx_config;
 };
 
 class WebmEncoderImpl;
@@ -64,7 +95,7 @@ class WebmEncoder {
   ~WebmEncoder();
   // Initializes the encoder. Returns |kSuccess| upon success, or one of the
   // above status codes upon failure.
-  int Init(const WebmEncoderSettings& settings);
+  int Init(const WebmEncoderConfig& config);
   // Runs the encoder. Returns |kSuccess| when successful, or one of the above
   // status codes upon failure.
   int Run();
@@ -72,6 +103,8 @@ class WebmEncoder {
   void Stop();
   // Returns encoded duration in seconds.
   double encoded_duration();
+  // Returns |WebmEncoderConfig| with fields set to default values.
+  static WebmEncoderConfig DefaultConfig();
  private:
   // Encoder object.
   boost::scoped_ptr<WebmEncoderImpl> ptr_encoder_;

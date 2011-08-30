@@ -129,7 +129,7 @@ class WebmEncoderImpl {
   ~WebmEncoderImpl();
   // Creates WebM encoder graph. Returns |kSuccess| upon success, or a
   // |WebmEncoder| status code upon failure.
-  int Init(const WebmEncoderSettings& settings);
+  int Init(const WebmEncoderConfig& config);
   // Runs encoder thread. Returns |kSuccess| upon success, or a |WebmEncoder|
   // status code upon failure.
   int Run();
@@ -198,12 +198,12 @@ class WebmEncoderImpl {
   boost::shared_ptr<boost::thread> encode_thread_;
   // Output file name.
   std::string out_file_name_;
-  // Keyframe interval.
-  double keyframe_interval_;
   // Audio device friendly name.
   std::wstring audio_device_name_;
   // Video device friendly name.
   std::wstring video_device_name_;
+  // User settings.
+  WebmEncoderConfig config_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoderImpl);
 };
 

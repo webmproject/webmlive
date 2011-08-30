@@ -28,8 +28,6 @@ const wchar_t* const kVpxEncoderName =  L"VP8Encoder";
 const wchar_t* const kVorbisEncoderName = L"VorbisEncoder";
 const wchar_t* const kWebmMuxerName = L"WebmMuxer";
 const wchar_t* const kFileWriterName = L"FileWriter";
-// Default VP8 encode bitrate.
-const int kVpxEncoderBitrate = 500;
 
 // Converts media time (100 nanosecond ticks) to seconds.
 double media_time_to_seconds(REFERENCE_TIME media_time) {
@@ -41,13 +39,18 @@ REFERENCE_TIME seconds_to_media_time(double seconds) {
   return static_cast<REFERENCE_TIME>(seconds * 10000000);
 }
 
+// Converts a std::string to std::wstring.
+std::wstring string_to_wstring(std::string str) {
+  std::wostringstream wstr;
+  wstr << str.c_str();
+  return wstr.str();
+}
 }  // anonymous namespace
 
 WebmEncoderImpl::WebmEncoderImpl()
     : stop_(false),
       encoded_duration_(0.0),
-      media_event_handle_(INVALID_HANDLE_VALUE),
-      keyframe_interval_(3.0) {
+      media_event_handle_(INVALID_HANDLE_VALUE) {
 }
 
 WebmEncoderImpl::~WebmEncoderImpl() {
@@ -73,7 +76,8 @@ WebmEncoderImpl::~WebmEncoderImpl() {
 // video source -> vp8 encoder    ->
 //                                   webm muxer -> file writer
 // audio source -> vorbis encoder ->
-int WebmEncoderImpl::Init(const WebmEncoderSettings& settings) {
+int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
+  config_ = config;
   const HRESULT hr = CoInitialize(NULL);
   if (FAILED(hr)) {
     DBGLOG("CoInitialize failed: " << HRLOG(hr));
@@ -84,10 +88,8 @@ int WebmEncoderImpl::Init(const WebmEncoderSettings& settings) {
     DBGLOG("CreateGraphInterfaces failed: " << status);
     return WebmEncoder::kInitFailed;
   }
-  if (!settings.video_device_name.empty()) {
-    std::wostringstream video_device_name;
-    video_device_name << settings.video_device_name.c_str();
-    video_device_name_ = video_device_name.str();
+  if (!config.video_device_name.empty()) {
+    video_device_name_ = string_to_wstring(config_.video_device_name);
   }
   status = CreateVideoSource();
   if (status) {
@@ -104,16 +106,13 @@ int WebmEncoderImpl::Init(const WebmEncoderSettings& settings) {
     DBGLOG("ConnectVideoSourceToVpxEncoder failed: " << status);
     return WebmEncoder::kVideoEncoderError;
   }
-  keyframe_interval_ = settings.keyframe_interval;
   status = ConfigureVpxEncoder();
   if (status) {
     DBGLOG("ConfigureVpxEncoder failed: " << status);
     return WebmEncoder::kVideoEncoderError;
   }
-  if (!settings.audio_device_name.empty()) {
-    std::wostringstream audio_device_name;
-    audio_device_name << settings.audio_device_name.c_str();
-    audio_device_name_ = audio_device_name.str();
+  if (!config.audio_device_name.empty()) {
+    audio_device_name_ = string_to_wstring(config_.audio_device_name);
   }
   status = CreateAudioSource();
   if (status) {
@@ -140,7 +139,7 @@ int WebmEncoderImpl::Init(const WebmEncoderSettings& settings) {
     DBGLOG("ConnectEncodersToWebmMuxer failed: " << status);
     return WebmEncoder::kWebmMuxerError;
   }
-  out_file_name_ = settings.output_file_name;
+  out_file_name_ = config.output_file_name;
   status = CreateFileWriter();
   if (status) {
     DBGLOG("CreateFileWriter failed: " << status);
@@ -335,7 +334,6 @@ int WebmEncoderImpl::ConfigureVpxEncoder() {
     DBGLOG("ERROR: cannot create VP8 encoder interface.");
     return kCannotConfigureVpxEncoder;
   }
-  // TODO(tomfinegan): Extend user VP8 encoder settings.
   // Set minimal defaults for a live encode...
   HRESULT hr = vp8_config->SetDeadline(kDeadlineRealtime);
   if (FAILED(hr)) {
@@ -347,7 +345,8 @@ int WebmEncoderImpl::ConfigureVpxEncoder() {
     DBGLOG("ERROR: cannot set VP8 encoder bitrate mode." << HRLOG(hr));
     return kVpxConfigureError;
   }
-  hr = vp8_config->SetTargetBitrate(kVpxEncoderBitrate);
+  const WebmEncoderConfig::VpxConfig& config = config_.vpx_config;
+  hr = vp8_config->SetTargetBitrate(config.bitrate);
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot set VP8 encoder bitrate." << HRLOG(hr));
     return kVpxConfigureError;
@@ -359,11 +358,42 @@ int WebmEncoderImpl::ConfigureVpxEncoder() {
     return kVpxConfigureError;
   }
   const REFERENCE_TIME keyframe_interval =
-      seconds_to_media_time(keyframe_interval_);
+      seconds_to_media_time(config.keyframe_interval);
   hr = vp8_config->SetFixedKeyframeInterval(keyframe_interval);
   if (FAILED(hr)) {
     DBGLOG("ERROR: cannot set VP8 keyframe interval." << HRLOG(hr));
     return kVpxConfigureError;
+  }
+  hr = vp8_config->SetMinQuantizer(config.min_quantizer);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set VP8 min quantizer value." << HRLOG(hr));
+    return kVpxConfigureError;
+  }
+  hr = vp8_config->SetMaxQuantizer(config.max_quantizer);
+  if (FAILED(hr)) {
+    DBGLOG("ERROR: cannot set VP8 max quantizer value." << HRLOG(hr));
+    return kVpxConfigureError;
+  }
+  if (config.speed != kUseEncoderDefault) {
+    hr = vp8_config->SetCPUUsed(config.speed);
+    if (FAILED(hr)) {
+      DBGLOG("ERROR: cannot set VP8 speed (CPU used) value." << HRLOG(hr));
+      return kVpxConfigureError;
+    }
+  }
+  if (config.static_threshold != kUseEncoderDefault) {
+    hr = vp8_config->SetStaticThreshold(config.static_threshold);
+    if (FAILED(hr)) {
+      DBGLOG("ERROR: cannot set VP8 static threshold value." << HRLOG(hr));
+      return kVpxConfigureError;
+    }
+  }
+  if (config.thread_count != kUseEncoderDefault) {
+    hr = vp8_config->SetThreadCount(config.thread_count);
+    if (FAILED(hr)) {
+      DBGLOG("ERROR: cannot set VP8 thread count." << HRLOG(hr));
+      return kVpxConfigureError;
+    }
   }
   return kSuccess;
 }
