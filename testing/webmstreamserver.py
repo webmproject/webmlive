@@ -17,23 +17,39 @@ FILENAME = 'test.webm'
 class WebMStreamServer(BaseHTTPRequestHandler):
   def do_POST(self):
     try:
+      print "%s %s" % (self.command, self.path)
+      print self.headers
+
       ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
-      print ctype
-      print pdict
-      query = cgi.parse_multipart(self.rfile, pdict)
-      upfilecontent = query.get('webm_file')
       self.file = file(FILENAME, 'ab')
-      self.file.write(upfilecontent[0])
+      if ctype == 'multipart/form-data':
+        query = cgi.parse_multipart(self.rfile, pdict)
+        upfilecontent = query.get('webm_file')
+        self.file.write(upfilecontent[0])
+        self.send_response(200)
+        self.wfile.write('Post OK')
+      elif ctype == 'video/webm':
+        length = int(self.headers['content-length'])
+        if length > 0:
+          self.file.write(self.rfile.read(length))
+          self.send_response(200)
+          self.wfile.write('Post OK')
+        else:
+          print 'post has 0 content-length (or is missing field)!'
+          self.send_response(400)
+          self.wfile.write('bad/missing content-length')
+      else:
+        print 'unsupported content-type, cannot handle POST!'
+        self.send_response(500)
+        self.wfile.write('Unsupported content-type')
+
       self.file.close()
-      self.send_response(301)
-      self.wfile.write('Post Ok!')
       self.end_headers()
     except:
       pass
 
 
 def main():
-  # TODO(hwasoo) : to consider if there is a new connection.  
   try:
     if os.path.exists(FILENAME):
      print "removed " + FILENAME
