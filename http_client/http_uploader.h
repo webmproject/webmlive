@@ -16,6 +16,11 @@
 
 namespace webmlive {
 
+enum UploadMode {
+  HTTP_POST = 0,
+  HTTP_FORM_POST = 1,
+};
+
 struct HttpUploaderSettings {
   // Form variables and HTTP headers are stored within
   // map<std::string,std::string>.
@@ -32,6 +37,8 @@ struct HttpUploaderSettings {
   std::string stream_name;
   // Data stream ID.
   std::string stream_id;
+  // Post mode
+  UploadMode post_mode;
 };
 
 struct HttpUploaderStats {

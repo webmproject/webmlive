@@ -30,8 +30,10 @@
 
 namespace webmlive {
 
-static const char* kContentType = "video/webm";
+static const char* kExpectHeader = "Expect:";
+static const char* kContentTypeHeader = "Content-Type: video/webm";
 static const char* kFormName = "webm_file";
+static const char* kWebmMimeType = "video/webm";
 static const int kUnknownFileSize = -1;
 static const int kBytesRequiredForResume = 32*1024;
 
@@ -75,8 +77,11 @@ class HttpUploaderImpl {
   CURLcode SetCurlCallbacks();
   // Pass user HTTP headers to libcurl, and disable HTTP 100 responses.
   CURLcode SetHeaders();
-  // Passes user data |upload_buffer_| and form variables to libcurl.
+  // Configures libcurl to POST data buffers as file data in a form/multipart
+  // HTTP POST.
   int SetupFormPost(const uint8* const ptr_buffer, int32 length);
+  // Configures libcurl to POST data buffers as HTTP POST content-data.
+  int SetupPost(const uint8* const ptr_buffer, int32 length);
   // Upload user data with libcurl.
   int Upload();
   // Wakes up |UploadThread| when users pass data through |UploadBuffer|.
@@ -397,9 +402,13 @@ CURLcode HttpUploaderImpl::SetCurlCallbacks() {
 // Disable HTTP 100 responses (send empty Expect header), and pass user HTTP
 // headers into lib curl.
 CURLcode HttpUploaderImpl::SetHeaders() {
-  // Disable HTTP 100 with an empty Expect header
-  std::string expect_header = "Expect:";
-  ptr_headers_ = curl_slist_append(ptr_headers_, expect_header.c_str());
+  // Tell libcurl to omit "Expect: 100-continue" from requests
+  ptr_headers_ = curl_slist_append(ptr_headers_, kExpectHeader);
+  if (settings_.post_mode == webmlive::HTTP_POST) {
+    // In form posts the video/webm mime-type is included in the form itself,
+    // but in plain old HTTP posts the Content-Type must be video/webm.
+    ptr_headers_ = curl_slist_append(ptr_headers_, kContentTypeHeader);
+  }
   typedef std::map<std::string, std::string> StringMap;
   StringMap::const_iterator header_iter = settings_.headers.begin();
   // add user headers
@@ -415,8 +424,8 @@ CURLcode HttpUploaderImpl::SetHeaders() {
   return err;
 }
 
-// Set necessary curl options for form based file upload, and add the user form
-// variables.
+// Sets necessary curl options for form based file upload, and adds the user
+// form variables.
 int HttpUploaderImpl::SetupFormPost(const uint8* const ptr_buffer,
                                     int32 length) {
   if (ptr_form_) {
@@ -444,7 +453,7 @@ int HttpUploaderImpl::SetupFormPost(const uint8* const ptr_buffer,
                      CURLFORM_BUFFER, local_file_name_.c_str(),
                      CURLFORM_BUFFERPTR, ptr_buffer,
                      CURLFORM_BUFFERLENGTH, length,
-                     CURLFORM_CONTENTTYPE, kContentType,
+                     CURLFORM_CONTENTTYPE, kWebmMimeType,
                      CURLFORM_END);
   if (err != CURL_FORMADD_OK) {
     LOG_CURLFORM_ERR(err, "curl_formadd CURLFORM_FILE failed.");
@@ -455,6 +464,30 @@ int HttpUploaderImpl::SetupFormPost(const uint8* const ptr_buffer,
                                          ptr_form_);
   if (err_setopt != CURLE_OK) {
     LOG_CURL_ERR(err_setopt, "setopt CURLOPT_HTTPPOST failed.");
+    return err_setopt;
+  }
+  return kSuccess;
+}
+
+// Configures libcurl to POST data buffers as HTTP POST content-data.
+int HttpUploaderImpl::SetupPost(const uint8* const ptr_buffer, int32 length) {
+  CURLcode err_setopt = curl_easy_setopt(ptr_curl_, CURLOPT_POST, ptr_form_);
+  if (err_setopt != CURLE_OK) {
+    LOG_CURL_ERR(err_setopt, "setopt CURLOPT_HTTPPOST failed.");
+    return err_setopt;
+  }
+  // Pass |ptr_buffer| to libcurl; it's used in the call to |curl_easy_perform|
+  err_setopt = curl_easy_setopt(ptr_curl_, CURLOPT_POSTFIELDS, ptr_buffer);
+  if (err_setopt != CURLE_OK) {
+    LOG_CURL_ERR(err_setopt, "setopt CURLOPT_POSTFIELDS failed.");
+    return err_setopt;
+  }
+  // Tell libcurl the size of |ptr_buffer|.  If libcurl is not informed of the
+  // size before the call to |curl_easy_perform|, it will use strlen to
+  // determine the length of the data.
+  err_setopt = curl_easy_setopt(ptr_curl_, CURLOPT_POSTFIELDSIZE, length);
+  if (err_setopt != CURLE_OK) {
+    LOG_CURL_ERR(err_setopt, "setopt CURLOPT_POSTFIELDSIZE failed.");
     return err_setopt;
   }
   return kSuccess;
@@ -480,9 +513,16 @@ int HttpUploaderImpl::Upload() {
     LOG_CURL_ERR(err, "could not pass URL to curl.");
     return HttpUploader::kUrlConfigError;
   }
-  if (SetupFormPost(ptr_data, length)) {
-    DBGLOG("ERROR: SetUploadBuffer failed!");
-    return HttpUploader::kRunFailed;
+  if (settings_.post_mode == webmlive::HTTP_FORM_POST) {
+    if (SetupFormPost(ptr_data, length)) {
+      DBGLOG("ERROR: SetupFormPost failed!");
+      return HttpUploader::kRunFailed;
+    }
+  } else {
+    if (SetupPost(ptr_data, length)) {
+      DBGLOG("ERROR: SetupPost failed!");
+      return HttpUploader::kRunFailed;
+    }
   }
   err = curl_easy_perform(ptr_curl_);
   if (err != CURLE_OK) {

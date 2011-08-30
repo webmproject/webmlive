@@ -56,6 +56,8 @@ void usage(const char** argv) {
   printf("    -h | -? | --help               Show this message and exit.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
   printf("    --file <output file name>      Path to output WebM file.\n");
+  printf("    --form_post                    Send WebM chunks as file data\n");
+  printf("                                   in an form (a la RFC 1867).\n");
   printf("    --keyframe_interval <seconds>  Time between keyframes.\n");
   printf("    --stream_id <stream ID>        Stream ID to include in POST");
   printf("                                   query string.\n" );
@@ -96,6 +98,7 @@ void parse_command_line(int argc, const char** argv,
   StringVector unparsed_vars;
   webmlive::HttpUploaderSettings& uploader_settings = config.uploader_settings;
   webmlive::WebmEncoderSettings& encoder_settings = config.encoder_settings;
+  config.uploader_settings.post_mode = webmlive::HTTP_POST;
   encoder_settings.keyframe_interval = kDefaultKeyframeInterval;
   for (int i = 1; i < argc; ++i) {
     if (!strcmp("-h", argv[i]) || !strcmp("-?", argv[i]) ||
@@ -122,6 +125,8 @@ void parse_command_line(int argc, const char** argv,
       uploader_settings.stream_name = argv[++i];
     } else if (!strcmp("--stream_id", argv[i])) {
       uploader_settings.stream_id = argv[++i];
+    } else if (!strcmp("--form_post", argv[i])) {
+      uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
     }
   }
   // Store user HTTP headers.
