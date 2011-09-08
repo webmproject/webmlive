@@ -65,6 +65,10 @@ class WebmEncoderImpl;
 class WebmEncoder {
  public:
   enum {
+    // Encoder implementation unable to configure audio source.
+    kAudioConfigureError = -113,
+    // Encoder implementation unable to configure video source.
+    kVideoConfigureError = -112,
     // Encoder implementation unable to monitor encoder state.
     kEncodeMonitorError = -111,
     // Encoder implementation unable to control encoder.

@@ -96,6 +96,11 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
     DBGLOG("CreateVideoSource failed: " << status);
     return WebmEncoder::kNoVideoSource;
   }
+  status = ConfigureVideoSource();
+  if (status) {
+    DBGLOG("ConfigureVideoSource failed: " << status);
+    return WebmEncoder::kVideoConfigureError;
+  }
   status = CreateVpxEncoder();
   if (status) {
     DBGLOG("CreateVpxEncoder failed: " << status);
@@ -118,6 +123,11 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
   if (status) {
     DBGLOG("CreateAudioSource failed: " << status);
     return WebmEncoder::kNoAudioSource;
+  }
+  status = ConfigureAudioSource();
+  if (status) {
+    DBGLOG("ConfigureAudioSource failed: " << status);
+    return WebmEncoder::kAudioConfigureError;
   }
   status = CreateVorbisEncoder();
   if (status) {
@@ -275,6 +285,12 @@ int WebmEncoderImpl::CreateVideoSource() {
   return kSuccess;
 }
 
+int WebmEncoderImpl::ConfigureVideoSource() {
+  // TODO(tomfinegan): support configuration of webcams!
+  DBGLOG("Not implemented, patches welcome!");
+  return WebmEncoder::kSuccess;
+}
+
 // Creates the VP8 encoder filter and adds it to the graph.
 int WebmEncoderImpl::CreateVpxEncoder() {
   HRESULT hr = vpx_encoder_.CreateInstance(CLSID_VP8Encoder);
@@ -408,7 +424,7 @@ int WebmEncoderImpl::ConfigureVpxEncoder() {
 int WebmEncoderImpl::CreateAudioSource() {
   // Check for an audio pin on the video source.
   // TODO(tomfinegan): We assume that the user wants to use the audio feed
-  //                   exposed by the video capture source.  This behavior
+  //                   exposed by the video capture source. This behavior
   //                   should be configurable.
   PinFinder pin_finder;
   int status = pin_finder.Init(video_source_);
@@ -450,6 +466,12 @@ int WebmEncoderImpl::CreateAudioSource() {
   }
   // TODO(tomfinegan): set audio format instead of hoping for sane defaults.
   return kSuccess;
+}
+
+int WebmEncoderImpl::ConfigureAudioSource() {
+  // TODO(tomfinegan): support configuration of soundcards/webcams!
+  DBGLOG("Not implemented, patches welcome!");
+  return WebmEncoder::kSuccess;
 }
 
 // Creates an instance of the Xiph.org Vorbis encoder filter, and adds it to

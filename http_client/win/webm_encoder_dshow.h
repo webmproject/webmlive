@@ -142,16 +142,22 @@ class WebmEncoderImpl {
   bool StopRequested();
   // Creates filter graph and graph builder interfaces.
   int CreateGraph();
-  // Loads first available video capture source and adds it to the graph.
+  // Creates video capture source filter instance and adds it to the graph.
   int CreateVideoSource();
-  // Loads the VP8 encoder and adds it to the graph.
+  // Configures the video capture source.
+  int ConfigureVideoSource();
+  // Creates VP8 encoder filter instance and adds it to the graph.
   int CreateVpxEncoder();
   // Connects video source to VP8 encoder.
   int ConnectVideoSourceToVpxEncoder();
   // Configures |vpx_encoder_|.
   int ConfigureVpxEncoder();
-  // Loads first available audio capture source and adds it to the graph.
+  // Copies |video_source_| to |audio_source_| if |video_source_| has an audio
+  // output pin, or creates an audio capture source filter instance and adds
+  // it to the graph.
   int CreateAudioSource();
+  // Configures the audio capture source.
+  int ConfigureAudioSource();
   // Loads the Vorbis encoder and adds it to the graph.
   int CreateVorbisEncoder();
   // Connects audio source to Vorbis encoder.
