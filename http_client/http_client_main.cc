@@ -58,12 +58,14 @@ void usage(const char** argv) {
   printf("    --file <output file name>      Path to output WebM file.\n");
   printf("    --form_post                    Send WebM chunks as file data\n");
   printf("                                   in an form (a la RFC 1867).\n");
-  printf("    --stream_id <stream ID>        Stream ID to include in POST");
+  printf("    --stream_id <stream ID>        Stream ID to include in POST\n");
   printf("                                   query string.\n" );
-  printf("    --stream_name <stream name>    Stream name to include in POST");
+  printf("    --stream_name <stream name>    Stream name to include in POST\n");
   printf("                                   query string.\n" );
   printf("    --url <target URL>             Target for HTTP Posts.\n");
   printf("    --vdev <video source name>     Video capture device name.\n");
+  printf("  Vorbis Encoder options:\n");
+  printf("    --vorbis_bitrate <kbps>            Audio bitrate.\n");
   printf("  VPX Encoder options:\n");
   printf("    --vpx_bitrate <kbps>               Video bitrate.\n");
   printf("    --vpx_keyframe_interval <seconds>  Time between keyframes.\n");
@@ -132,6 +134,9 @@ void parse_command_line(int argc, const char** argv,
       uploader_settings.stream_id = argv[++i];
     } else if (!strcmp("--form_post", argv[i])) {
       uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
+    } else if (!strcmp("--vorbis_bitrate", argv[i])) {
+      char* ptr_end;
+      enc_config.vorbis_bitrate = strtol(argv[++i], &ptr_end, 10);
     } else if (!strcmp("--vpx_keyframe_interval", argv[i])) {
       char* ptr_end;
       enc_config.vpx_config.keyframe_interval = strtod(argv[++i], &ptr_end);

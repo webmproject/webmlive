@@ -300,6 +300,22 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="oggdsf"
+				>
+				<File
+					RelativePath="..\third_party\oggdsf\IVorbisEncodeSettings.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\oggdsf\VorbisEncodeSettings.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\oggdsf\VorbisTypes.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

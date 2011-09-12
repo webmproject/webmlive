@@ -87,6 +87,10 @@ class WebmEncoderImpl {
  public:
   enum {
     // Internal status codes for the DirectShow encoder.
+    // Error configuring Vorbis encoder.
+    kVorbisConfigureError = -221,
+    // Unable to obtain Vorbis encoder configuration interface.
+    kCannotConfigureVorbisEncoder = -220,
     // Graph abort event received.
     kGraphAborted = -219,
     // Unable to configure the graph.
@@ -162,6 +166,8 @@ class WebmEncoderImpl {
   int CreateVorbisEncoder();
   // Connects audio source to Vorbis encoder.
   int ConnectAudioSourceToVorbisEncoder();
+  // Configures the xiph.org Vorbis encoder filter.
+  int ConfigureVorbisEncoder();
   // Loads the WebM muxer and adds it to the graph.
   int CreateWebmMuxer();
   // Connects VP8 and vorbis encoders to the WebM muxer.

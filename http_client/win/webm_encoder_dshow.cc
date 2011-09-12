@@ -8,11 +8,17 @@
 #include "win/webm_encoder_dshow.h"
 
 #include <dvdmedia.h>  // Needed for |VIDEOINFOHEADER2|.
+#include <initguid.h>  // MUST be included before VorbisTypes.h to avoid
+                       // undefined external error for
+                       // IID_VorbisEncodeSettings due to behavior of
+                       // DEFINE_GUID macro.
 #include <vfwmsgs.h>
 
 #include <sstream>
 
 #include "debug_util.h"
+#include "oggdsf/IVorbisEncodeSettings.h"
+#include "oggdsf/VorbisTypes.h"
 #include "webm_encoder.h"
 #include "webmdshow/common/hrtext.hpp"
 #include "webmdshow/IDL/vp8encoderidl.h"
@@ -137,6 +143,11 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
   status = ConnectAudioSourceToVorbisEncoder();
   if (status) {
     DBGLOG("ConnectAudioSourceToVorbisEncoder failed: " << status);
+    return WebmEncoder::kAudioEncoderError;
+  }
+  status = ConfigureVorbisEncoder();
+  if (status) {
+    DBGLOG("ConfigureVorbisEncoder failed: " << status);
     return WebmEncoder::kAudioEncoderError;
   }
   status = CreateWebmMuxer();
@@ -522,6 +533,26 @@ int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder() {
     DBGLOG("ERROR: cannot connect audio source to Vorbis encoder."
            << HRLOG(hr));
     return kAudioConnectError;
+  }
+  return kSuccess;
+}
+
+// Obtains vorbis encoder configuration interface and applies user settings.
+int WebmEncoderImpl::ConfigureVorbisEncoder() {
+  // At present only vorbis audio bitrate configuration is exposed; do nothing
+  // and return kSuccess if the user has not specified a bitrate.
+  if (config_.vorbis_bitrate != kUseEncoderDefault) {
+    COMPTR_TYPEDEF(IVorbisEncodeSettings);
+    IVorbisEncodeSettingsPtr vorbis_config(vorbis_encoder_);
+    if (!vorbis_config) {
+      DBGLOG("ERROR: cannot create Vorbis encoder configuration interface.");
+      return kCannotConfigureVorbisEncoder;
+    }
+    HRESULT hr = vorbis_config->setBitrateQualityMode(config_.vorbis_bitrate);
+    if (FAILED(hr)) {
+      DBGLOG("ERROR: cannot set Vorbis encoder bitrate." << HRLOG(hr));
+      return kVorbisConfigureError;
+    }
   }
   return kSuccess;
 }

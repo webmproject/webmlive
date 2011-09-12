@@ -21,6 +21,7 @@ static const int kUseEncoderDefault = -200;
 
 // Defaults for live encodes.
 static const double kDefaultVpxKeyframeInterval = 1.0;
+static const int kDefaultVorbisBitrate = kUseEncoderDefault;
 static const int kDefaultVpxBitrate = 500;
 static const int kDefaultVpxMinQ = 10;
 static const int kDefaultVpxMaxQ = 46;
@@ -48,6 +49,8 @@ struct WebmEncoderConfig {
     // Encoder thead count.
     int thread_count;
   };
+  // Vorbis encoder bitrate.
+  int vorbis_bitrate;
   // Output file name.
   std::string output_file_name;
   // Name of the audio device.  Leave empty to use system default.

@@ -51,6 +51,7 @@ double WebmEncoder::encoded_duration() {
 // Returns default |WebmEncoderConfig|.
 WebmEncoderConfig WebmEncoder::DefaultConfig() {
   WebmEncoderConfig c;
+  c.vorbis_bitrate = kDefaultVorbisBitrate;
   c.vpx_config.bitrate = kDefaultVpxBitrate;
   c.vpx_config.min_quantizer = kDefaultVpxMinQ;
   c.vpx_config.max_quantizer = kDefaultVpxMaxQ;
