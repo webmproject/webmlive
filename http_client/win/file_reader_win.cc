@@ -11,8 +11,8 @@
 
 #include <sstream>
 
-#include "debug_util.h"
 #include "file_util.h"
+#include "glog/logging.h"
 
 namespace webmlive {
 
@@ -26,12 +26,12 @@ FileReaderImpl::~FileReaderImpl() {
 // Confirm |file_path| string is non-empty and call |Open|.
 int FileReaderImpl::CreateFile(std::wstring file_path) {
   if (file_path.empty()) {
-    DBGLOG("ERROR: empty file_path");
+    LOG(ERROR) << "empty file_path";
     return kInvalidArg;
   }
   file_path_ = file_path;
   if (Open(kModeCreate)) {
-    DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
+    LOG(ERROR) << "could not open file, GetLastError=" << GetLastError();
     return kOpenFailed;
   }
   return kSuccess;
@@ -47,18 +47,19 @@ int FileReaderImpl::Read(size_t num_bytes, uint8* ptr_buffer,
   size_t& num_read = *ptr_num_read;
   int status = Open(kModeOpen);
   if (status) {
-    DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
+    LOG(ERROR) << "could not open file, GetLastError=" << GetLastError();
     return kOpenFailed;
   }
   if (GetBytesAvailable() > 0) {
     int err = ReadFromStream(num_bytes, ptr_buffer, num_read);
     if (err && err != FileReader::kAtEOF) {
-      DBGLOG("ERROR: could not read file, err=" << err);
+      LOG(ERROR) << "could not read file, err=" << err;
       return err;
     }
     bytes_read_ += num_read;
     if (num_bytes != num_read) {
-      //DBGLOG("shortfall! requested=" << num_bytes << " read=" << num_read);
+      VLOG(4) << "not enough data -- requested=" << num_bytes << " read="
+              << num_read;
       return kAtEOF;
     }
   }
@@ -76,25 +77,22 @@ int FileReaderImpl::Open(int mode) {
     ptr_mode = L"r+b";
   }
   if (!ptr_mode) {
-    DBGLOG("invalid mode specified");
+    LOG(ERROR) << "invalid mode specified";
     return kInvalidArg;
   }
   if (ptr_file_) {
-    //DBGLOG("closing");
     fclose(ptr_file_);
     ptr_file_ = NULL;
   }
-  //DBGLOG("opening, mode=" << ptr_mode);
   ptr_file_ = _wfsopen(file_path_.c_str(), ptr_mode, _SH_DENYNO);
   if (!ptr_file_) {
-    DBGLOG("ERROR: could not open file, GetLastError=" << GetLastError());
+    LOG(ERROR) << "could not open file, GetLastError=" << GetLastError();
     return kOpenFailed;
   }
   if (bytes_read_ > 0) {
     if (_fseeki64(ptr_file_, bytes_read_, SEEK_SET)) {
-      DBGLOG("ERROR: could not seek to read pos, GetLastError="
-             << GetLastError());
-      DBGLOG("closing");
+      LOG(ERROR) << "could not seek to read pos, GetLastError="
+                 << GetLastError();
       fclose(ptr_file_);
       ptr_file_ = NULL;
       return kSeekFailed;
@@ -116,7 +114,7 @@ int FileReaderImpl::ReadFromStream(size_t num_bytes, uint8* ptr_buffer,
     return kAtEOF;
   }
   if (ferror(ptr_file_)) {
-    DBGLOG("ERROR: ferror on read, GetLastError=" << GetLastError());
+    LOG(ERROR) << "ferror on read, GetLastError=" << GetLastError();
     return kReadFailed;
   }
   return kSuccess;
@@ -131,8 +129,8 @@ uint64 FileReaderImpl::GetBytesAvailable() {
   assert(offset == bytes_read_);
   int failed = _fseeki64(ptr_file_, 0, SEEK_END);
   if (failed) {
-    DBGLOG("ERROR: could not seek to end of file, GetLastError="
-           << GetLastError());
+    LOG(ERROR) << "could not seek to end of file, GetLastError="
+               << GetLastError();
     return 0;
   }
   int64 file_size = _ftelli64(ptr_file_);
@@ -141,8 +139,8 @@ uint64 FileReaderImpl::GetBytesAvailable() {
   }
   failed = _fseeki64(ptr_file_, offset, SEEK_SET);
   if (failed) {
-    DBGLOG("ERROR: could not seek to read pos, GetLastError="
-           << GetLastError());
+    LOG(ERROR) << "could not seek to read pos, GetLastError="
+               << GetLastError();
     return 0;
   }
   return available;

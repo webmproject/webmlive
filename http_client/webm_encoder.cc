@@ -10,7 +10,7 @@
 #include <cstdio>
 #include <sstream>
 
-#include "debug_util.h"
+#include "glog/logging.h"
 #ifdef _WIN32
 #include "win/webm_encoder_dshow.h"
 #endif
@@ -27,7 +27,7 @@ WebmEncoder::~WebmEncoder() {
 int WebmEncoder::Init(const WebmEncoderConfig& config) {
   ptr_encoder_.reset(new (std::nothrow) WebmEncoderImpl());
   if (!ptr_encoder_) {
-    DBGLOG("ERROR: cannot construct WebmEncoderImpl.");
+    LOG(ERROR) << "cannot construct encoder instance!";
     return kInitFailed;
   }
   return ptr_encoder_->Init(config);

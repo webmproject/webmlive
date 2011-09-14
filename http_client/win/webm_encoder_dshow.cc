@@ -17,6 +17,7 @@
 #include <sstream>
 
 #include "debug_util.h"
+#include "glog/logging.h"
 #include "oggdsf/IVorbisEncodeSettings.h"
 #include "oggdsf/VorbisTypes.h"
 #include "webm_encoder.h"
@@ -86,12 +87,12 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
   config_ = config;
   const HRESULT hr = CoInitialize(NULL);
   if (FAILED(hr)) {
-    DBGLOG("CoInitialize failed: " << HRLOG(hr));
+    LOG(ERROR) << "CoInitialize failed: " << HRLOG(hr);
     return WebmEncoder::kInitFailed;
   }
   int status = CreateGraph();
   if (status) {
-    DBGLOG("CreateGraphInterfaces failed: " << status);
+    LOG(ERROR) << "CreateGraphInterfaces failed: " << status;
     return WebmEncoder::kInitFailed;
   }
   if (!config.video_device_name.empty()) {
@@ -99,27 +100,27 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
   }
   status = CreateVideoSource();
   if (status) {
-    DBGLOG("CreateVideoSource failed: " << status);
+    LOG(ERROR) << "CreateVideoSource failed: " << status;
     return WebmEncoder::kNoVideoSource;
   }
   status = ConfigureVideoSource();
   if (status) {
-    DBGLOG("ConfigureVideoSource failed: " << status);
+    LOG(ERROR) << "ConfigureVideoSource failed: " << status;
     return WebmEncoder::kVideoConfigureError;
   }
   status = CreateVpxEncoder();
   if (status) {
-    DBGLOG("CreateVpxEncoder failed: " << status);
+    LOG(ERROR) << "CreateVpxEncoder failed: " << status;
     return WebmEncoder::kVideoEncoderError;
   }
   status = ConnectVideoSourceToVpxEncoder();
   if (status) {
-    DBGLOG("ConnectVideoSourceToVpxEncoder failed: " << status);
+    LOG(ERROR) << "ConnectVideoSourceToVpxEncoder failed: " << status;
     return WebmEncoder::kVideoEncoderError;
   }
   status = ConfigureVpxEncoder();
   if (status) {
-    DBGLOG("ConfigureVpxEncoder failed: " << status);
+    LOG(ERROR) << "ConfigureVpxEncoder failed: " << status;
     return WebmEncoder::kVideoEncoderError;
   }
   if (!config.audio_device_name.empty()) {
@@ -127,48 +128,48 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
   }
   status = CreateAudioSource();
   if (status) {
-    DBGLOG("CreateAudioSource failed: " << status);
+    LOG(ERROR) << "CreateAudioSource failed: " << status;
     return WebmEncoder::kNoAudioSource;
   }
   status = ConfigureAudioSource();
   if (status) {
-    DBGLOG("ConfigureAudioSource failed: " << status);
+    LOG(ERROR) << "ConfigureAudioSource failed: " << status;
     return WebmEncoder::kAudioConfigureError;
   }
   status = CreateVorbisEncoder();
   if (status) {
-    DBGLOG("CreateVorbisEncoder failed: " << status);
+    LOG(ERROR) << "CreateVorbisEncoder failed: " << status;
     return WebmEncoder::kAudioEncoderError;
   }
   status = ConnectAudioSourceToVorbisEncoder();
   if (status) {
-    DBGLOG("ConnectAudioSourceToVorbisEncoder failed: " << status);
+    LOG(ERROR) << "ConnectAudioSourceToVorbisEncoder failed: " << status;
     return WebmEncoder::kAudioEncoderError;
   }
   status = ConfigureVorbisEncoder();
   if (status) {
-    DBGLOG("ConfigureVorbisEncoder failed: " << status);
+    LOG(ERROR) << "ConfigureVorbisEncoder failed: " << status;
     return WebmEncoder::kAudioEncoderError;
   }
   status = CreateWebmMuxer();
   if (status) {
-    DBGLOG("CreateWebmMuxer failed: " << status);
+    LOG(ERROR) << "CreateWebmMuxer failed: " << status;
     return WebmEncoder::kWebmMuxerError;
   }
   status = ConnectEncodersToWebmMuxer();
   if (status) {
-    DBGLOG("ConnectEncodersToWebmMuxer failed: " << status);
+    LOG(ERROR) << "ConnectEncodersToWebmMuxer failed: " << status;
     return WebmEncoder::kWebmMuxerError;
   }
   out_file_name_ = config.output_file_name;
   status = CreateFileWriter();
   if (status) {
-    DBGLOG("CreateFileWriter failed: " << status);
+    LOG(ERROR) << "CreateFileWriter failed: " << status;
     return WebmEncoder::kFileWriteError;
   }
   status = ConnectWebmMuxerToFileWriter();
   if (status) {
-    DBGLOG("ConnectWebmMuxerToFileWriter failed: " << status);
+    LOG(ERROR) << "ConnectWebmMuxerToFileWriter failed: " << status;
     return WebmEncoder::kFileWriteError;
   }
   return kSuccess;
@@ -181,28 +182,28 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
 // Then starts the encoder thread.
 int WebmEncoderImpl::Run() {
   if (encode_thread_) {
-    DBGLOG("ERROR: non-null encode thread. Already running?");
+    LOG(ERROR) << "non-null encode thread. Already running?";
     return WebmEncoder::kRunFailed;
   }
   media_control_ = IMediaControlPtr(graph_builder_);
   if (!media_control_) {
-    DBGLOG("ERROR: cannot create media control.");
+    LOG(ERROR) << "cannot create media control.";
     return WebmEncoder::kEncodeControlError;
   }
   media_event_ = IMediaEventPtr(graph_builder_);
   if (!media_event_) {
-    DBGLOG("ERROR: cannot create media event.");
+    LOG(ERROR) << "cannot create media event.";
     return WebmEncoder::kEncodeMonitorError;
   }
   OAEVENT* const ptr_handle = reinterpret_cast<OAEVENT*>(&media_event_handle_);
   const HRESULT hr = media_event_->GetEventHandle(ptr_handle);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: could not media event handle!" << HRLOG(hr));
+    LOG(ERROR) << "could not media event handle!" << HRLOG(hr);
     return WebmEncoder::kEncodeMonitorError;
   }
   media_seeking_ = IMediaSeekingPtr(graph_builder_);
   if (!media_seeking_) {
-    DBGLOG("ERROR: cannot create media seeking interface.");
+    LOG(ERROR) << "cannot create media seeking interface.";
     return WebmEncoder::kEncodeMonitorError;
   }
   using boost::bind;
@@ -248,17 +249,17 @@ bool WebmEncoderImpl::StopRequested() {
 int WebmEncoderImpl::CreateGraph() {
   HRESULT hr = graph_builder_.CreateInstance(CLSID_FilterGraph);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: graph builder creation failed." << HRLOG(hr));
+    LOG(ERROR) << "graph builder creation failed." << HRLOG(hr);
     return kCannotCreateGraph;
   }
   hr = capture_graph_builder_.CreateInstance(CLSID_CaptureGraphBuilder2);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: capture graph builder creation failed." << HRLOG(hr));
+    LOG(ERROR) << "capture graph builder creation failed." << HRLOG(hr);
     return kCannotCreateGraph;
   }
   hr = capture_graph_builder_->SetFiltergraph(graph_builder_);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: could not set capture builder graph." << HRLOG(hr));
+    LOG(ERROR) << "could not set capture builder graph." << HRLOG(hr);
     return kGraphConfigureError;
   }
   return kSuccess;
@@ -271,11 +272,11 @@ int WebmEncoderImpl::CreateVideoSource() {
   CaptureSourceLoader loader;
   int status = loader.Init(CLSID_VideoInputDeviceCategory);
   if (status) {
-    DBGLOG("ERROR: no video source!");
+    LOG(ERROR) << "no video source!";
     return WebmEncoder::kNoVideoSource;
   }
   for (int i = 0; i < loader.GetNumSources(); ++i) {
-    DBGLOG("[" << i+1 << "] " << loader.GetSourceName(i).c_str());
+    LOG(INFO) << "vdev" << i << ": " << loader.GetSourceName(i).c_str();
   }
   if (video_device_name_.empty()) {
     video_source_ = loader.GetSource(0);
@@ -283,13 +284,13 @@ int WebmEncoderImpl::CreateVideoSource() {
     video_source_ = loader.GetSource(video_device_name_);
   }
   if (!video_source_) {
-    DBGLOG("ERROR: cannot create video source!");
+    LOG(ERROR) << "cannot create video source!";
     return WebmEncoder::kNoVideoSource;
   }
   const HRESULT hr = graph_builder_->AddFilter(video_source_,
                                                kVideoSourceName);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot add video source to graph." << HRLOG(hr));
+    LOG(ERROR) << "cannot add video source to graph." << HRLOG(hr);
     return kCannotAddFilter;
   }
   // TODO(tomfinegan): set video format instead of hoping for sane defaults.
@@ -298,7 +299,7 @@ int WebmEncoderImpl::CreateVideoSource() {
 
 int WebmEncoderImpl::ConfigureVideoSource() {
   // TODO(tomfinegan): support configuration of webcams!
-  DBGLOG("Not implemented, patches welcome!");
+  LOG(WARNING) << __FUNCTION__" not implemented, patches welcome!";
   return WebmEncoder::kSuccess;
 }
 
@@ -306,12 +307,12 @@ int WebmEncoderImpl::ConfigureVideoSource() {
 int WebmEncoderImpl::CreateVpxEncoder() {
   HRESULT hr = vpx_encoder_.CreateInstance(CLSID_VP8Encoder);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: VP8 encoder creation failed." << HRLOG(hr));
+    LOG(ERROR) << "VP8 encoder creation failed." << HRLOG(hr);
     return kCannotCreateVpxEncoder;
   }
   hr = graph_builder_->AddFilter(vpx_encoder_, kVpxEncoderName);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot add VP8 encoder to graph." << HRLOG(hr));
+    LOG(ERROR) << "cannot add VP8 encoder to graph." << HRLOG(hr);
     return kCannotAddFilter;
   }
   return kSuccess;
@@ -323,22 +324,22 @@ int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
   PinFinder pin_finder;
   int status = pin_finder.Init(video_source_);
   if (status) {
-    DBGLOG("ERROR: cannot look for pins on video source!");
+    LOG(ERROR) << "cannot look for pins on video source!";
     return kVideoConnectError;
   }
   IPinPtr video_src_pin = pin_finder.FindVideoOutputPin(0);
   if (!video_src_pin) {
-    DBGLOG("ERROR: cannot find output pin on video source!");
+    LOG(ERROR) << "cannot find output pin on video source!";
     return kVideoConnectError;
   }
   status = pin_finder.Init(vpx_encoder_);
   if (status) {
-    DBGLOG("ERROR: cannot look for pins on video source!");
+    LOG(ERROR) << "cannot look for pins on video source!";
     return kVideoConnectError;
   }
   IPinPtr vpx_input_pin = pin_finder.FindVideoInputPin(0);
   if (!vpx_input_pin) {
-    DBGLOG("ERROR: cannot find video input pin on VP8 encoder!");
+    LOG(ERROR) << "cannot find video input pin on VP8 encoder!";
     return kVideoConnectError;
   }
   // TODO(tomfinegan): Add WebM Color Conversion filter when |ConnectDirect|
@@ -347,7 +348,7 @@ int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
                                                    vpx_input_pin,
                                                    NULL);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot connect video source to VP8 encoder." << HRLOG(hr));
+    LOG(ERROR) << "cannot connect video source to VP8 encoder." << HRLOG(hr);
     return kVideoConnectError;
   }
   return kSuccess;
@@ -358,81 +359,81 @@ int WebmEncoderImpl::ConfigureVpxEncoder() {
   _COM_SMARTPTR_TYPEDEF(IVP8Encoder, __uuidof(IVP8Encoder));
   IVP8EncoderPtr vp8_config(vpx_encoder_);
   if (!vp8_config) {
-    DBGLOG("ERROR: cannot create VP8 encoder interface.");
+    LOG(ERROR) << "cannot create VP8 encoder interface.";
     return kCannotConfigureVpxEncoder;
   }
   // Set minimal defaults for a live encode...
   HRESULT hr = vp8_config->SetDeadline(kDeadlineRealtime);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set VP8 encoder deadline." << HRLOG(hr));
+    LOG(ERROR) << "cannot set VP8 encoder deadline." << HRLOG(hr);
     return kVpxConfigureError;
   }
   hr = vp8_config->SetEndUsage(kEndUsageCBR);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set VP8 encoder bitrate mode." << HRLOG(hr));
+    LOG(ERROR) << "cannot set VP8 encoder bitrate mode." << HRLOG(hr);
     return kVpxConfigureError;
   }
   const WebmEncoderConfig::VpxConfig& config = config_.vpx_config;
   hr = vp8_config->SetTargetBitrate(config.bitrate);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set VP8 encoder bitrate." << HRLOG(hr));
+    LOG(ERROR) << "cannot set VP8 encoder bitrate." << HRLOG(hr);
     return kVpxConfigureError;
   }
   // Set keyframe interval.
   hr = vp8_config->SetKeyframeMode(kKeyframeModeDisabled);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set VP8 keyframe mode." << HRLOG(hr));
+    LOG(ERROR) << "cannot set VP8 keyframe mode." << HRLOG(hr);
     return kVpxConfigureError;
   }
   const REFERENCE_TIME keyframe_interval =
       seconds_to_media_time(config.keyframe_interval);
   hr = vp8_config->SetFixedKeyframeInterval(keyframe_interval);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set VP8 keyframe interval." << HRLOG(hr));
+    LOG(ERROR) << "cannot set VP8 keyframe interval." << HRLOG(hr);
     return kVpxConfigureError;
   }
   hr = vp8_config->SetMinQuantizer(config.min_quantizer);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set VP8 min quantizer value." << HRLOG(hr));
+    LOG(ERROR) << "cannot set VP8 min quantizer value." << HRLOG(hr);
     return kVpxConfigureError;
   }
   hr = vp8_config->SetMaxQuantizer(config.max_quantizer);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set VP8 max quantizer value." << HRLOG(hr));
+    LOG(ERROR) << "cannot set VP8 max quantizer value." << HRLOG(hr);
     return kVpxConfigureError;
   }
   if (config.speed != kUseEncoderDefault) {
     hr = vp8_config->SetCPUUsed(config.speed);
     if (FAILED(hr)) {
-      DBGLOG("ERROR: cannot set VP8 speed (CPU used) value." << HRLOG(hr));
+      LOG(ERROR) << "cannot set VP8 speed (CPU used) value." << HRLOG(hr);
       return kVpxConfigureError;
     }
   }
   if (config.static_threshold != kUseEncoderDefault) {
     hr = vp8_config->SetStaticThreshold(config.static_threshold);
     if (FAILED(hr)) {
-      DBGLOG("ERROR: cannot set VP8 static threshold value." << HRLOG(hr));
+      LOG(ERROR) << "cannot set VP8 static threshold value." << HRLOG(hr);
       return kVpxConfigureError;
     }
   }
   if (config.thread_count != kUseEncoderDefault) {
     hr = vp8_config->SetThreadCount(config.thread_count);
     if (FAILED(hr)) {
-      DBGLOG("ERROR: cannot set VP8 thread count." << HRLOG(hr));
+      LOG(ERROR) << "cannot set VP8 thread count." << HRLOG(hr);
       return kVpxConfigureError;
     }
   }
   if (config.token_partitions != kUseEncoderDefault) {
     hr = vp8_config->SetTokenPartitions(config.token_partitions);
     if (FAILED(hr)) {
-      DBGLOG("ERROR: cannot set VP8 token partition count." << HRLOG(hr));
+      LOG(ERROR) << "cannot set VP8 token partition count." << HRLOG(hr);
       return kVpxConfigureError;
     }
   }
   if (config.undershoot != kUseEncoderDefault) {
     hr = vp8_config->SetUndershootPct(config.undershoot);
     if (FAILED(hr)) {
-      DBGLOG("ERROR: cannot set VP8 undershoot percentage." << HRLOG(hr));
+      LOG(ERROR) << "cannot set VP8 undershoot percentage." << HRLOG(hr);
       return kVpxConfigureError;
     }
   }
@@ -454,12 +455,12 @@ int WebmEncoderImpl::CreateAudioSource() {
   PinFinder pin_finder;
   int status = pin_finder.Init(video_source_);
   if (status) {
-    DBGLOG("ERROR: cannot check video source for audio pins!");
+    LOG(ERROR) << "cannot check video source for audio pins!";
     return WebmEncoder::kInitFailed;
   }
   if (pin_finder.FindAudioOutputPin(0)) {
     // Use the video source filter audio output pin.
-    DBGLOG("Using video source filter audio output pin.");
+    LOG(ERROR) << "Using video source filter audio output pin.";
     audio_source_ = video_source_;
   } else {
     // The video source doesn't have an audio output pin. Find an audio
@@ -467,11 +468,11 @@ int WebmEncoderImpl::CreateAudioSource() {
     CaptureSourceLoader loader;
     status = loader.Init(CLSID_AudioInputDeviceCategory);
     if (status) {
-      DBGLOG("ERROR: no audio source!");
+      LOG(ERROR) << "no audio source!";
       return WebmEncoder::kNoAudioSource;
     }
     for (int i = 0; i < loader.GetNumSources(); ++i) {
-      DBGLOG("[" << i+1 << "] " << loader.GetSourceName(i).c_str());
+      LOG(INFO) << "adev" << i << ": " << loader.GetSourceName(i).c_str();
     }
     if (audio_device_name_.empty()) {
       audio_source_ = loader.GetSource(0);
@@ -479,13 +480,13 @@ int WebmEncoderImpl::CreateAudioSource() {
       audio_source_ = loader.GetSource(audio_device_name_);
     }
     if (!audio_source_) {
-      DBGLOG("ERROR: cannot create audio source!");
+      LOG(ERROR) << "cannot create audio source!";
       return WebmEncoder::kNoAudioSource;
     }
     const HRESULT hr = graph_builder_->AddFilter(audio_source_,
                                                  kAudioSourceName);
     if (FAILED(hr)) {
-      DBGLOG("ERROR: cannot add audio source to graph." << HRLOG(hr));
+      LOG(ERROR) << "cannot add audio source to graph." << HRLOG(hr);
       return kCannotAddFilter;
     }
   }
@@ -495,7 +496,7 @@ int WebmEncoderImpl::CreateAudioSource() {
 
 int WebmEncoderImpl::ConfigureAudioSource() {
   // TODO(tomfinegan): support configuration of soundcards/webcams!
-  DBGLOG("Not implemented, patches welcome!");
+  LOG(WARNING) << __FUNCTION__" not implemented, patches welcome!";
   return WebmEncoder::kSuccess;
 }
 
@@ -504,12 +505,12 @@ int WebmEncoderImpl::ConfigureAudioSource() {
 int WebmEncoderImpl::CreateVorbisEncoder() {
   HRESULT hr = vorbis_encoder_.CreateInstance(CLSID_VorbisEncoder);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: Vorbis encoder creation failed." << HRLOG(hr));
+    LOG(ERROR) << "Vorbis encoder creation failed." << HRLOG(hr);
     return kCannotCreateVorbisEncoder;
   }
   hr = graph_builder_->AddFilter(vorbis_encoder_, kVorbisEncoderName);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot add Vorbis encoder to graph." << HRLOG(hr));
+    LOG(ERROR) << "cannot add Vorbis encoder to graph." << HRLOG(hr);
     return kCannotAddFilter;
   }
   // TODO(tomfinegan): add Vorbis encoder configuration.
@@ -522,30 +523,30 @@ int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder() {
   PinFinder pin_finder;
   int status = pin_finder.Init(audio_source_);
   if (status) {
-    DBGLOG("ERROR: cannot look for pins on audio source!");
+    LOG(ERROR) << "cannot look for pins on audio source!";
     return kAudioConnectError;
   }
   IPinPtr audio_src_pin = pin_finder.FindAudioOutputPin(0);
   if (!audio_src_pin) {
-    DBGLOG("ERROR: cannot find output pin on audio source!");
+    LOG(ERROR) << "cannot find output pin on audio source!";
     return kAudioConnectError;
   }
   status = pin_finder.Init(vorbis_encoder_);
   if (status) {
-    DBGLOG("ERROR: cannot look for pins on video source!");
+    LOG(ERROR) << "cannot look for pins on video source!";
     return kAudioConnectError;
   }
   IPinPtr vorbis_input_pin = pin_finder.FindAudioInputPin(0);
   if (!vorbis_input_pin) {
-    DBGLOG("ERROR: cannot find audio input pin on Vorbis encoder!");
+    LOG(ERROR) << "cannot find audio input pin on Vorbis encoder!";
     return kAudioConnectError;
   }
   const HRESULT hr = graph_builder_->ConnectDirect(audio_src_pin,
                                                    vorbis_input_pin,
                                                    NULL);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot connect audio source to Vorbis encoder."
-           << HRLOG(hr));
+    LOG(ERROR) << "cannot connect audio source to Vorbis encoder."
+           << HRLOG(hr);
     return kAudioConnectError;
   }
   return kSuccess;
@@ -559,12 +560,12 @@ int WebmEncoderImpl::ConfigureVorbisEncoder() {
     COMPTR_TYPEDEF(IVorbisEncodeSettings);
     IVorbisEncodeSettingsPtr vorbis_config(vorbis_encoder_);
     if (!vorbis_config) {
-      DBGLOG("ERROR: cannot create Vorbis encoder configuration interface.");
+      LOG(ERROR) << "cannot create Vorbis encoder configuration interface.";
       return kCannotConfigureVorbisEncoder;
     }
     HRESULT hr = vorbis_config->setBitrateQualityMode(config_.vorbis_bitrate);
     if (FAILED(hr)) {
-      DBGLOG("ERROR: cannot set Vorbis encoder bitrate." << HRLOG(hr));
+      LOG(ERROR) << "cannot set Vorbis encoder bitrate." << HRLOG(hr);
       return kVorbisConfigureError;
     }
   }
@@ -575,23 +576,23 @@ int WebmEncoderImpl::ConfigureVorbisEncoder() {
 int WebmEncoderImpl::CreateWebmMuxer() {
   HRESULT hr = webm_muxer_.CreateInstance(CLSID_WebmMux);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: webm muxer creation failed." << HRLOG(hr));
+    LOG(ERROR) << "webm muxer creation failed." << HRLOG(hr);
     return kCannotCreateWebmMuxer;
   }
   hr = graph_builder_->AddFilter(webm_muxer_, kWebmMuxerName);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot add webm muxer to graph." << HRLOG(hr));
+    LOG(ERROR) << "cannot add webm muxer to graph." << HRLOG(hr);
     return kCannotAddFilter;
   }
   _COM_SMARTPTR_TYPEDEF(IWebmMux, __uuidof(IWebmMux));
   IWebmMuxPtr mux_config(webm_muxer_);
   if (!mux_config) {
-    DBGLOG("ERROR: cannot create webm muxer interface.");
+    LOG(ERROR) << "cannot create webm muxer interface.";
     return kCannotConfigureWebmMuxer;
   }
   hr = mux_config->SetMuxMode(kWebmMuxModeLive);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot enable webm live mux mode." << HRLOG(hr));
+    LOG(ERROR) << "cannot enable webm live mux mode." << HRLOG(hr);
     return kWebmMuxerConfigureError;
   }
   // TODO(tomfinegan): set writing app
@@ -604,52 +605,52 @@ int WebmEncoderImpl::ConnectEncodersToWebmMuxer() {
   PinFinder pin_finder;
   int status = pin_finder.Init(vpx_encoder_);
   if (status) {
-    DBGLOG("ERROR: cannot look for pins on vpx encoder!");
+    LOG(ERROR) << "cannot look for pins on vpx encoder!";
     return kWebmMuxerVideoConnectError;
   }
   IPinPtr encoder_pin = pin_finder.FindVideoOutputPin(0);
   if (!encoder_pin) {
-    DBGLOG("ERROR: cannot find video output pin on vpx encoder!");
+    LOG(ERROR) << "cannot find video output pin on vpx encoder!";
     return kWebmMuxerVideoConnectError;
   }
   status = pin_finder.Init(webm_muxer_);
   if (status) {
-    DBGLOG("ERROR: cannot look for pins on webm muxer!");
+    LOG(ERROR) << "cannot look for pins on webm muxer!";
     return kWebmMuxerVideoConnectError;
   }
   IPinPtr muxer_pin = pin_finder.FindVideoInputPin(0);
   if (!muxer_pin) {
-    DBGLOG("ERROR: cannot find video input pin on webm muxer!");
+    LOG(ERROR) << "cannot find video input pin on webm muxer!";
     return kWebmMuxerVideoConnectError;
   }
   HRESULT hr = graph_builder_->ConnectDirect(encoder_pin, muxer_pin, NULL);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot connect vpx encoder to webm muxer!" << HRLOG(hr));
+    LOG(ERROR) << "cannot connect vpx encoder to webm muxer!" << HRLOG(hr);
     return kWebmMuxerVideoConnectError;
   }
   status = pin_finder.Init(vorbis_encoder_);
   if (status) {
-    DBGLOG("ERROR: cannot look for pins on vorbis encoder!");
+    LOG(ERROR) << "cannot look for pins on vorbis encoder!";
     return kWebmMuxerAudioConnectError;
   }
   encoder_pin = pin_finder.FindAudioOutputPin(0);
   if (!encoder_pin) {
-    DBGLOG("ERROR: cannot find audio output pin on vorbis encoder!");
+    LOG(ERROR) << "cannot find audio output pin on vorbis encoder!";
     return kWebmMuxerAudioConnectError;
   }
   status = pin_finder.Init(webm_muxer_);
   if (status) {
-    DBGLOG("ERROR: cannot look for pins on webm muxer!");
+    LOG(ERROR) << "cannot look for pins on webm muxer!";
     return kWebmMuxerAudioConnectError;
   }
   muxer_pin = pin_finder.FindAudioInputPin(0);
   if (!muxer_pin) {
-    DBGLOG("ERROR: cannot find audio input pin on webm muxer!");
+    LOG(ERROR) << "cannot find audio input pin on webm muxer!";
     return kWebmMuxerAudioConnectError;
   }
   hr = graph_builder_->ConnectDirect(encoder_pin, muxer_pin, NULL);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot connect vorbis encoder to webm muxer!" << HRLOG(hr));
+    LOG(ERROR) << "cannot connect vorbis encoder to webm muxer!" << HRLOG(hr);
     return kWebmMuxerAudioConnectError;
   }
   return kSuccess;
@@ -660,24 +661,24 @@ int WebmEncoderImpl::ConnectEncodersToWebmMuxer() {
 int WebmEncoderImpl::CreateFileWriter() {
   HRESULT hr = file_writer_.CreateInstance(CLSID_FileWriter);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: file writer creation failed." << HRLOG(hr));
+    LOG(ERROR) << "file writer creation failed." << HRLOG(hr);
     return kCannotCreateFileWriter;
   }
   hr = graph_builder_->AddFilter(file_writer_, kFileWriterName);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot add file writer to graph." << HRLOG(hr));
+    LOG(ERROR) << "cannot add file writer to graph." << HRLOG(hr);
     return kCannotAddFilter;
   }
   IFileSinkFilter2Ptr writer_config(file_writer_);
   if (!writer_config) {
-    DBGLOG("ERROR: cannot create file writer sink interface.");
+    LOG(ERROR) << "cannot create file writer sink interface.";
     return kCannotCreateFileWriter;
   }
   std::wostringstream out_file_name_stream;
   out_file_name_stream << out_file_name_.c_str();
   hr = writer_config->SetFileName(out_file_name_stream.str().c_str(), NULL);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot set output file name." << HRLOG(hr));
+    LOG(ERROR) << "cannot set output file name." << HRLOG(hr);
     return kCannotCreateFileWriter;
   }
   return kSuccess;
@@ -689,28 +690,28 @@ int WebmEncoderImpl::ConnectWebmMuxerToFileWriter() {
   PinFinder pin_finder;
   int status = pin_finder.Init(webm_muxer_);
   if (status) {
-    DBGLOG("ERROR: cannot look for pins on vpx encoder!");
+    LOG(ERROR) << "cannot look for pins on vpx encoder!";
     return kFileWriterConnectError;
   }
   IPinPtr muxer_pin = pin_finder.FindStreamOutputPin(0);
   if (!muxer_pin) {
-    DBGLOG("ERROR: cannot find stream output pin on webm muxer!");
+    LOG(ERROR) << "cannot find stream output pin on webm muxer!";
     return kFileWriterConnectError;
   }
   status = pin_finder.Init(file_writer_);
   if (status) {
-    DBGLOG("ERROR: cannot look for pins on webm muxer!");
+    LOG(ERROR) << "cannot look for pins on webm muxer!";
     return kFileWriterConnectError;
   }
   IPinPtr writer_pin = pin_finder.FindInputPin(0);
   if (!writer_pin) {
-    DBGLOG("ERROR: cannot find stream input pin on file writer!");
+    LOG(ERROR) << "cannot find stream input pin on file writer!";
     return kFileWriterConnectError;
   }
   const HRESULT hr = graph_builder_->ConnectDirect(muxer_pin, writer_pin,
                                                    NULL);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot connect webm muxer to file writer!" << HRLOG(hr));
+    LOG(ERROR) << "cannot connect webm muxer to file writer!" << HRLOG(hr);
     return kFileWriterConnectError;
   }
   return kSuccess;
@@ -730,21 +731,21 @@ int WebmEncoderImpl::HandleMediaEvent() {
     media_event_->FreeEventParams(code, param1, param2);
     if (SUCCEEDED(hr)) {
       if (code == EC_ERRORABORT) {
-        DBGLOG("EC_ERRORABORT");
+        LOG(ERROR) << "EC_ERRORABORT";
         status = kGraphAborted;
       } else if (code == EC_ERRORABORTEX) {
-        DBGLOG("EC_ERRORABORTEX");
+        LOG(ERROR) << "EC_ERRORABORTEX";
         status = kGraphAborted;
       } else if (code == EC_USERABORT) {
-        DBGLOG("EC_USERABORT");
+        LOG(ERROR) << "EC_USERABORT";
         status = kGraphAborted;
       } else if (code == EC_COMPLETE) {
-        DBGLOG("EC_COMPLETE");
+        LOG(INFO) << "EC_COMPLETE";
         status = kGraphCompleted;
       }
     } else {
       // Couldn't get the event; tell caller to abort.
-      DBGLOG("GetEvent failed: " << HRLOG(hr));
+      LOG(ERROR) << "GetEvent failed: " << HRLOG(hr);
       status = kGraphAborted;
     }
   }
@@ -764,7 +765,7 @@ void WebmEncoderImpl::WebmEncoderThread() {
   CoInitialize(NULL);
   HRESULT hr = media_control_->Run();
   if (FAILED(hr)) {
-    DBGLOG("media control Run failed, cannot run encode!" << HRLOG(hr));
+    LOG(ERROR) << "media control Run failed, cannot run encode!" << HRLOG(hr);
   } else {
     for (;;) {
       int status = HandleMediaEvent();
@@ -782,13 +783,13 @@ void WebmEncoderImpl::WebmEncoderThread() {
     }
     hr = media_control_->Stop();
     if (FAILED(hr)) {
-      DBGLOG("media control Stop failed!" << HRLOG(hr));
+      LOG(ERROR) << "media control Stop failed! error=" << HRLOG(hr);
     } else {
-      DBGLOG("graph stopping." << HRLOG(hr));
+      LOG(INFO) << "graph stopping. status=" << HRLOG(hr);
     }
   }
   CoUninitialize();
-  DBGLOG("Done.");
+  LOG(INFO) << "Done.";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -806,7 +807,7 @@ CaptureSourceLoader::~CaptureSourceLoader() {
 int CaptureSourceLoader::Init(CLSID source_type) {
   if (source_type != CLSID_AudioInputDeviceCategory &&
       source_type != CLSID_VideoInputDeviceCategory) {
-    DBGLOG("ERROR: unknown device category!");
+    LOG(ERROR) << "unknown device category!";
     return WebmEncoder::kInvalidArg;
   }
   source_type_ = source_type;
@@ -819,14 +820,14 @@ int CaptureSourceLoader::FindAllSources() {
   ICreateDevEnumPtr sys_enum;
   HRESULT hr = sys_enum.CreateInstance(CLSID_SystemDeviceEnum);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: source enumerator creation failed." << HRLOG(hr));
+    LOG(ERROR) << "source enumerator creation failed." << HRLOG(hr);
     return kNoDeviceFound;
   }
   const DWORD kNoEnumFlags = 0;
   hr = sys_enum->CreateClassEnumerator(source_type_, &source_enum_,
                                        kNoEnumFlags);
   if (FAILED(hr) || hr == S_FALSE) {
-    DBGLOG("ERROR: moniker creation failed (no devices)." << HRLOG(hr));
+    LOG(ERROR) << "moniker creation failed (no devices)." << HRLOG(hr);
     return kNoDeviceFound;
   }
   int source_index = 0;
@@ -834,20 +835,21 @@ int CaptureSourceLoader::FindAllSources() {
     IMonikerPtr source_moniker;
     hr = source_enum_->Next(1, &source_moniker, NULL);
     if (FAILED(hr) || hr == S_FALSE || !source_moniker) {
-      DBGLOG("Done enumerating sources, found " << source_index << " sources.");
+      LOG(INFO) << "Done enumerating sources, found " << source_index
+                << " sources.";
       break;
     }
     std::wstring name = GetMonikerFriendlyName(source_moniker);
     if (name.empty()) {
-      DBGLOG("source=" << source_index << " has no name, skipping.");
+      LOG(WARNING) << "source=" << source_index << " has no name, skipping.";
       continue;
     }
-    DBGLOG("source=" << source_index << " name=" << name.c_str());
+    LOG(INFO) << "source=" << source_index << " name=" << name.c_str();
     sources_[source_index] = name;
     ++source_index;
   }
   if (sources_.size() == 0) {
-    DBGLOG("No devices found!");
+    LOG(ERROR) << "No devices found!";
     return kNoDeviceFound;
   }
   return kSuccess;
@@ -857,7 +859,7 @@ int CaptureSourceLoader::FindAllSources() {
 // |GetSource(std::wstring)|.
 IBaseFilterPtr CaptureSourceLoader::GetSource(int index) {
   if (static_cast<size_t>(index) >= sources_.size()) {
-    DBGLOG("ERROR: " << index << " is not a valid source index");
+    LOG(ERROR) << "" << index << " is not a valid source index";
     return NULL;
   }
   return GetSource(GetSourceName(index));
@@ -869,19 +871,19 @@ IBaseFilterPtr CaptureSourceLoader::GetSource(int index) {
 // enumerator.
 IBaseFilterPtr CaptureSourceLoader::GetSource(const std::wstring name) {
   if (name.empty()) {
-    DBGLOG("ERROR: empty source name.");
+    LOG(ERROR) << "empty source name.";
     return NULL;
   }
   HRESULT hr = source_enum_->Reset();
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot reset source enumerator!" << HRLOG(hr));
+    LOG(ERROR) << "cannot reset source enumerator!" << HRLOG(hr);
     return NULL;
   }
   IMonikerPtr source_moniker;
   for (;;) {
     hr = source_enum_->Next(1, &source_moniker, NULL);
     if (FAILED(hr) || hr == S_FALSE || !source_moniker) {
-      DBGLOG("ERROR: ran out of devices before reaching requested index!");
+      LOG(ERROR) << "device not found!";
       return NULL;
     }
     std::wstring source_name = GetMonikerFriendlyName(source_moniker);
@@ -893,7 +895,7 @@ IBaseFilterPtr CaptureSourceLoader::GetSource(const std::wstring name) {
   hr = source_moniker->BindToObject(NULL, NULL, IID_IBaseFilter,
                                     reinterpret_cast<void**>(&filter));
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot bind filter!" << HRLOG(hr));
+    LOG(ERROR) << "cannot bind filter!" << HRLOG(hr);
   }
   return filter;
 }
@@ -925,7 +927,7 @@ std::wstring CaptureSourceLoader::GetMonikerFriendlyName(
       const wchar_t* const kFriendlyName = L"FriendlyName";
       name = GetStringProperty(props, kFriendlyName);
       if (name.empty()) {
-        DBGLOG("moniker has no friendly name property, or it's empty.");
+        LOG(WARNING) << "moniker friendly name property missing or empty.";
       }
     }
   }
@@ -945,12 +947,12 @@ PinFinder::~PinFinder() {
 // Creates the pin enumerator, |pin_enum_|
 int PinFinder::Init(const IBaseFilterPtr& filter) {
   if (!filter) {
-    DBGLOG("ERROR: NULL filter.");
+    LOG(ERROR) << "NULL filter.";
     return WebmEncoder::kInvalidArg;
   }
   const HRESULT hr = filter->EnumPins(&pin_enum_);
   if (FAILED(hr)) {
-    DBGLOG("ERROR: cannot enum filter pins!" << HRLOG(hr));
+    LOG(ERROR) << "cannot enum filter pins!" << HRLOG(hr);
     return WebmEncoder::kInitFailed;
   }
   return WebmEncoder::kSuccess;
@@ -1232,19 +1234,19 @@ VideoPinInfo::~VideoPinInfo() {
 // - confirms that |pin| is connected.
 int VideoPinInfo::Init(const IPinPtr& pin) {
   if (!pin) {
-    DBGLOG("ERROR: empty pin.");
+    LOG(ERROR) << "empty pin.";
     return kInvalidArg;
   }
   PinInfo info(pin);
   if (info.IsVideo() == false) {
-    DBGLOG("ERROR: Not a video pin.");
+    LOG(ERROR) << "Not a video pin.";
     return kNotVideo;
   }
   // Confirm that |pin| is connected.
   IPinPtr pin_peer;
   HRESULT hr = pin->ConnectedTo(&pin_peer);
   if (hr != S_OK || !pin_peer) {
-    DBGLOG("ERROR: pin not connected.");
+    LOG(ERROR) << "pin not connected.";
     return kNotConnected;
   }
   pin_ = pin;
