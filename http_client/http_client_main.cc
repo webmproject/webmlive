@@ -75,6 +75,8 @@ void usage(const char** argv) {
   printf("    --vpx_static_threshold <threshold> Static threshold.\n");
   printf("    --vpx_speed <speed value>          Speed.\n");
   printf("    --vpx_threads <num threads>        Number of encode threads.\n");
+  printf("    --vpx_token_partitions <0-3>       Number of token\n");
+  printf("                                       partitions.\n");
   printf("    --vpx_undershoot <undershoot>      Undershoot value.\n");
 }
 
@@ -155,12 +157,15 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vpx_static_threshold", argv[i])) {
       char* ptr_end;
       enc_config.vpx_config.static_threshold = strtol(argv[++i], &ptr_end, 10);
-    } else if (!strcmp("--vpx_undershoot", argv[i])) {
-      char* ptr_end;
-      enc_config.vpx_config.undershoot = strtol(argv[++i], &ptr_end, 10);
     } else if (!strcmp("--vpx_threads", argv[i])) {
       char* ptr_end;
       enc_config.vpx_config.thread_count = strtol(argv[++i], &ptr_end, 10);
+    } else if (!strcmp("--vpx_token_partitions", argv[i])) {
+      char* ptr_end;
+      enc_config.vpx_config.token_partitions = strtol(argv[++i], &ptr_end, 10);
+    } else if (!strcmp("--vpx_undershoot", argv[i])) {
+      char* ptr_end;
+      enc_config.vpx_config.undershoot = strtol(argv[++i], &ptr_end, 10);
     }
   }
   // Store user HTTP headers.

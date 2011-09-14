@@ -29,6 +29,7 @@ static const int kDefaultVpxSpeed = kUseEncoderDefault;
 static const int kDefaultVpxStaticThreshold = kUseEncoderDefault;
 static const int kDefaultVpxUndershoot = kUseEncoderDefault;
 static const int kDefaultVpxThreadCount = kUseEncoderDefault;
+static const int kDefaultVpxTokenPartitions = kUseEncoderDefault;
 
 struct WebmEncoderConfig {
   struct VpxConfig {
@@ -44,10 +45,12 @@ struct WebmEncoderConfig {
     int speed;
     // Threshold at which a macroblock is considered static.
     int static_threshold;
-    // Percentage to undershoot the requested datarate.
-    int undershoot;
     // Encoder thead count.
     int thread_count;
+    // Number of token partitions.
+    int token_partitions;
+    // Percentage to undershoot the requested datarate.
+    int undershoot;
   };
   // Vorbis encoder bitrate.
   int vorbis_bitrate;

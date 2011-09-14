@@ -422,6 +422,20 @@ int WebmEncoderImpl::ConfigureVpxEncoder() {
       return kVpxConfigureError;
     }
   }
+  if (config.token_partitions != kUseEncoderDefault) {
+    hr = vp8_config->SetTokenPartitions(config.token_partitions);
+    if (FAILED(hr)) {
+      DBGLOG("ERROR: cannot set VP8 token partition count." << HRLOG(hr));
+      return kVpxConfigureError;
+    }
+  }
+  if (config.undershoot != kUseEncoderDefault) {
+    hr = vp8_config->SetUndershootPct(config.undershoot);
+    if (FAILED(hr)) {
+      DBGLOG("ERROR: cannot set VP8 undershoot percentage." << HRLOG(hr));
+      return kVpxConfigureError;
+    }
+  }
   return kSuccess;
 }
 

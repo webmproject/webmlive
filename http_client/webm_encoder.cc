@@ -59,6 +59,7 @@ WebmEncoderConfig WebmEncoder::DefaultConfig() {
   c.vpx_config.speed = kDefaultVpxSpeed;
   c.vpx_config.static_threshold = kDefaultVpxStaticThreshold;
   c.vpx_config.thread_count = kDefaultVpxThreadCount;
+  c.vpx_config.token_partitions = kDefaultVpxTokenPartitions;
   c.vpx_config.undershoot = kDefaultVpxUndershoot;
   return c;
 }
