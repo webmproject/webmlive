@@ -6,7 +6,7 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 #include "buffer_util.h"
-#include "debug_util.h"
+#include "glog/logging.h"
 #include "webm_buffer_parser.h"
 
 namespace webmlive {
@@ -35,7 +35,7 @@ int LockableBuffer::Init(const uint8* const ptr_data, int32 length) {
   }
   boost::mutex::scoped_lock lock(mutex_);
   if (!ptr_data || length <= 0) {
-    DBGLOG("invalid arg(s).");
+    LOG(ERROR) << "invalid arg(s).";
     return kInvalidArg;
   }
   buffer_.clear();
@@ -50,7 +50,7 @@ int LockableBuffer::GetBuffer(uint8** ptr_buffer, int32* ptr_length) {
     return kInvalidArg;
   }
   if (!IsLocked()) {
-    DBGLOG("error, buffer not locked!");
+    LOG(WARNING) << "buffer not locked!";
     return kNotLocked;
   }
   *ptr_buffer = &buffer_[0];
@@ -75,7 +75,7 @@ int LockableBuffer::Unlock() {
   int status = kSuccess;
   if (!locked_) {
     status = kNotLocked;
-    DBGLOG("buffer was not locked!");
+    LOG(WARNING) << "buffer was not locked!";
   }
   locked_ = false;
   return status;
@@ -113,11 +113,11 @@ bool WebmChunkBuffer::ChunkReady(int32* ptr_chunk_length) {
 // Inserts data from |ptr_data| at the end of |buffer_|.
 int WebmChunkBuffer::BufferData(const uint8* const ptr_data, int32 length) {
   if (!ptr_data || length < 1) {
-    DBGLOG("invalid arg(s).");
+    LOG(ERROR) << "invalid arg(s).";
     return kInvalidArg;
   }
   buffer_.insert(buffer_.end(), ptr_data, ptr_data+length);
-  DBGLOG("buffer_ size=" << buffer_.size());
+  LOG(INFO) << "buffer_ size=" << buffer_.size();
   return kSuccess;
 }
 
@@ -125,7 +125,7 @@ int WebmChunkBuffer::BufferData(const uint8* const ptr_data, int32 length) {
 int WebmChunkBuffer::Init() {
   parser_.reset(new (std::nothrow) WebmBufferParser());
   if (!parser_) {
-    DBGLOG("out of memory");
+    LOG(ERROR) << "out of memory";
     return kOutOfMemory;
   }
   return parser_->Init();
@@ -136,11 +136,11 @@ int WebmChunkBuffer::Init() {
 // resume in |ChunkReady|.
 int WebmChunkBuffer::ReadChunk(uint8* ptr_buf, int32 length) {
   if (!ptr_buf) {
-    DBGLOG("NULL buffer pointer");
+    LOG(ERROR) << "NULL buffer pointer";
     return kInvalidArg;
   }
   if (length < chunk_length_) {
-    DBGLOG("not enough space for chunk");
+    LOG(ERROR) << "not enough space for chunk";
     return kUserBufferTooSmall;
   }
   memcpy(ptr_buf, &buffer_[0], chunk_length_);

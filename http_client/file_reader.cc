@@ -11,7 +11,7 @@
 #include <sstream>
 #include <string>
 
-#include "debug_util.h"
+#include "glog/logging.h"
 #ifdef _WIN32
 #include "win/file_reader_win.h"
 #endif
@@ -36,7 +36,7 @@ int FileReader::CreateFile(std::string file_path) {
 int FileReader::CreateFile(std::wstring file_path) {
   ptr_reader_.reset(new (std::nothrow) FileReaderImpl());
   if (!ptr_reader_) {
-    DBGLOG("ERROR: can't construct FileReaderImpl.");
+    LOG(ERROR) << "ERROR: can't construct FileReaderImpl.";
     return kOpenFailed;
   }
   return ptr_reader_->CreateFile(file_path);

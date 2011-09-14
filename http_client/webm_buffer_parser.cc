@@ -7,7 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "webm_buffer_parser.h"
 
-#include "debug_util.h"
+#include "glog/logging.h"
 #include "libwebm/mkvparser.hpp"
 
 namespace webmlive {
@@ -53,7 +53,7 @@ WebmBufferReader::~WebmBufferReader() {
 int WebmBufferReader::SetBufferWindow(const uint8* ptr_buffer, int32 length,
                                       int64 bytes_consumed) {
   if (!ptr_buffer || !length) {
-    DBGLOG("invalid arg(s)");
+    LOG(ERROR) << "invalid arg(s)";
     return kInvalidArg;
   }
   ptr_buffer_ = ptr_buffer;
@@ -66,7 +66,7 @@ int WebmBufferReader::SetBufferWindow(const uint8* ptr_buffer, int32 length,
 int WebmBufferReader::Read(int64 read_pos, long length_requested,
                            uint8* ptr_buf) {
   if (!ptr_buf) {
-    DBGLOG("NULL ptr_buf");
+    LOG(ERROR) << "NULL ptr_buf";
     return 0;
   }
   // |read_pos| includes |bytes_consumed_|, which is not going to work with the
@@ -79,9 +79,9 @@ int WebmBufferReader::Read(int64 read_pos, long length_requested,
     // No, not enough data buffered.
     return mkvparser::E_BUFFER_NOT_FULL;
   }
-  //DBGLOG("read_pos=" << read_pos << " window_pos=" << window_pos
-  //       << " length_=" << length_ << " length_requested=" << length_requested
-  //       << " available=" << bytes_available);
+  VLOG(4) << "read_pos=" << read_pos << " window_pos=" << window_pos
+          << " length_=" << length_ << " length_requested=" << length_requested
+          << " available=" << bytes_available;
   // Yes, there's enough data in the buffer.
   memcpy(ptr_buf, ptr_buffer_ + window_pos, length_requested);
   return kSuccess;
@@ -92,7 +92,7 @@ int WebmBufferReader::Read(int64 read_pos, long length_requested,
 // buffer current window plus the sum of the sizes of all parsed elements.
 int WebmBufferReader::Length(int64* ptr_total, int64* ptr_available) {
   if (!ptr_total || !ptr_available) {
-    DBGLOG("invalid arg(s)");
+    LOG(ERROR) << "invalid arg(s)";
     return -1;
   }
   *ptr_total = -1;  // Total file size is unknown.
@@ -118,7 +118,7 @@ WebmBufferParser::~WebmBufferParser() {
 int WebmBufferParser::Init() {
   reader_.reset(new (std::nothrow) WebmBufferReader());
   if (!reader_) {
-    DBGLOG("out of memory");
+    LOG(ERROR) << "out of memory";
     return kOutOfMemory;
   }
   return kSuccess;
@@ -129,7 +129,7 @@ int WebmBufferParser::Init() {
 // successful.
 int WebmBufferParser::Parse(const Buffer& buf, int32* ptr_element_size) {
   if (!ptr_element_size) {
-    DBGLOG("NULL element size pointer!");
+    LOG(ERROR) << "NULL element size pointer!";
     return kInvalidArg;
   }
   if (buf.empty()) {
@@ -137,7 +137,7 @@ int WebmBufferParser::Parse(const Buffer& buf, int32* ptr_element_size) {
   }
   // Update |reader_|'s buffer window...
   if (reader_->SetBufferWindow(&buf[0], buf.size(), total_bytes_parsed_)) {
-    DBGLOG("could not update buffer window");
+    LOG(ERROR) << "could not update buffer window";
     return kParseError;
   }
   // Try to parse...
@@ -164,7 +164,7 @@ int WebmBufferParser::ParseSegmentHeaders(int32* ptr_element_size) {
   int64 pos = 0;
   int64 parse_status = ebml_header.Parse(reader_.get(), pos);
   if (parse_status) {
-    DBGLOG("EBML header parse failed, parse_status=" << parse_status);
+    LOG(INFO) << "EBML header parse failed, parse_status=" << parse_status;
     return kNeedMoreData;
   }
   // |pos| is equal to the length of the EBML header; start a running total now
@@ -175,7 +175,7 @@ int WebmBufferParser::ParseSegmentHeaders(int32* ptr_element_size) {
   parse_status = mkvparser::Segment::CreateInstance(reader_.get(), pos,
                                                     ptr_segment);
   if (parse_status) {
-    DBGLOG("EBML segment creation failed, parse_status=" << parse_status);
+    LOG(INFO) << "segment creation failed, parse_status=" << parse_status;
     return kNeedMoreData;
   }
   segment_.reset(ptr_segment);
@@ -188,31 +188,32 @@ int WebmBufferParser::ParseSegmentHeaders(int32* ptr_element_size) {
   // elements were found as well.
   parse_status = segment_->ParseHeaders();
   if (parse_status) {
-    DBGLOG("segment header parse failed, parse_status=" << parse_status);
+    LOG(INFO) << "segment header parse failed, parse_status=" << parse_status;
     return kNeedMoreData;
   }
   // Get the segment info to obtain its length.
   const mkvparser::SegmentInfo* ptr_segment_info = segment_->GetInfo();
   if (!ptr_segment_info) {
-    DBGLOG("missing MKV segment info");
+    LOG(ERROR) << "missing MKV segment info";
     return kParseError;
   }
   if (headers_length != ptr_segment_info->m_element_start) {
-    DBGLOG("ERROR: unexpected segment info offset (expected=" << headers_length
-           << " actual=" << ptr_segment_info->m_element_start << ")");
+    LOG(ERROR) << "ERROR: unexpected segment info offset (expected="
+               << headers_length << " actual="
+               << ptr_segment_info->m_element_start << ")";
     return kParseError;
   }
-  DBGLOG("segment info size=" << ptr_segment_info->m_element_size);
+  LOG(INFO) << "segment info size=" << ptr_segment_info->m_element_size;
   headers_length += ptr_segment_info->m_element_size;
   // Get the segment tracks to obtain its length.
   const mkvparser::Tracks* ptr_tracks = segment_->GetTracks();
   if (!ptr_tracks) {
-    DBGLOG("missing MKV segment tracks");
+    LOG(ERROR) << "missing MKV segment tracks";
     return kParseError;
   }
-  DBGLOG("segment tracks size=" << ptr_tracks->m_element_size);
+  LOG(INFO) << "segment tracks size=" << ptr_tracks->m_element_size;
   headers_length += ptr_tracks->m_element_size;
-  DBGLOG("element_size=" << headers_length);
+  LOG(INFO) << "element_size=" << headers_length;
   total_bytes_parsed_ = headers_length;
   *ptr_element_size = static_cast<int32>(headers_length);
   return kSuccess;
