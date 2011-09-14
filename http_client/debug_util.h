@@ -11,14 +11,7 @@
 #ifdef _DEBUG
 #ifdef _WIN32
 #include "webmdshow/common/odbgstream.hpp"
-// Simple trace logging macro that expands to nothing in release mode builds.
-// Output is sent to the vs console.
-#define DBGLOG(X) \
-do { \
-    wodbgstream wos; \
-    wos << __FILE__ << "(" << __LINE__ << ") : ["__FUNCTION__"] " << X \
-        << std::endl; \
-} while (0)
+
 // Extracts error from the HRESULT, and output its hex and decimal values.
 #define \
     HRLOG(X) L" {" << #X << L"=" << X << L"/" << std::hex << X << std::dec \
@@ -35,7 +28,6 @@ do { \
 } while (0)
 #endif  // _WIN32
 #else
-#define DBGLOG(X)
 #define REFTIMETOSECONDS(X)
 #endif
 
