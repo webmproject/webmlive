@@ -19,8 +19,12 @@
 #include "debug_util.h"
 #include "buffer_util.h"
 #include "file_reader.h"
+#include "glog/logging.h"
 #include "http_uploader.h"
 #include "webm_encoder.h"
+
+#undef DBGLOG
+#define DBGLOG(X) LOG(ERROR) << X
 
 namespace {
 enum {
@@ -343,6 +347,7 @@ int client_main(WebmEncoderClientConfig& config) {
 }
 
 int main(int argc, const char** argv) {
+  google::InitGoogleLogging(argv[0]);
   WebmEncoderClientConfig config;
   config.enc_config = webmlive::WebmEncoder::DefaultConfig();
   parse_command_line(argc, argv, config);
