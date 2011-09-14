@@ -19,6 +19,7 @@
 #pragma warning(disable:4996)
 
 #include "windows.h"
+#undef ERROR  // unused by webmlive, and must be undef'd to use glog!
 
 #endif  // _WIN32
 
