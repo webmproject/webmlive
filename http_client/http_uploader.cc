@@ -18,15 +18,15 @@
 #include "curl/curl.h"
 #include "curl/types.h"
 #include "curl/easy.h"
-#include "debug_util.h"
+#include "glog/logging.h"
 #include "http_client_base.h"
 #include "libwebm/mkvparser.hpp"
 
 #define LOG_CURL_ERR(CURL_ERR, MSG_STR) \
-  DBGLOG("ERROR: " << MSG_STR << " err=" << CURL_ERR << ":" << \
-         curl_easy_strerror(CURL_ERR))
+  LOG(ERROR) << MSG_STR << " err=" << CURL_ERR << ":" \
+             << curl_easy_strerror(CURL_ERR)
 #define LOG_CURLFORM_ERR(CURL_ERR, MSG_STR) \
-  DBGLOG("ERROR: " << MSG_STR << " err=" << CURL_ERR)
+  LOG(ERROR) << MSG_STR << " err=" << CURL_ERR
 
 namespace webmlive {
 
@@ -163,12 +163,12 @@ bool HttpUploader::UploadComplete()
 int HttpUploader::Init(const HttpUploaderSettings& settings) {
   ptr_uploader_.reset(new (std::nothrow) HttpUploaderImpl());
   if (!ptr_uploader_) {
-    DBGLOG("ERROR: can't construct HttpUploaderImpl.");
+    LOG(ERROR) << "ERROR: can't construct HttpUploaderImpl.";
     return kInitFailed;
   }
   int status = ptr_uploader_->Init(settings);
   if (status) {
-    DBGLOG("ERROR: uploader init failed. " << status);
+    LOG(ERROR) << "ERROR: uploader init failed. " << status;
     return kInitFailed;
   }
   return kSuccess;
@@ -245,7 +245,7 @@ int HttpUploaderImpl::Init(const HttpUploaderSettings& settings) {
   ptr_curl_ = curl_easy_init();
   if (!ptr_curl_)
   {
-    DBGLOG("curl_easy_init failed!");
+    LOG(ERROR) << "curl_easy_init failed!";
     return kLibCurlError;
   }
   // enable progress reports
@@ -274,7 +274,7 @@ int HttpUploaderImpl::Init(const HttpUploaderSettings& settings) {
 // |ptr_stats|.
 int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats) {
   if (!ptr_stats) {
-    DBGLOG("ERROR: NULL ptr_stats");
+    LOG(ERROR) << "ERROR: NULL ptr_stats";
     return HttpUploader::kInvalidArg;
   }
   boost::mutex::scoped_lock lock(mutex_);
@@ -310,25 +310,25 @@ int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length,
       target_url_ = target_url;
     }
     if (target_url_.empty()) {
-      DBGLOG("ERROR: No target URL!");
+      LOG(ERROR) << "ERROR: No target URL!";
       return HttpUploader::kUrlConfigError;
     }
     // Lock obtained; (re)initialize |upload_buffer_| with the user data...
     status = upload_buffer_.Init(ptr_buf, length);
     if (status) {
-      DBGLOG("upload_buffer_ Init failed, status=" << status);
+      LOG(ERROR) << "upload_buffer_ Init failed, status=" << status;
       return status;
     }
     // Lock |upload_buffer_|; it's unlocked by |UploadThread| once libcurl
     // finishes its run.
     status = upload_buffer_.Lock();
     if (status) {
-      DBGLOG("upload_buffer_ Lock failed, status=" << status);
+      LOG(ERROR) << "upload_buffer_ Lock failed, status=" << status;
       return status;
     }
     upload_complete_ = false;
     // Wake |UploadThread|.
-    DBGLOG("waking uploader with " << length << " bytes");
+    LOG(INFO) << "waking uploader with " << length << " bytes";
     buffer_ready_.notify_one();
   }
   return status;
@@ -496,17 +496,17 @@ int HttpUploaderImpl::SetupPost(const uint8* const ptr_buffer, int32 length) {
 // Upload data using libcurl.
 int HttpUploaderImpl::Upload() {
   if (!upload_buffer_.IsLocked()) {
-    DBGLOG("woke with unlocked buffer, stopping.");
+    LOG(ERROR) << "woke with unlocked buffer, stopping.";
     return kStopping;
   }
   uint8* ptr_data = NULL;
   int32 length = 0;
   int status = upload_buffer_.GetBuffer(&ptr_data, &length);
   if (status) {
-    DBGLOG("error, could not get buffer pointer, status=" << status);
+    LOG(ERROR) << "error, could not get buffer pointer, status=" << status;
     return HttpUploader::kRunFailed;
   }
-  DBGLOG("upload buffer size=" << length);
+  LOG(INFO) << "upload buffer size=" << length;
   CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_URL,
                                   target_url_.c_str());
   if (err != CURLE_OK) {
@@ -515,12 +515,12 @@ int HttpUploaderImpl::Upload() {
   }
   if (settings_.post_mode == webmlive::HTTP_FORM_POST) {
     if (SetupFormPost(ptr_data, length)) {
-      DBGLOG("ERROR: SetupFormPost failed!");
+      LOG(ERROR) << "ERROR: SetupFormPost failed!";
       return HttpUploader::kRunFailed;
     }
   } else {
     if (SetupPost(ptr_data, length)) {
-      DBGLOG("ERROR: SetupPost failed!");
+      LOG(ERROR) << "ERROR: SetupPost failed!";
       return HttpUploader::kRunFailed;
     }
   }
@@ -530,7 +530,7 @@ int HttpUploaderImpl::Upload() {
   } else {
     int resp_code = 0;
     curl_easy_getinfo(ptr_curl_, CURLINFO_RESPONSE_CODE, &resp_code);
-    DBGLOG("server response code: " << resp_code);
+    LOG(INFO) << "server response code: " << resp_code;
   }
   // Update total bytes uploaded.
   double bytes_uploaded = 0;
@@ -564,7 +564,7 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
   HttpUploaderImpl* ptr_uploader_ =
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
   if (ptr_uploader_->StopRequested()) {
-    DBGLOG("stop requested.");
+    LOG(ERROR) << "stop requested.";
     return kProgressCallbackStopRequest;
   }
   boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
@@ -575,8 +575,8 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
   stats.bytes_per_second =
       (upload_current + stats.total_bytes_uploaded) /
       (ticks_elapsed / ticks_per_sec);
-  //DBGLOG("total=" << int(upload_total) << " bytes_per_sec="
-  //       << int(stats.bytes_per_second));
+  VLOG(4) << "total=" << int(upload_total) << " bytes_per_sec="
+          << int(stats.bytes_per_second);
   return 0;
 }
 
@@ -584,15 +584,15 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
 size_t HttpUploaderImpl::WriteCallback(char* buffer, size_t size,
                                        size_t nitems,
                                        void* ptr_this) {
-  //DBGLOG("size=" << size << " nitems=" << nitems);
+  VLOG(4) << "size=" << size << " nitems=" << nitems;
   // TODO(tomfinegan): store response data for users
   std::string tmp;
   tmp.assign(buffer, size*nitems);
-  DBGLOG("from server: " << tmp.c_str());
+  LOG(INFO) << "from server:\n" << tmp.c_str();
   HttpUploaderImpl* ptr_uploader_ =
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
   if (ptr_uploader_->StopRequested()) {
-    DBGLOG("stop requested.");
+    LOG(INFO) << "stop requested.";
     return kWriteCallbackStopRequest;
   }
   return size*nitems;
@@ -610,30 +610,31 @@ void HttpUploaderImpl::ResetStats() {
 // Upload thread.  Wakes when user provides a buffer via call to
 // |UploadBuffer|.
 void HttpUploaderImpl::UploadThread() {
-  DBGLOG("running...");
+  LOG(INFO) << "upload thread running...";
   while (!StopRequested()) {
-    DBGLOG("waiting...");
+    LOG(INFO) << "upload thread waiting for buffer...";
     WaitForUserData();
-    DBGLOG("running upload...");
+    LOG(INFO) << "uploading buffer...";
     int status = Upload();
     if (status == kStopping) {
       break;
     }
     if (status) {
-      DBGLOG("upload failed, status=" << status);
-      // keep spinning, for now...
+      LOG(ERROR) << "buffer upload failed, status=" << status;
+      // TODO(tomfinegan): Report upload failure, and provide access to
+      //                   response code and data.
     } else {
       boost::mutex::scoped_lock lock(mutex_);
-      DBGLOG("unlocking buffer...");
+      LOG(INFO) << "unlocking upload buffer...";
       status = upload_buffer_.Unlock();
       if (status) {
-        DBGLOG("error, unable to unlock buffer, status=" << status);
+        LOG(ERROR) << "unable to unlock buffer, status=" << status;
         // keep spinning, for now...
       }
       upload_complete_ = true;
     }
   }
-  DBGLOG("thread done");
+  LOG(INFO) << "thread done";
 }
 
 }  // namespace webmlive

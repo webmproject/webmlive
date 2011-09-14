@@ -18,8 +18,10 @@
 #pragma comment(lib, "../third_party/curl/win/x86/libcurldll.a")
 
 #ifdef _DEBUG
+#pragma comment(lib, "../third_party/glog/win/x86/debug/libglog_static.lib")
 #pragma comment(lib, "../third_party/libwebm/win/x86/debug/libwebm.lib")
 #else
+#pragma comment(lib, "../third_party/glog/win/x86/release/libglog_static.lib")
 #pragma comment(lib, "../third_party/libwebm/win/x86/release/libwebm.lib")
 #endif
 
