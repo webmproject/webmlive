@@ -108,7 +108,7 @@ WebmBufferParser::WebmBufferParser()
     : ptr_cluster_(NULL),
       cluster_parse_offset_(0),
       total_bytes_parsed_(0),
-      mode_(kParseModeSegmentHeaders) {
+      parse_func_(&WebmBufferParser::ParseSegmentHeaders) {
 }
 
 WebmBufferParser::~WebmBufferParser() {
@@ -140,20 +140,8 @@ int WebmBufferParser::Parse(const Buffer& buf, int32* ptr_element_size) {
     LOG(ERROR) << "could not update buffer window";
     return kParseError;
   }
-  // Try to parse...
-  int parse_status = kNeedMoreData;
-  switch (mode_) {
-    case kParseModeClusters:
-      parse_status = ParseCluster(ptr_element_size);
-      break;
-    case kParseModeSegmentHeaders:
-      parse_status = ParseSegmentHeaders(ptr_element_size);
-      if (parse_status == kSuccess) {
-        // Parsed the segment headers, look for clusters from here on out...
-        mode_ = kParseModeClusters;
-      }
-  }
-  return parse_status;
+  // Just return the result of the parsing attempt.
+  return (this->*parse_func_)(ptr_element_size);
 }
 
 // Tries to parse the segment headers, segment info and segment tracks.
@@ -203,7 +191,7 @@ int WebmBufferParser::ParseSegmentHeaders(int32* ptr_element_size) {
                << ptr_segment_info->m_element_start << ")";
     return kParseError;
   }
-  LOG(INFO) << "segment info size=" << ptr_segment_info->m_element_size;
+  VLOG(4) << "segment info size=" << ptr_segment_info->m_element_size;
   headers_length += ptr_segment_info->m_element_size;
   // Get the segment tracks to obtain its length.
   const mkvparser::Tracks* ptr_tracks = segment_->GetTracks();
@@ -211,11 +199,12 @@ int WebmBufferParser::ParseSegmentHeaders(int32* ptr_element_size) {
     LOG(ERROR) << "missing MKV segment tracks";
     return kParseError;
   }
-  LOG(INFO) << "segment tracks size=" << ptr_tracks->m_element_size;
+  VLOG(4) << "segment tracks size=" << ptr_tracks->m_element_size;
   headers_length += ptr_tracks->m_element_size;
-  LOG(INFO) << "element_size=" << headers_length;
+  VLOG(4) << "element_size=" << headers_length;
   total_bytes_parsed_ = headers_length;
   *ptr_element_size = static_cast<int32>(headers_length);
+  parse_func_ = &WebmBufferParser::ParseCluster;
   return kSuccess;
 }
 
@@ -237,7 +226,6 @@ int WebmBufferParser::ParseCluster(int32* ptr_element_size) {
     if (status) {
       return kNeedMoreData;
     }
-    //DBGLOG("current_pos=" << current_pos << " length=" << length);
     const mkvparser::Cluster* ptr_cluster = segment_->GetLast();
     if (!ptr_cluster || ptr_cluster->EOS()) {
       return kNeedMoreData;
@@ -248,8 +236,6 @@ int WebmBufferParser::ParseCluster(int32* ptr_element_size) {
   const int kClusterComplete = 1;
   for (;;) {
     status = ptr_cluster_->Parse(cluster_parse_offset_, length);
-    //DBGLOG("cluster_parse_offset_=" << cluster_parse_offset_
-    //       << " length=" << length);
     if (status == kClusterComplete) {
       break;
     }
@@ -267,8 +253,8 @@ int WebmBufferParser::ParseCluster(int32* ptr_element_size) {
   cluster_parse_offset_ = 0;
   total_bytes_parsed_ += cluster_size;
   *ptr_element_size = static_cast<int32>(cluster_size);
-  //DBGLOG("cluster_size=" << cluster_size << " total_bytes_parsed_="
-  //       << total_bytes_parsed_);
+  VLOG(4) << "cluster_size=" << cluster_size << " total_bytes_parsed_="
+          << total_bytes_parsed_;
   return kSuccess;
 }
 
