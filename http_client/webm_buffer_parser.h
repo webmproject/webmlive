@@ -40,12 +40,6 @@ class WebmBufferParser {
     // element.  Add more data to your buffer.
     kNeedMoreData = 1,
   };
-  enum ParseMode {
-    // Parser is looking for segment info and segment tracks.
-    kParseModeSegmentHeaders,
-    // Parser is looking for clusters.
-    kParseModeClusters,
-  };
   WebmBufferParser();
   ~WebmBufferParser();
   // Constructs |reader_|.
@@ -56,6 +50,8 @@ class WebmBufferParser {
   // sets |ptr_element_size| when all data has been parsed.
   int Parse(const Buffer& buf, int32* ptr_element_size);
  private:
+  // Parse function pointer type.
+  typedef int (WebmBufferParser::*ParseFunc)(int32* ptr_element_size);
   // Tries to parse the segment headers: segment info and segment tracks.
   // Returns |kNeedMoreData| if more data is needed.  Returns |kSuccess| and
   // sets |ptr_element_size| when successful.
@@ -78,8 +74,8 @@ class WebmBufferParser {
   int64 cluster_parse_offset_;
   // Sum of parsed element lengths.  Used to update |parser_| window.
   int64 total_bytes_parsed_;
-  // Parsing mode-- either |kParseModeSegmentHeaders| or |kParseModeClusters|.
-  ParseMode mode_;
+  // Parsing function-- either |ParseSegmentHeaders| or |ParseCluster|.
+  ParseFunc parse_func_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmBufferParser);
 };
 

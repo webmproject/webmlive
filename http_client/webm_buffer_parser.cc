@@ -108,7 +108,7 @@ WebmBufferParser::WebmBufferParser()
     : ptr_cluster_(NULL),
       cluster_parse_offset_(0),
       total_bytes_parsed_(0),
-      mode_(kParseModeSegmentHeaders) {
+      parse_func_(&WebmBufferParser::ParseSegmentHeaders) {
 }
 
 WebmBufferParser::~WebmBufferParser() {
@@ -141,19 +141,8 @@ int WebmBufferParser::Parse(const Buffer& buf, int32* ptr_element_size) {
     return kParseError;
   }
   // Try to parse...
-  int parse_status = kNeedMoreData;
-  switch (mode_) {
-    case kParseModeClusters:
-      parse_status = ParseCluster(ptr_element_size);
-      break;
-    case kParseModeSegmentHeaders:
-      parse_status = ParseSegmentHeaders(ptr_element_size);
-      if (parse_status == kSuccess) {
-        // Parsed the segment headers, look for clusters from here on out...
-        mode_ = kParseModeClusters;
-      }
-  }
-  return parse_status;
+  DCHECK(parse_func_ != NULL);
+  return (this->*parse_func_)(ptr_element_size);
 }
 
 // Tries to parse the segment headers, segment info and segment tracks.
@@ -216,6 +205,7 @@ int WebmBufferParser::ParseSegmentHeaders(int32* ptr_element_size) {
   LOG(INFO) << "element_size=" << headers_length;
   total_bytes_parsed_ = headers_length;
   *ptr_element_size = static_cast<int32>(headers_length);
+  parse_func_ = &WebmBufferParser::ParseCluster;
   return kSuccess;
 }
 
