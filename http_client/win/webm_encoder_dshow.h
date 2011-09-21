@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef HTTP_CLIENT_WEBM_ENCODER_DSHOW_H_
-#define HTTP_CLIENT_WEBM_ENCODER_DSHOW_H_
+#ifndef HTTP_CLIENT_WIN_WEBM_ENCODER_DSHOW_H_
+#define HTTP_CLIENT_WIN_WEBM_ENCODER_DSHOW_H_
 
 #include <comdef.h>
 // files included by dshow.h cause many 4996 warnings, disable them:
@@ -80,6 +80,10 @@ const CLSID CLSID_VP8Encoder = {
   0x11DF,
   {0x94, 0xAF, 0x00, 0x26, 0xB9, 0x77, 0xEE, 0xAA}
 };
+
+// Utility functions for conversion between seconds and 100ns ticks.
+double media_time_to_seconds(REFERENCE_TIME media_time);
+REFERENCE_TIME seconds_to_media_time(double seconds);
 
 // WebM encoder object. Currently supports only live encoding from the primary
 // video and audio input devices on the user system.
@@ -305,8 +309,6 @@ class PinInfo {
   bool IsVideo() const;
   // Returns true for pins with media type stream.
   bool IsStream() const;
-  // Utility function for free'ing |AM_MEDIA_TYPE| pointers.
-  static void FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type);
  private:
   // Disallow construction without IPinPtr.
   PinInfo();
@@ -339,4 +341,4 @@ class VideoPinInfo {
 
 }  // namespace webmlive
 
-#endif  // HTTP_CLIENT_WEBM_ENCODER_DSHOW_H_
+#endif  // HTTP_CLIENT_WIN_WEBM_ENCODER_DSHOW_H_

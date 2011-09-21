@@ -7,7 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "win/webm_encoder_dshow.h"
 
-#include <dvdmedia.h>  // Needed for |VIDEOINFOHEADER2|.
+//#include <dvdmedia.h>  // Needed for |VIDEOINFOHEADER2|.
 #include <initguid.h>  // MUST be included before VorbisTypes.h to avoid
                        // undefined external error for
                        // IID_VorbisEncodeSettings due to behavior of
@@ -24,6 +24,8 @@
 #include "webmdshow/common/hrtext.hpp"
 #include "webmdshow/IDL/vp8encoderidl.h"
 #include "webmdshow/IDL/webmmuxidl.h"
+#include "win/media_type_dshow.h"
+#include "win/webm_guids.h"
 
 namespace webmlive {
 
@@ -36,6 +38,14 @@ const wchar_t* const kVorbisEncoderName = L"VorbisEncoder";
 const wchar_t* const kWebmMuxerName = L"WebmMuxer";
 const wchar_t* const kFileWriterName = L"FileWriter";
 
+// Converts a std::string to std::wstring.
+std::wstring string_to_wstring(std::string str) {
+  std::wostringstream wstr;
+  wstr << str.c_str();
+  return wstr.str();
+}
+}  // anonymous namespace
+
 // Converts media time (100 nanosecond ticks) to seconds.
 double media_time_to_seconds(REFERENCE_TIME media_time) {
   return media_time / 10000000.0;
@@ -45,14 +55,6 @@ double media_time_to_seconds(REFERENCE_TIME media_time) {
 REFERENCE_TIME seconds_to_media_time(double seconds) {
   return static_cast<REFERENCE_TIME>(seconds * 10000000);
 }
-
-// Converts a std::string to std::wstring.
-std::wstring string_to_wstring(std::string str) {
-  std::wostringstream wstr;
-  wstr << str.c_str();
-  return wstr.str();
-}
-}  // anonymous namespace
 
 WebmEncoderImpl::WebmEncoderImpl()
     : stop_(false),
@@ -1138,7 +1140,7 @@ bool PinInfo::HasMajorType(GUID major_type) const {
           break;
         }
         has_type = (ptr_media_type && ptr_media_type->majortype == major_type);
-        FreeMediaTypeData(ptr_media_type);
+        MediaType::FreeMediaTypeData(ptr_media_type);
         if (has_type) {
           break;
         }
@@ -1197,26 +1199,6 @@ bool PinInfo::IsStream() const {
     is_stream_pin = HasMajorType(MEDIATYPE_Stream);
   }
   return is_stream_pin;
-}
-
-// Utility function for proper clean up of resources owned by |AM_MEDIA_TYPE|
-// pointers.
-void PinInfo::FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type) {
-  if (ptr_media_type) {
-    AM_MEDIA_TYPE& mt = *ptr_media_type;
-    if (mt.cbFormat != 0) {
-      CoTaskMemFree((PVOID)mt.pbFormat);
-      mt.cbFormat = 0;
-      mt.pbFormat = NULL;
-    }
-    if (mt.pUnk != NULL) {
-      // |pUnk| should not be used, but because the Microsoft example code
-      // has this section, it's included here-- leaking is never OK. (The
-      // example also includes the note "pUnk should not be used").
-      mt.pUnk->Release();
-      mt.pUnk = NULL;
-    }
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1281,7 +1263,7 @@ double VideoPinInfo::frames_per_second() const {
             media_time_to_seconds(media_time_ticks_per_frame);
         frames_per_second = 1.0/seconds_per_frame;
       }
-      PinInfo::FreeMediaTypeData(&ptr_media_type);
+      MediaType::FreeMediaTypeData(&ptr_media_type);
     }
   }
   return frames_per_second;
