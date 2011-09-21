@@ -935,6 +935,137 @@ std::wstring CaptureSourceLoader::GetMonikerFriendlyName(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// MediaType
+//
+MediaType::MediaType(): ptr_type_(NULL) {
+  LOG(INFO) << "MediaType";
+}
+
+MediaType::~MediaType() {
+  FreeMediaType(ptr_type_);
+}
+
+const AM_MEDIA_TYPE* MediaType::get() const {
+  return ptr_type_;
+}
+
+// Utility function for cleaning up AM_MEDIA_TYPE and its format blob.
+void MediaType::FreeMediaType(AM_MEDIA_TYPE* ptr_media_type) {
+  if (ptr_media_type) {
+    FreeMediaTypeData(ptr_media_type);
+    CoTaskMemFree(ptr_media_type);
+  }
+}
+
+// Utility function for proper clean up of AM_MEDIA_TYPE format blob.
+void MediaType::FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type) {
+  if (ptr_media_type) {
+    if (ptr_media_type->cbFormat != 0) {
+      CoTaskMemFree(ptr_media_type->pbFormat);
+      ptr_media_type->cbFormat = 0;
+      ptr_media_type->pbFormat = NULL;
+    }
+    if (ptr_media_type->pUnk != NULL) {
+      // |pUnk| should not be used, but because the Microsoft example code
+      // has this section, it's included here. (The example also includes the
+      // note, "pUnk should not be used", but does not explain why cleanup code
+      // remains in place).
+      ptr_media_type->pUnk->Release();
+      ptr_media_type->pUnk = NULL;
+    }
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// VideoMediaType
+//
+VideoMediaType::VideoMediaType() {
+  LOG(INFO) << "VideoMediaType";
+}
+
+VideoMediaType::~VideoMediaType() {
+  LOG(INFO) << "~VideoMediaType";
+}
+
+// Allocates storage for AM_MEDIA_TYPE struct (|ptr_type_|), and its format
+// blob (|ptr_type_->pbFormat|).
+int VideoMediaType::Init(const GUID& major_type, const GUID& format_type) {
+  FreeMediaType(ptr_type_);
+  if (major_type != MEDIATYPE_Video) {
+    LOG(ERROR) << "Unsupported major type.";
+    return kUnsupportedMajorType;
+  }
+  if (format_type != FORMAT_VideoInfo && format_type != FORMAT_VideoInfo2) {
+    LOG(ERROR) << "Unsupported format type.";
+    return kUnsupportedFormatType;
+  }
+  // Allocate basic |AM_MEDIA_TYPE| storage, and assign |ptr_type_|.
+  const uint64 type_size = sizeof(AM_MEDIA_TYPE);
+  ptr_type_ = static_cast<AM_MEDIA_TYPE*>(CoTaskMemAlloc(type_size));
+  if (!ptr_type_) {
+    LOG(ERROR) << "AM_MEDIA_TYPE CoTaskMemAlloc returned NULL!";
+    return kNoMemory;
+  }
+  memset(ptr_type_, 0, sizeof(AM_MEDIA_TYPE));
+  ptr_type_->majortype = major_type;
+  ptr_type_->formattype = format_type;
+  // Store size of |format_type|.
+  ptr_type_->cbFormat = format_type == FORMAT_VideoInfo ?
+      sizeof(VIDEOINFOHEADER) : sizeof(VIDEOINFOHEADER2);
+  // Alloc storage for |format_type|'s format block.
+  ptr_type_->pbFormat =
+      static_cast<BYTE*>(CoTaskMemAlloc(ptr_type_->cbFormat));
+  if (!ptr_type_->pbFormat) {
+    LOG(ERROR) << "AM_MEDIA_TYPE format blob CoTaskMemAlloc returned NULL!";
+    return kNoMemory;
+  }
+  memset(ptr_type_, 0, ptr_type_->cbFormat);
+  return kSuccess;
+}
+
+// Copies |media_type| data to |ptr_type_| using |Init| overload to allocate
+// storage for |ptr_type_|.
+int VideoMediaType::Init(const AM_MEDIA_TYPE& media_type) {
+  int status = Init(media_type.majortype, media_type.formattype);
+  if (status) {
+    LOG(ERROR) << "Init failed, status=" << status;
+    return status;
+  }
+  *ptr_type_ = media_type;
+  if (ptr_type_->cbFormat != media_type.cbFormat) {
+    LOG(ERROR) << "AM_MEDIA_TYPE size mismatch, expected="
+               << ptr_type_->cbFormat << " actual=" << media_type.cbFormat
+               << ".";
+    return status;
+  }
+  memcpy(ptr_type_->pbFormat, media_type.pbFormat, ptr_type_->cbFormat);
+  return kSuccess;
+}
+
+// Configures AM_MEDIA_TYPE format blob for given |sub_type| and |config|.
+int VideoMediaType::ConfigureSubType(
+    VideoSubType sub_type,
+    const WebmEncoderConfig::VideoCaptureConfig &config) {
+  switch (sub_type) {
+    case kI420:
+    case kYV12:
+    case kYUY2:
+    case kUYVY:
+      break;
+    case kIYUV:
+      // TODO(tomfinegan): Add IYUV support to the VP8 encode filter. It's
+      //                   trivial: same format as I420; just a different 4cc.
+      LOG(ERROR) << "the VP8 encoder filter does not support IYUV.";
+      return kNotImplemented;
+      break;
+    default:
+      LOG(ERROR) << sub_type << " is not a known VideoSubType.";
+      return kUnsupportedSubType;
+  }
+  return kSuccess;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // PinFinder
 //
 
@@ -1138,7 +1269,7 @@ bool PinInfo::HasMajorType(GUID major_type) const {
           break;
         }
         has_type = (ptr_media_type && ptr_media_type->majortype == major_type);
-        FreeMediaTypeData(ptr_media_type);
+        MediaType::FreeMediaTypeData(ptr_media_type);
         if (has_type) {
           break;
         }
@@ -1197,26 +1328,6 @@ bool PinInfo::IsStream() const {
     is_stream_pin = HasMajorType(MEDIATYPE_Stream);
   }
   return is_stream_pin;
-}
-
-// Utility function for proper clean up of resources owned by |AM_MEDIA_TYPE|
-// pointers.
-void PinInfo::FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type) {
-  if (ptr_media_type) {
-    AM_MEDIA_TYPE& mt = *ptr_media_type;
-    if (mt.cbFormat != 0) {
-      CoTaskMemFree((PVOID)mt.pbFormat);
-      mt.cbFormat = 0;
-      mt.pbFormat = NULL;
-    }
-    if (mt.pUnk != NULL) {
-      // |pUnk| should not be used, but because the Microsoft example code
-      // has this section, it's included here-- leaking is never OK. (The
-      // example also includes the note "pUnk should not be used").
-      mt.pUnk->Release();
-      mt.pUnk = NULL;
-    }
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1281,7 +1392,7 @@ double VideoPinInfo::frames_per_second() const {
             media_time_to_seconds(media_time_ticks_per_frame);
         frames_per_second = 1.0/seconds_per_frame;
       }
-      PinInfo::FreeMediaTypeData(&ptr_media_type);
+      MediaType::FreeMediaTypeData(&ptr_media_type);
     }
   }
   return frames_per_second;

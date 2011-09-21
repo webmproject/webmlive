@@ -258,6 +258,62 @@ class CaptureSourceLoader {
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(CaptureSourceLoader);
 };
 
+// Base class for audio and video AM_MEDIA_TYPE wrapper classes.
+class MediaType {
+ public:
+  enum {
+    kUnsupportedSubType = -5,
+    kNotImplemented = -4,
+    kNoMemory = -3,
+    kUnsupportedFormatType = -2,
+    kUnsupportedMajorType = -1,
+    kSuccess = 0,
+  };
+  MediaType();
+  virtual ~MediaType();
+  // Returns |ptr_type_|.
+  const AM_MEDIA_TYPE* get() const;
+  virtual int Init(const GUID& major_type, const GUID& format_type) = 0;
+  virtual int Init(const AM_MEDIA_TYPE& media_type) = 0;
+  // Utility functions for free'ing |AM_MEDIA_TYPE| pointers.
+  static void FreeMediaType(AM_MEDIA_TYPE* ptr_media_type);
+  static void FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type);
+ private:
+  // Pointer to AM_MEDIA_TYPE memory allocated via CoTaskMemAlloc.
+  AM_MEDIA_TYPE* ptr_type_;
+  friend class VideoMediaType;
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(MediaType);
+};
+
+// Video specific AM_MEDIA_TYPE wrapper class.
+class VideoMediaType : public MediaType {
+ public:
+  enum VideoSubType {
+    kDefault = 0,
+    kI420 = 1,
+    kIYUV = 2,  // same as I420, just a different type name and 4cc.
+    kYV12 = 3,
+    kYUY2 = 4,
+    kUYVY = 5,
+  };
+  VideoMediaType();
+  virtual ~VideoMediaType();
+  // Allocates AM_MEDIA_TYPE for specified |major_type| and |format_type|.
+  // Supports only |major_type| equal to MEDIATYPE_Video, and |format_type|'s
+  // FORMAT_VideoInfo and FORMAT_VideoInfo2. Returns |kSuccess| for supported
+  // types.
+  virtual int Init(const GUID& major_type, const GUID& format_type);
+  // Copies |media_type| and returns |kSuccess|.
+  virtual int Init(const AM_MEDIA_TYPE& media_type);
+  // Configures format block using |sub_type| and |config|. Directly applies
+  // settings specified by |config| and returns success for supported
+  // |sub_type| values. Note that not all |VideoSubType| values are supported.
+  int ConfigureSubType(VideoSubType sub_type,
+                       const WebmEncoderConfig::VideoCaptureConfig& config);
+ private:
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoMediaType);
+};
+
 // Utility class for finding a specific pin on a DirectShow filter.
 class PinFinder {
  public:
@@ -305,8 +361,6 @@ class PinInfo {
   bool IsVideo() const;
   // Returns true for pins with media type stream.
   bool IsStream() const;
-  // Utility function for free'ing |AM_MEDIA_TYPE| pointers.
-  static void FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type);
  private:
   // Disallow construction without IPinPtr.
   PinInfo();
