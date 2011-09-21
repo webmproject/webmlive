@@ -7,7 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "win/webm_encoder_dshow.h"
 
-#include <dvdmedia.h>  // Needed for |VIDEOINFOHEADER2|.
+//#include <dvdmedia.h>  // Needed for |VIDEOINFOHEADER2|.
 #include <initguid.h>  // MUST be included before VorbisTypes.h to avoid
                        // undefined external error for
                        // IID_VorbisEncodeSettings due to behavior of
@@ -24,6 +24,8 @@
 #include "webmdshow/common/hrtext.hpp"
 #include "webmdshow/IDL/vp8encoderidl.h"
 #include "webmdshow/IDL/webmmuxidl.h"
+#include "win/media_type_dshow.h"
+#include "win/webm_guids.h"
 
 namespace webmlive {
 
@@ -36,6 +38,14 @@ const wchar_t* const kVorbisEncoderName = L"VorbisEncoder";
 const wchar_t* const kWebmMuxerName = L"WebmMuxer";
 const wchar_t* const kFileWriterName = L"FileWriter";
 
+// Converts a std::string to std::wstring.
+std::wstring string_to_wstring(std::string str) {
+  std::wostringstream wstr;
+  wstr << str.c_str();
+  return wstr.str();
+}
+}  // anonymous namespace
+
 // Converts media time (100 nanosecond ticks) to seconds.
 double media_time_to_seconds(REFERENCE_TIME media_time) {
   return media_time / 10000000.0;
@@ -45,14 +55,6 @@ double media_time_to_seconds(REFERENCE_TIME media_time) {
 REFERENCE_TIME seconds_to_media_time(double seconds) {
   return static_cast<REFERENCE_TIME>(seconds * 10000000);
 }
-
-// Converts a std::string to std::wstring.
-std::wstring string_to_wstring(std::string str) {
-  std::wostringstream wstr;
-  wstr << str.c_str();
-  return wstr.str();
-}
-}  // anonymous namespace
 
 WebmEncoderImpl::WebmEncoderImpl()
     : stop_(false),
@@ -298,8 +300,61 @@ int WebmEncoderImpl::CreateVideoSource() {
 }
 
 int WebmEncoderImpl::ConfigureVideoSource() {
-  // TODO(tomfinegan): support configuration of webcams!
-  LOG(WARNING) << __FUNCTION__" not implemented, patches welcome!";
+  WebmEncoderConfig::VideoCaptureConfig& video_config = config_.video_config;
+  if (video_config.width != kDefaultVideoWidth ||
+      video_config.height != kDefaultVideoHeight ||
+      video_config.frame_rate != kDefaultVideoFrameRate) {
+    VideoMediaType video_format;
+    // TODO(tomfinegan): This is just a quick test using I420... need to loop
+    //                   through |VideoMediaType|'s supported types, and try
+    //                   other formats when the IAMStreamConfig::SetFormat
+    //                   call fails.
+    // TODO(tomfinegan): If all types supported by |VideoMediaType| are not
+    //                   acceptable to |video_source_|'s output pin, use
+    //                   GetFormat and attempt adjustment only of frame rate
+    //                   and dimensions.
+    // TODO(tomfinegan): Bail out with a log warning when
+    //                   IAMStreamConfig::SetFormat fails for all attempts.
+    //                   Intelligent connect can potentially still allow for
+    //                   a connection to the VP8 encoder filter, even if none
+    //                   of the VP8 filter's formats are available from the
+    //                   source filter.
+    int status = video_format.Init(MEDIATYPE_Video, FORMAT_VideoInfo);
+    if (status) {
+      LOG(ERROR) << "video media type init failed.";
+      return WebmEncoder::kVideoConfigureError;
+    }
+    status = video_format.ConfigureSubType(VideoMediaType::kI420,
+                                           video_config);
+    if (status) {
+      LOG(ERROR) << "video sub type configuration failed.";
+      return WebmEncoder::kVideoConfigureError;
+    }
+    PinFinder pin_finder;
+    status = pin_finder.Init(video_source_);
+    if (status) {
+      LOG(ERROR) << "cannot look for pins on video source!";
+      return WebmEncoder::kVideoConfigureError;
+    }
+    IPinPtr video_src_pin = pin_finder.FindVideoOutputPin(0);
+    if (!video_src_pin) {
+      LOG(ERROR) << "cannot find output pin on video source!";
+      return WebmEncoder::kVideoConfigureError;
+    }
+    COMPTR_TYPEDEF(IAMStreamConfig);
+    IAMStreamConfigPtr config;
+    HRESULT hr = video_src_pin->QueryInterface(
+        config.GetIID(), reinterpret_cast<void**>(&config));
+    if (FAILED(hr)) {
+      LOG(ERROR) << "cannot obtain IAMStreamConfig." << HRLOG(hr);
+      return WebmEncoder::kVideoConfigureError;
+    }
+    hr = config->SetFormat(const_cast<AM_MEDIA_TYPE*>(video_format.get()));
+    if (FAILED(hr)) {
+      LOG(ERROR) << "IAMStreamConfig::SetFormat failed." << HRLOG(hr);
+      return WebmEncoder::kVideoConfigureError;
+    }
+  }
   return WebmEncoder::kSuccess;
 }
 
@@ -1138,7 +1193,7 @@ bool PinInfo::HasMajorType(GUID major_type) const {
           break;
         }
         has_type = (ptr_media_type && ptr_media_type->majortype == major_type);
-        FreeMediaTypeData(ptr_media_type);
+        MediaType::FreeMediaTypeData(ptr_media_type);
         if (has_type) {
           break;
         }
@@ -1199,26 +1254,6 @@ bool PinInfo::IsStream() const {
   return is_stream_pin;
 }
 
-// Utility function for proper clean up of resources owned by |AM_MEDIA_TYPE|
-// pointers.
-void PinInfo::FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type) {
-  if (ptr_media_type) {
-    AM_MEDIA_TYPE& mt = *ptr_media_type;
-    if (mt.cbFormat != 0) {
-      CoTaskMemFree((PVOID)mt.pbFormat);
-      mt.cbFormat = 0;
-      mt.pbFormat = NULL;
-    }
-    if (mt.pUnk != NULL) {
-      // |pUnk| should not be used, but because the Microsoft example code
-      // has this section, it's included here-- leaking is never OK. (The
-      // example also includes the note "pUnk should not be used").
-      mt.pUnk->Release();
-      mt.pUnk = NULL;
-    }
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // VideoPinInfo
 //
@@ -1256,32 +1291,19 @@ int VideoPinInfo::Init(const IPinPtr& pin) {
 // Grabs the pin media type, extracts the |VIDEOINFOHEADER|, calculates frame
 // rate using |AvgTimePerFrame|, and returns the value.  Returns a rate <0 on
 // failure. Note that an |AvgTimePerFrame| of 0 is interpreted as an error.
-double VideoPinInfo::frames_per_second() const {
+double VideoPinInfo::frame_rate() const {
   double frames_per_second = -1.0;
   // Validate |pin_| again; |_com_ptr_t| throws when empty.
   if (pin_) {
-    AM_MEDIA_TYPE ptr_media_type;
-    HRESULT hr = pin_->ConnectionMediaType(&ptr_media_type);
+    AM_MEDIA_TYPE media_type;
+    HRESULT hr = pin_->ConnectionMediaType(&media_type);
     if (hr == S_OK) {
-      int64 media_time_ticks_per_frame = 0;
-      const GUID& format = ptr_media_type.formattype;
-      if (format == FORMAT_MPEGVideo || format == FORMAT_VideoInfo) {
-        // |FORMAT_MPEGVideo| and |FORMAT_VideoInfo| use |VIDEOINFOHEADER|.
-        VIDEOINFOHEADER* ptr_video_info_header =
-            reinterpret_cast<VIDEOINFOHEADER*>(ptr_media_type.pbFormat);
-        media_time_ticks_per_frame = ptr_video_info_header->AvgTimePerFrame;
-      } else if (format == FORMAT_MPEG2Video || format == FORMAT_VideoInfo2) {
-        // |FORMAT_MPEG2Video| and |FORMAT_VideoInfo2| use |VIDEOINFOHEADER2|.
-        VIDEOINFOHEADER2* ptr_video_info_header =
-            reinterpret_cast<VIDEOINFOHEADER2*>(ptr_media_type.pbFormat);
-        media_time_ticks_per_frame = ptr_video_info_header->AvgTimePerFrame;
+      VideoMediaType video_format;
+      int status = video_format.Init(media_type);
+      if (status == kSuccess) {
+        frames_per_second = video_format.frame_rate();
       }
-      if (media_time_ticks_per_frame != 0) {
-        const double seconds_per_frame =
-            media_time_to_seconds(media_time_ticks_per_frame);
-        frames_per_second = 1.0/seconds_per_frame;
-      }
-      PinInfo::FreeMediaTypeData(&ptr_media_type);
+      MediaType::FreeMediaTypeData(&media_type);
     }
   }
   return frames_per_second;
