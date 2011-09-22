@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "win/webm_encoder_dshow.h"
+#include "http_client/win/webm_encoder_dshow.h"
 
 #include <dvdmedia.h>  // Needed for |VIDEOINFOHEADER2|.
 #include <initguid.h>  // MUST be included before VorbisTypes.h to avoid
@@ -16,11 +16,11 @@
 
 #include <sstream>
 
-#include "debug_util.h"
 #include "glog/logging.h"
+#include "http_client/debug_util.h"
+#include "http_client/webm_encoder.h"
 #include "oggdsf/IVorbisEncodeSettings.h"
 #include "oggdsf/VorbisTypes.h"
-#include "webm_encoder.h"
 #include "webmdshow/common/hrtext.hpp"
 #include "webmdshow/IDL/vp8encoderidl.h"
 #include "webmdshow/IDL/webmmuxidl.h"
@@ -36,6 +36,15 @@ const wchar_t* const kVorbisEncoderName = L"VorbisEncoder";
 const wchar_t* const kWebmMuxerName = L"WebmMuxer";
 const wchar_t* const kFileWriterName = L"FileWriter";
 
+// Converts a std::string to std::wstring.
+std::wstring string_to_wstring(const std::string& str) {
+  std::wostringstream wstr;
+  wstr << str.c_str();
+  return wstr.str();
+}
+
+}  // anonymous namespace
+
 // Converts media time (100 nanosecond ticks) to seconds.
 double media_time_to_seconds(REFERENCE_TIME media_time) {
   return media_time / 10000000.0;
@@ -45,14 +54,6 @@ double media_time_to_seconds(REFERENCE_TIME media_time) {
 REFERENCE_TIME seconds_to_media_time(double seconds) {
   return static_cast<REFERENCE_TIME>(seconds * 10000000);
 }
-
-// Converts a std::string to std::wstring.
-std::wstring string_to_wstring(std::string str) {
-  std::wostringstream wstr;
-  wstr << str.c_str();
-  return wstr.str();
-}
-}  // anonymous namespace
 
 WebmEncoderImpl::WebmEncoderImpl()
     : stop_(false),
@@ -211,7 +212,8 @@ int WebmEncoderImpl::Run() {
   using boost::thread;
   using std::nothrow;
   encode_thread_ = shared_ptr<thread>(
-      new (nothrow) thread(bind(&WebmEncoderImpl::WebmEncoderThread, this)));
+      new (nothrow) thread(bind(&WebmEncoderImpl::WebmEncoderThread,  // NOLINT
+                                this)));
   return kSuccess;
 }
 
@@ -901,8 +903,9 @@ IBaseFilterPtr CaptureSourceLoader::GetSource(const std::wstring name) {
 }
 
 // Extracts a string value from a |VARIANT|.  Returns emptry string on failure.
-std::wstring CaptureSourceLoader::GetStringProperty(IPropertyBagPtr &prop_bag,
-                                                    std::wstring prop_name) {
+std::wstring CaptureSourceLoader::GetStringProperty(
+    const IPropertyBagPtr &prop_bag,
+    std::wstring prop_name) {
   VARIANT var;
   VariantInit(&var);
   const HRESULT hr = prop_bag->Read(prop_name.c_str(), &var, NULL);

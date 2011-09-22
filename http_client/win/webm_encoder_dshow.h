@@ -5,27 +5,20 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef HTTP_CLIENT_WEBM_ENCODER_DSHOW_H_
-#define HTTP_CLIENT_WEBM_ENCODER_DSHOW_H_
+#ifndef HTTP_CLIENT_WIN_WEBM_ENCODER_DSHOW_H_
+#define HTTP_CLIENT_WIN_WEBM_ENCODER_DSHOW_H_
 
 #include <comdef.h>
-// files included by dshow.h cause many 4996 warnings, disable them:
-#pragma warning(disable:4996)
 #include <dshow.h>
-#pragma warning(default:4996)
 
-// <map> includes <cstdlib> (indirectly), which leads to deprecation warnings,
-// disable them.
-#pragma warning(disable:4995)
 #include <map>
-#pragma warning(default:4995)
 #include <string>
 
-#include "basictypes.h"
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/thread.hpp"
-#include "http_client_base.h"
-#include "webm_encoder.h"
+#include "http_client/basictypes.h"
+#include "http_client/http_client_base.h"
+#include "http_client/webm_encoder.h"
 
 namespace webmlive {
 // A slightly more brief version of the com_ptr_t definition macro.
@@ -80,6 +73,10 @@ const CLSID CLSID_VP8Encoder = {
   0x11DF,
   {0x94, 0xAF, 0x00, 0x26, 0xB9, 0x77, 0xEE, 0xAA}
 };
+
+// Utility functions for conversion between seconds and 100ns ticks.
+double media_time_to_seconds(REFERENCE_TIME media_time);
+REFERENCE_TIME seconds_to_media_time(double seconds);
 
 // WebM encoder object. Currently supports only live encoding from the primary
 // video and audio input devices on the user system.
@@ -233,9 +230,13 @@ class CaptureSourceLoader {
   // CLSID_AudioInputDeviceCategory or CLSID_VideoInputDeviceCategory.
   int Init(CLSID source_type);
   // Returns number of sources found by Init.
-  int GetNumSources() const { return sources_.size(); };
+  int GetNumSources() const {
+    return sources_.size();
+  }
   // Return source name for specified index.
-  std::wstring GetSourceName(int index) { return sources_[index]; };
+  std::wstring GetSourceName(int index) {
+    return sources_[index];
+  }
   // Returns filter for capture source at specified |index|.
   IBaseFilterPtr GetSource(int index);
   // Returns filter for capture source specified by |name|.
@@ -245,7 +246,7 @@ class CaptureSourceLoader {
   int FindAllSources();
   // Utility for returning the string property specified by |prop_name| stored
   // in |prop_bag|.
-  std::wstring GetStringProperty(IPropertyBagPtr& prop_bag,
+  std::wstring GetStringProperty(const IPropertyBagPtr& prop_bag,
                                  std::wstring prop_name);
   // Returns the value of |moniker|'s friendly name property.
   std::wstring GetMonikerFriendlyName(const IMonikerPtr& moniker);
@@ -339,4 +340,4 @@ class VideoPinInfo {
 
 }  // namespace webmlive
 
-#endif  // HTTP_CLIENT_WEBM_ENCODER_DSHOW_H_
+#endif  // HTTP_CLIENT_WIN_WEBM_ENCODER_DSHOW_H_

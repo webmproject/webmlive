@@ -10,28 +10,42 @@
 
 #include <string>
 
-#include "basictypes.h"
 #include "boost/scoped_ptr.hpp"
-#include "http_client_base.h"
+#include "http_client/basictypes.h"
+#include "http_client/http_client_base.h"
 
 namespace webmlive {
-
 // Special value interpreted by |WebmEncoder| as "use implementation default".
-static const int kUseEncoderDefault = -200;
+const int kUseEncoderDefault = -200;
+// Special value interpreted by |WebmEncoder| as "use capture device default".
+const int kUseDeviceDefault = -200;
 
-// Defaults for live encodes.
-static const double kDefaultVpxKeyframeInterval = 1.0;
-static const int kDefaultVorbisBitrate = kUseEncoderDefault;
-static const int kDefaultVpxBitrate = 500;
-static const int kDefaultVpxMinQ = 10;
-static const int kDefaultVpxMaxQ = 46;
-static const int kDefaultVpxSpeed = kUseEncoderDefault;
-static const int kDefaultVpxStaticThreshold = kUseEncoderDefault;
-static const int kDefaultVpxUndershoot = kUseEncoderDefault;
-static const int kDefaultVpxThreadCount = kUseEncoderDefault;
-static const int kDefaultVpxTokenPartitions = kUseEncoderDefault;
+// Video capture defaults.
+const int kDefaultVideoWidth = kUseDeviceDefault;
+const int kDefaultVideoHeight = kUseDeviceDefault;
+const int kDefaultVideoFrameRate = kUseDeviceDefault;
+// Vorbis defaults.
+const int kDefaultVorbisBitrate = kUseEncoderDefault;
+// VP8 defaults.
+const double kDefaultVpxKeyframeInterval = 1.0;
+const int kDefaultVpxBitrate = 500;
+const int kDefaultVpxMinQ = 10;
+const int kDefaultVpxMaxQ = 46;
+const int kDefaultVpxSpeed = kUseEncoderDefault;
+const int kDefaultVpxStaticThreshold = kUseEncoderDefault;
+const int kDefaultVpxUndershoot = kUseEncoderDefault;
+const int kDefaultVpxThreadCount = kUseEncoderDefault;
+const int kDefaultVpxTokenPartitions = kUseEncoderDefault;
 
 struct WebmEncoderConfig {
+  struct VideoCaptureConfig {
+    // Width, in pixels.
+    int width;
+    // Height, in pixels.
+    int height;
+    // Frame rate, in frames per second.
+    double frame_rate;
+  };
   struct VpxConfig {
     // Time between keyframes, in seconds.
     double keyframe_interval;
