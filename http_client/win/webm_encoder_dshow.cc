@@ -7,7 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "win/webm_encoder_dshow.h"
 
-#include <dvdmedia.h>  // Needed for |VIDEOINFOHEADER2|.
+//#include <dvdmedia.h>  // Needed for |VIDEOINFOHEADER2|.
 #include <initguid.h>  // MUST be included before VorbisTypes.h to avoid
                        // undefined external error for
                        // IID_VorbisEncodeSettings due to behavior of
@@ -16,6 +16,8 @@
 
 #include <sstream>
 
+#include "http_client_base.h"
+#include "boost/scoped_array.hpp"
 #include "debug_util.h"
 #include "glog/logging.h"
 #include "oggdsf/IVorbisEncodeSettings.h"
@@ -24,6 +26,8 @@
 #include "webmdshow/common/hrtext.hpp"
 #include "webmdshow/IDL/vp8encoderidl.h"
 #include "webmdshow/IDL/webmmuxidl.h"
+#include "win/media_type_dshow.h"
+#include "win/webm_guids.h"
 
 namespace webmlive {
 
@@ -43,6 +47,22 @@ std::wstring string_to_wstring(std::string str) {
   return wstr.str();
 }
 
+// Converts |wstr| to a multi-byte string and returns result std::string.
+std::string wstring_to_string(const std::wstring& wstr) {
+  // Conversion buffer for |wcstombs| calls.
+  const size_t buf_size = wstr.length() + 1;
+  boost::scoped_array<char> temp_str(new (std::nothrow) char[buf_size]);
+  if (!temp_str) {
+    fprintf(stderr, "Cannot allocate wide char conversion buffer!\n");
+    std::string("<empty>");
+  }
+  memset(temp_str.get(), 0, buf_size);
+  size_t num_converted = 0;
+  wcstombs_s(&num_converted, temp_str.get(), buf_size, wstr.c_str(),
+             wstr.length()*sizeof(wchar_t));
+  std::string str = temp_str.get();
+  return str;
+}
 }  // anonymous namespace
 
 // Converts media time (100 nanosecond ticks) to seconds.
@@ -103,11 +123,6 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
   if (status) {
     LOG(ERROR) << "CreateVideoSource failed: " << status;
     return WebmEncoder::kNoVideoSource;
-  }
-  status = ConfigureVideoSource();
-  if (status) {
-    LOG(ERROR) << "ConfigureVideoSource failed: " << status;
-    return WebmEncoder::kVideoConfigureError;
   }
   status = CreateVpxEncoder();
   if (status) {
@@ -277,7 +292,8 @@ int WebmEncoderImpl::CreateVideoSource() {
     return WebmEncoder::kNoVideoSource;
   }
   for (int i = 0; i < loader.GetNumSources(); ++i) {
-    LOG(INFO) << "vdev" << i << ": " << loader.GetSourceName(i).c_str();
+    LOG(INFO) << "vdev" << i << ": "
+              << wstring_to_string(loader.GetSourceName(i).c_str());
   }
   if (video_device_name_.empty()) {
     video_source_ = loader.GetSource(0);
@@ -298,9 +314,41 @@ int WebmEncoderImpl::CreateVideoSource() {
   return kSuccess;
 }
 
-int WebmEncoderImpl::ConfigureVideoSource() {
-  // TODO(tomfinegan): support configuration of webcams!
-  LOG(WARNING) << __FUNCTION__" not implemented, patches welcome!";
+// Attempts to configure |video_source_pin| media type through using user
+// settings stored in |config_.video_config| with |VideoMediaType| to produce
+// an AM_MEDIA_TYPE struct suitable for use with IAMStreamConfig::SetFormat.
+// Returns |kSuccess| upon successful configuration.
+int WebmEncoderImpl::ConfigureVideoSource(IPinPtr& video_source_pin,
+                                          int sub_type) {
+  WebmEncoderConfig::VideoCaptureConfig& video_config = config_.video_config;
+  if (video_config.width != kDefaultVideoWidth ||
+      video_config.height != kDefaultVideoHeight ||
+      video_config.frame_rate != kDefaultVideoFrameRate) {
+    VideoMediaType video_format;
+    int status = video_format.Init(MEDIATYPE_Video, FORMAT_VideoInfo);
+    if (status) {
+      LOG(ERROR) << "video media type init failed.";
+      return WebmEncoder::kVideoConfigureError;
+    }
+    VideoMediaType::VideoSubType video_sub_type =
+        static_cast<VideoMediaType::VideoSubType>(sub_type);
+    status = video_format.ConfigureSubType(video_sub_type, video_config);
+    if (status) {
+      LOG(ERROR) << "video sub type configuration failed.";
+      return WebmEncoder::kVideoConfigureError;
+    }
+    IAMStreamConfigPtr config(video_source_pin);
+    if (!config) {
+      LOG(ERROR) << "cannot obtain IAMStreamConfig from video source pin.";
+      return WebmEncoder::kVideoConfigureError;
+    }
+    HRESULT hr =
+        config->SetFormat(const_cast<AM_MEDIA_TYPE*>(video_format.get()));
+    if (FAILED(hr)) {
+      LOG(ERROR) << "IAMStreamConfig::SetFormat failed." << HRLOG(hr);
+      return WebmEncoder::kVideoConfigureError;
+    }
+  }
   return WebmEncoder::kSuccess;
 }
 
@@ -320,7 +368,8 @@ int WebmEncoderImpl::CreateVpxEncoder() {
 }
 
 // Locates the output pin on |video_source_| and the input pin on
-// |vpx_encoder_|, connects them directly.
+// |vpx_encoder_|, configures the output pin with user settings, and attempts
+// to connect the pins directly. Returns kSuccess if able to make a connection.
 int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
   PinFinder pin_finder;
   int status = pin_finder.Init(video_source_);
@@ -328,8 +377,8 @@ int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
     LOG(ERROR) << "cannot look for pins on video source!";
     return kVideoConnectError;
   }
-  IPinPtr video_src_pin = pin_finder.FindVideoOutputPin(0);
-  if (!video_src_pin) {
+  IPinPtr video_source_pin = pin_finder.FindVideoOutputPin(0);
+  if (!video_source_pin) {
     LOG(ERROR) << "cannot find output pin on video source!";
     return kVideoConnectError;
   }
@@ -343,16 +392,59 @@ int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
     LOG(ERROR) << "cannot find video input pin on VP8 encoder!";
     return kVideoConnectError;
   }
-  // TODO(tomfinegan): Add WebM Color Conversion filter when |ConnectDirect|
-  //                   fails here.
-  const HRESULT hr = graph_builder_->ConnectDirect(video_src_pin,
-                                                   vpx_input_pin,
-                                                   NULL);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot connect video source to VP8 encoder." << HRLOG(hr);
-    return kVideoConnectError;
+  status = kVideoConnectError;
+  HRESULT hr = E_FAIL;
+  for (int i = 0; i < VideoMediaType::kNumVideoSubtypes; ++i) {
+    status = ConfigureVideoSource(video_source_pin, i);
+    if (status == kSuccess) {
+      LOG(INFO) << "Format " << i << " configuration OK.";
+    } else {
+      continue;
+    }
+    hr = graph_builder_->ConnectDirect(video_source_pin, vpx_input_pin, NULL);
+    if (hr != S_OK) {
+      LOG(INFO) << "Format " << i << " connection failed.";
+    } else {
+      LOG(INFO) << "Format " << i << " connection OK.";
+      break;
+    }
   }
-  return kSuccess;
+  if (status || hr != S_OK) {
+    // All previous connection attempts failed. Try one last time using the
+    // |video_source_pin|'s current format.
+    IAMStreamConfigPtr pin_config(video_source_pin);
+    status = kVideoConnectError;
+    if (pin_config) {
+      AM_MEDIA_TYPE* ptr_media_type = NULL;
+      hr = pin_config->GetFormat(&ptr_media_type);
+      if (hr == S_OK && ptr_media_type) {
+        hr = graph_builder_->ConnectDirect(video_source_pin, vpx_input_pin,
+                                           ptr_media_type);
+        if (hr == S_OK) {
+          LOG(INFO) << "Connected with video source pin default format.";
+          status = kSuccess;
+        } else {
+          LOG(ERROR) << "Cannot connect video source to VP8 encoder.";
+        }
+        MediaType::FreeMediaType(ptr_media_type);
+      }
+    }
+  }
+  if (status == kSuccess && hr == S_OK) {
+    AM_MEDIA_TYPE media_type = {0};
+    // log the actual width/height/frame rate.
+    hr = video_source_pin->ConnectionMediaType(&media_type);
+    if (hr == S_OK) {
+      VideoMediaType video_format;
+      if (video_format.Init(media_type) == kSuccess) {
+        LOG(INFO) << "actual capture width=" << video_format.width()
+                  << " height=" << video_format.height()
+                  << " frame_rate=" << video_format.frame_rate();
+      }
+    }
+    MediaType::FreeMediaTypeData(&media_type);
+  }
+  return status;
 }
 
 // Sets minimal settings required for a realtime encode.
@@ -473,7 +565,8 @@ int WebmEncoderImpl::CreateAudioSource() {
       return WebmEncoder::kNoAudioSource;
     }
     for (int i = 0; i < loader.GetNumSources(); ++i) {
-      LOG(INFO) << "adev" << i << ": " << loader.GetSourceName(i).c_str();
+      LOG(INFO) << "adev" << i << ": "
+                << wstring_to_string(loader.GetSourceName(i).c_str());
     }
     if (audio_device_name_.empty()) {
       audio_source_ = loader.GetSource(0);
@@ -845,7 +938,8 @@ int CaptureSourceLoader::FindAllSources() {
       LOG(WARNING) << "source=" << source_index << " has no name, skipping.";
       continue;
     }
-    LOG(INFO) << "source=" << source_index << " name=" << name.c_str();
+    LOG(INFO) << "source=" << source_index << " name="
+              << wstring_to_string(name.c_str());
     sources_[source_index] = name;
     ++source_index;
   }
@@ -1139,7 +1233,7 @@ bool PinInfo::HasMajorType(GUID major_type) const {
           break;
         }
         has_type = (ptr_media_type && ptr_media_type->majortype == major_type);
-        FreeMediaTypeData(ptr_media_type);
+        MediaType::FreeMediaTypeData(ptr_media_type);
         if (has_type) {
           break;
         }
@@ -1200,26 +1294,6 @@ bool PinInfo::IsStream() const {
   return is_stream_pin;
 }
 
-// Utility function for proper clean up of resources owned by |AM_MEDIA_TYPE|
-// pointers.
-void PinInfo::FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type) {
-  if (ptr_media_type) {
-    AM_MEDIA_TYPE& mt = *ptr_media_type;
-    if (mt.cbFormat != 0) {
-      CoTaskMemFree((PVOID)mt.pbFormat);
-      mt.cbFormat = 0;
-      mt.pbFormat = NULL;
-    }
-    if (mt.pUnk != NULL) {
-      // |pUnk| should not be used, but because the Microsoft example code
-      // has this section, it's included here-- leaking is never OK. (The
-      // example also includes the note "pUnk should not be used").
-      mt.pUnk->Release();
-      mt.pUnk = NULL;
-    }
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // VideoPinInfo
 //
@@ -1257,32 +1331,19 @@ int VideoPinInfo::Init(const IPinPtr& pin) {
 // Grabs the pin media type, extracts the |VIDEOINFOHEADER|, calculates frame
 // rate using |AvgTimePerFrame|, and returns the value.  Returns a rate <0 on
 // failure. Note that an |AvgTimePerFrame| of 0 is interpreted as an error.
-double VideoPinInfo::frames_per_second() const {
+double VideoPinInfo::frame_rate() const {
   double frames_per_second = -1.0;
   // Validate |pin_| again; |_com_ptr_t| throws when empty.
   if (pin_) {
-    AM_MEDIA_TYPE ptr_media_type;
-    HRESULT hr = pin_->ConnectionMediaType(&ptr_media_type);
+    AM_MEDIA_TYPE media_type;
+    HRESULT hr = pin_->ConnectionMediaType(&media_type);
     if (hr == S_OK) {
-      int64 media_time_ticks_per_frame = 0;
-      const GUID& format = ptr_media_type.formattype;
-      if (format == FORMAT_MPEGVideo || format == FORMAT_VideoInfo) {
-        // |FORMAT_MPEGVideo| and |FORMAT_VideoInfo| use |VIDEOINFOHEADER|.
-        VIDEOINFOHEADER* ptr_video_info_header =
-            reinterpret_cast<VIDEOINFOHEADER*>(ptr_media_type.pbFormat);
-        media_time_ticks_per_frame = ptr_video_info_header->AvgTimePerFrame;
-      } else if (format == FORMAT_MPEG2Video || format == FORMAT_VideoInfo2) {
-        // |FORMAT_MPEG2Video| and |FORMAT_VideoInfo2| use |VIDEOINFOHEADER2|.
-        VIDEOINFOHEADER2* ptr_video_info_header =
-            reinterpret_cast<VIDEOINFOHEADER2*>(ptr_media_type.pbFormat);
-        media_time_ticks_per_frame = ptr_video_info_header->AvgTimePerFrame;
+      VideoMediaType video_format;
+      int status = video_format.Init(media_type);
+      if (status == kSuccess) {
+        frames_per_second = video_format.frame_rate();
       }
-      if (media_time_ticks_per_frame != 0) {
-        const double seconds_per_frame =
-            media_time_to_seconds(media_time_ticks_per_frame);
-        frames_per_second = 1.0/seconds_per_frame;
-      }
-      PinInfo::FreeMediaTypeData(&ptr_media_type);
+      MediaType::FreeMediaTypeData(&media_type);
     }
   }
   return frames_per_second;
