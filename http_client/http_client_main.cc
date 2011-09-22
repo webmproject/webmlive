@@ -65,6 +65,10 @@ void usage(const char** argv) {
   printf("    --vdev <video source name>     Video capture device name.\n");
   printf("  Vorbis Encoder options:\n");
   printf("    --vorbis_bitrate <kbps>            Audio bitrate.\n");
+  printf("  Video source configuration options:\n");
+  printf("    --vwidth <width>                   Width in pixels.\n");
+  printf("    --vheight <height>                 Height in pixels.\n");
+  printf("    --vframe_rate <width>              Frames per second.\n");
   printf("  VPX Encoder options:\n");
   printf("    --vpx_bitrate <kbps>               Video bitrate.\n");
   printf("    --vpx_keyframe_interval <seconds>  Time between keyframes.\n");
@@ -127,44 +131,40 @@ void parse_command_line(int argc, const char** argv,
       unparsed_vars.push_back(argv[++i]);
     } else if (!strcmp("--adev", argv[i])) {
       enc_config.audio_device_name = argv[++i];
-    } else if (!strcmp("--vdev", argv[i])) {
-      enc_config.video_device_name = argv[++i];
     } else if (!strcmp("--stream_name", argv[i])) {
       uploader_settings.stream_name = argv[++i];
     } else if (!strcmp("--stream_id", argv[i])) {
       uploader_settings.stream_id = argv[++i];
     } else if (!strcmp("--form_post", argv[i])) {
       uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
+    } else if (!strcmp("--vdev", argv[i])) {
+      enc_config.video_device_name = argv[++i];
+    } else if (!strcmp("--vwidth", argv[i])) {
+      enc_config.video_config.width = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vheight", argv[i])) {
+      enc_config.video_config.height = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vframe_rate", argv[i])) {
+      enc_config.video_config.frame_rate = strtod(argv[++i], NULL);
     } else if (!strcmp("--vorbis_bitrate", argv[i])) {
-      char* ptr_end;
-      enc_config.vorbis_bitrate = strtol(argv[++i], &ptr_end, 10);
+      enc_config.vorbis_bitrate = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_keyframe_interval", argv[i])) {
-      char* ptr_end;
-      enc_config.vpx_config.keyframe_interval = strtod(argv[++i], &ptr_end);
+      enc_config.vpx_config.keyframe_interval = strtod(argv[++i], NULL);
     } else if (!strcmp("--vpx_bitrate", argv[i])) {
-      char* ptr_end;
-      enc_config.vpx_config.bitrate = strtol(argv[++i], &ptr_end, 10);
+      enc_config.vpx_config.bitrate = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_min_q", argv[i])) {
-      char* ptr_end;
-      enc_config.vpx_config.min_quantizer = strtol(argv[++i], &ptr_end, 10);
+      enc_config.vpx_config.min_quantizer = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_max_q", argv[i])) {
-      char* ptr_end;
-      enc_config.vpx_config.max_quantizer = strtol(argv[++i], &ptr_end, 10);
+      enc_config.vpx_config.max_quantizer = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_speed", argv[i])) {
-      char* ptr_end;
-      enc_config.vpx_config.speed = strtol(argv[++i], &ptr_end, 10);
+      enc_config.vpx_config.speed = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_static_threshold", argv[i])) {
-      char* ptr_end;
-      enc_config.vpx_config.static_threshold = strtol(argv[++i], &ptr_end, 10);
+      enc_config.vpx_config.static_threshold = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_threads", argv[i])) {
-      char* ptr_end;
-      enc_config.vpx_config.thread_count = strtol(argv[++i], &ptr_end, 10);
+      enc_config.vpx_config.thread_count = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_token_partitions", argv[i])) {
-      char* ptr_end;
-      enc_config.vpx_config.token_partitions = strtol(argv[++i], &ptr_end, 10);
+      enc_config.vpx_config.token_partitions = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_undershoot", argv[i])) {
-      char* ptr_end;
-      enc_config.vpx_config.undershoot = strtol(argv[++i], &ptr_end, 10);
+      enc_config.vpx_config.undershoot = strtol(argv[++i], NULL, 10);
     }
   }
   // Store user HTTP headers.
