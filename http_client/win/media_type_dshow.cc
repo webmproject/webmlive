@@ -55,6 +55,38 @@ void MediaType::FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type) {
   }
 }
 
+// Allocates base AM_MEDIA_TYPE storage. Used by specialized media type classes.
+int MediaType::AllocTypeStruct() {
+  const SIZE_T type_size = sizeof(AM_MEDIA_TYPE);
+  ptr_type_ = reinterpret_cast<AM_MEDIA_TYPE*>(CoTaskMemAlloc(type_size));
+  if (!ptr_type_) {
+    LOG(ERROR) << "AM_MEDIA_TYPE CoTaskMemAlloc returned NULL!";
+    return kNoMemory;
+  }
+  memset(ptr_type_, 0, type_size);
+  return kSuccess;
+}
+
+// Allocates memory for AM_MEDIA_TYPE format blob.
+int MediaType::AllocFormatBlob(SIZE_T blob_size) {
+  if (blob_size == 0) {
+    LOG(ERROR) << "cannot allocate format blob of size 0.";
+    return kInvalidArg;
+  }
+  if (!ptr_type_) {
+    LOG(ERROR) << "NULL media type.";
+    return kNullType;
+  }
+  ptr_type_->pbFormat = reinterpret_cast<BYTE*>(CoTaskMemAlloc(blob_size));
+  if (!ptr_type_->pbFormat) {
+    LOG(ERROR) << "format blob CoTaskMemAlloc returned NULL!";
+    return kNoMemory;
+  }
+  memset(ptr_type_->pbFormat, 0, blob_size);
+  ptr_type_->cbFormat = blob_size;
+  return kSuccess;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // VideoMediaType
 //
@@ -76,27 +108,20 @@ int VideoMediaType::Init(const GUID& major_type, const GUID& format_type) {
     LOG(ERROR) << "Unsupported format type.";
     return kUnsupportedFormatType;
   }
-  // Allocate basic |AM_MEDIA_TYPE| storage, and assign |ptr_type_|.
-  const SIZE_T type_size = sizeof(AM_MEDIA_TYPE);
-  ptr_type_ = reinterpret_cast<AM_MEDIA_TYPE*>(CoTaskMemAlloc(type_size));
-  if (!ptr_type_) {
-    LOG(ERROR) << "AM_MEDIA_TYPE CoTaskMemAlloc returned NULL!";
+  if (AllocTypeStruct()) {
+    LOG(ERROR) << "AllocTypeStruct failed.";
     return kNoMemory;
   }
-  memset(ptr_type_, 0, type_size);
   ptr_type_->majortype = major_type;
   ptr_type_->formattype = format_type;
-  // Store size of |format_type|.
-  ptr_type_->cbFormat = (format_type == FORMAT_VideoInfo) ?
+  // Determine blob size for |format_type|.
+  const SIZE_T blob_size = (format_type == FORMAT_VideoInfo) ?
       sizeof(VIDEOINFOHEADER) : sizeof(VIDEOINFOHEADER2);
   // Alloc storage for |format_type|'s format block.
-  ptr_type_->pbFormat =
-      reinterpret_cast<BYTE*>(CoTaskMemAlloc(ptr_type_->cbFormat));
-  if (!ptr_type_->pbFormat) {
-    LOG(ERROR) << "AM_MEDIA_TYPE format blob CoTaskMemAlloc returned NULL!";
+  if (AllocFormatBlob(blob_size)) {
+    LOG(ERROR) << "AllocFormatBlob failed.";
     return kNoMemory;
   }
-  memset(ptr_type_->pbFormat, 0, ptr_type_->cbFormat);
   return kSuccess;
 }
 
@@ -119,6 +144,12 @@ int VideoMediaType::Init(const AM_MEDIA_TYPE& media_type) {
   }
   memcpy(ptr_type_->pbFormat, media_type.pbFormat, ptr_type_->cbFormat);
   return kSuccess;
+}
+
+// Inits |ptr_type_| with majortype MEDIATYPE_Video and formattype
+// FORMAT_VideoInfo. Uses |Init(const GUID&, const GUID&)|.
+int VideoMediaType::Init() {
+  return Init(MEDIATYPE_Video, FORMAT_VideoInfo);
 }
 
 // Configures AM_MEDIA_TYPE format blob for given |sub_type| and |config|.
@@ -345,6 +376,106 @@ int VideoMediaType::ConfigureVideoInfoHeader2(
   }
   // Configure the BITMAPINFOHEADER.
   return ConfigureFormatInfo(config, sub_type, ptr_header->bmiHeader);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AudioMediaType
+//
+AudioMediaType::AudioMediaType() {
+}
+
+AudioMediaType::~AudioMediaType() {
+}
+
+// Allocates storage for AM_MEDIA_TYPE struct (|ptr_type_|), and its format
+// blob (|ptr_type_->pbFormat|).
+int AudioMediaType::Init(const GUID& major_type, const GUID& format_type) {
+  FreeMediaType(ptr_type_);
+  if (major_type != MEDIATYPE_Audio) {
+    LOG(ERROR) << "Unsupported major type.";
+    return kUnsupportedMajorType;
+  }
+  if (format_type != FORMAT_WaveFormatEx) {
+    LOG(ERROR) << "Unsupported format type.";
+    return kUnsupportedFormatType;
+  }
+  if (AllocTypeStruct()) {
+    LOG(ERROR) << "AllocTypeStruct failed.";
+    return kNoMemory;
+  }
+  ptr_type_->majortype = major_type;
+  ptr_type_->formattype = format_type;
+  const SIZE_T blob_size = sizeof(WAVEFORMATEX);
+  // Alloc storage for |format_type|'s format block.
+  if (AllocFormatBlob(blob_size)) {
+    LOG(ERROR) << "AllocFormatBlob failed.";
+    return kNoMemory;
+  }
+  return kSuccess;
+}
+
+// Copies |media_type| data to |ptr_type_|.
+int AudioMediaType::Init(const AM_MEDIA_TYPE& media_type) {
+  FreeMediaType(ptr_type_);
+  if (media_type.majortype != MEDIATYPE_Audio) {
+    LOG(ERROR) << "Unsupported major type.";
+    return kUnsupportedMajorType;
+  }
+  if (media_type.formattype != FORMAT_WaveFormatEx) {
+    LOG(ERROR) << "Unsupported format type.";
+    return kUnsupportedFormatType;
+  }
+  if (AllocTypeStruct()) {
+    LOG(ERROR) << "AllocTypeStruct failed.";
+    return kNoMemory;
+  }
+  memcpy_s(ptr_type_, sizeof(AM_MEDIA_TYPE), &media_type,
+           sizeof(AM_MEDIA_TYPE));
+  if (AllocFormatBlob(media_type.cbFormat)) {
+    LOG(ERROR) << "AllocFormatBlob failed.";
+    return kNoMemory;
+  }
+  memcpy_s(ptr_type_->pbFormat, ptr_type_->cbFormat, media_type.pbFormat,
+           media_type.cbFormat);
+  return kSuccess;
+}
+
+int AudioMediaType::Init() {
+  return Init(MEDIATYPE_Audio, FORMAT_WaveFormatEx);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// MediaTypePtr
+//
+MediaTypePtr::MediaTypePtr(AM_MEDIA_TYPE* ptr_type): ptr_type_(ptr_type) {
+}
+
+MediaTypePtr::~MediaTypePtr() {
+  MediaType::FreeMediaType(ptr_type_);
+}
+
+// Releases |ptr_type_| and takes ownership of |ptr_type|. Rreturns |kSuccess|,
+// or |kNullType| if |ptr_type| is NULL.
+int MediaTypePtr::Attach(AM_MEDIA_TYPE* ptr_type) {
+  if (!ptr_type) {
+    LOG(ERROR) << "NULL media type.";
+    return kNullType;
+  }
+  MediaType::FreeMediaType(ptr_type_);
+  ptr_type_ = ptr_type;
+  return kSuccess;
+}
+
+// Copies |ptr_type_| and sets it to NULL, then returns the copy.
+AM_MEDIA_TYPE* MediaTypePtr::Detach() {
+  AM_MEDIA_TYPE* ptr_type = ptr_type_;
+  ptr_type_ = NULL;
+  return ptr_type;
+}
+
+// Returns |ptr_type_|.
+AM_MEDIA_TYPE* MediaTypePtr::get() const {
+  return ptr_type_;
 }
 
 }  // namespace webmlive
