@@ -244,6 +244,14 @@
 				RelativePath=".\webm_encoder.h"
 				>
 			</File>
+			<File
+				RelativePath=".\win\webm_guids.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\win\webm_guids.h"
+				>
+			</File>
 			<Filter
 				Name="win"
 				>
@@ -261,6 +269,14 @@
 				</File>
 				<File
 					RelativePath=".\win\file_util_win.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\media_type_dshow.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\media_type_dshow.h"
 					>
 				</File>
 				<File
