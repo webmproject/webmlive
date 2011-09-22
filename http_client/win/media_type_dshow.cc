@@ -133,7 +133,7 @@ int VideoMediaType::ConfigureSubType(VideoSubType sub_type,
     LOG(ERROR) << "Invalid height.";
     return kInvalidArg;
   }
-  if (config.frame_rate <= 0) {
+  if (config.frame_rate <= 0 && config.frame_rate != kDefaultVideoFrameRate) {
     LOG(ERROR) << "Invalid frame rate.";
     return kInvalidArg;
   }
@@ -321,8 +321,11 @@ int VideoMediaType::ConfigureVideoInfoHeader(
     VIDEOINFOHEADER* ptr_header) {
   // Set source and target rectangles.
   ConfigureRects(config, ptr_header->rcSource, ptr_header->rcTarget);
-  // Set frame rate.
-  ptr_header->AvgTimePerFrame = seconds_to_media_time(1.0 / config.frame_rate);
+  if (config.frame_rate != kDefaultVideoFrameRate) {
+    // Set frame rate.
+    ptr_header->AvgTimePerFrame =
+        seconds_to_media_time(1.0 / config.frame_rate);
+  }
   // Configure BITMAPINFOHEADER.
   return ConfigureFormatInfo(config, sub_type, ptr_header->bmiHeader);
 }
@@ -335,8 +338,11 @@ int VideoMediaType::ConfigureVideoInfoHeader2(
     VIDEOINFOHEADER2* ptr_header) {
   // Set source and target rectangles.
   ConfigureRects(config, ptr_header->rcSource, ptr_header->rcTarget);
-  // Set frame rate.
-  ptr_header->AvgTimePerFrame = seconds_to_media_time(1.0 / config.frame_rate);
+  if (config.frame_rate != kDefaultVideoFrameRate) {
+    // Set frame rate.
+    ptr_header->AvgTimePerFrame =
+        seconds_to_media_time(1.0 / config.frame_rate);
+  }
   // Configure the BITMAPINFOHEADER.
   return ConfigureFormatInfo(config, sub_type, ptr_header->bmiHeader);
 }
