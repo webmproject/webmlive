@@ -74,6 +74,8 @@ struct WebmEncoderConfig {
   std::string audio_device_name;
   // Name of the video device.  Leave empty to use system default.
   std::string video_device_name;
+  // Video capture settings.
+  VideoCaptureConfig video_config;
   // VP8 encoder settings.
   VpxConfig vpx_config;
 };
