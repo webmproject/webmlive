@@ -121,6 +121,12 @@ int VideoMediaType::Init(const AM_MEDIA_TYPE& media_type) {
   return kSuccess;
 }
 
+// Inits |ptr_type_| with majortype MEDIATYPE_Video and formattype
+// FORMAT_VideoInfo. Uses |Init(const GUID&, const GUID&)|.
+int VideoMediaType::Init() {
+  return Init(MEDIATYPE_Video, FORMAT_VideoInfo);
+}
+
 // Configures AM_MEDIA_TYPE format blob for given |sub_type| and |config|.
 int VideoMediaType::ConfigureSubType(VideoSubType sub_type,
                                      const VideoConfig &config) {
@@ -345,6 +351,66 @@ int VideoMediaType::ConfigureVideoInfoHeader2(
   }
   // Configure the BITMAPINFOHEADER.
   return ConfigureFormatInfo(config, sub_type, ptr_header->bmiHeader);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AudioMediaType
+//
+AudioMediaType::AudioMediaType() {
+}
+
+AudioMediaType::~AudioMediaType() {
+}
+
+// Allocates storage for AM_MEDIA_TYPE struct (|ptr_type_|), and its format
+// blob (|ptr_type_->pbFormat|).
+int AudioMediaType::Init(const GUID& major_type, const GUID& format_type) {
+  FreeMediaType(ptr_type_);
+  return kSuccess;
+}
+
+// Copies |media_type| data to |ptr_type_| using |Init| overload to allocate
+// storage for |ptr_type_|.
+int AudioMediaType::Init(const AM_MEDIA_TYPE& media_type) {
+  return kSuccess;
+}
+
+int AudioMediaType::Init() {
+  return kSuccess;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// MediaTypePtr
+//
+MediaTypePtr::MediaTypePtr(AM_MEDIA_TYPE* ptr_type): ptr_type_(ptr_type) {
+}
+
+MediaTypePtr::~MediaTypePtr() {
+  MediaType::FreeMediaType(ptr_type_);
+}
+
+// Releases |ptr_type_| and takes ownership of |ptr_type|. Rreturns |kSuccess|,
+// or |kNullType| if |ptr_type| is NULL.
+int MediaTypePtr::Attach(AM_MEDIA_TYPE* ptr_type) {
+  if (!ptr_type) {
+    LOG(ERROR) << "NULL media type.";
+    return kNullType;
+  }
+  MediaType::FreeMediaType(ptr_type_);
+  ptr_type_ = ptr_type;
+  return kSuccess;
+}
+
+// Copies |ptr_type_| and sets it to NULL, then returns the copy.
+AM_MEDIA_TYPE* MediaTypePtr::Detach() {
+  AM_MEDIA_TYPE* ptr_type = ptr_type_;
+  ptr_type_ = NULL;
+  return ptr_type;
+}
+
+// Returns |ptr_type_|.
+AM_MEDIA_TYPE* MediaTypePtr::get() const {
+  return ptr_type_;
 }
 
 }  // namespace webmlive
