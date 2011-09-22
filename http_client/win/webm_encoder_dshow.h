@@ -81,6 +81,10 @@ const CLSID CLSID_VP8Encoder = {
   {0x94, 0xAF, 0x00, 0x26, 0xB9, 0x77, 0xEE, 0xAA}
 };
 
+// Utility functions for conversion between seconds and 100ns ticks.
+double media_time_to_seconds(REFERENCE_TIME media_time);
+REFERENCE_TIME seconds_to_media_time(double seconds);
+
 // WebM encoder object. Currently supports only live encoding from the primary
 // video and audio input devices on the user system.
 class WebmEncoderImpl {
