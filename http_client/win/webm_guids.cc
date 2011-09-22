@@ -5,20 +5,13 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef HTTP_CLIENT_HTTP_CLIENT_BASE_H_
-#define HTTP_CLIENT_HTTP_CLIENT_BASE_H_
 
-#if _WIN32
+#include "win/webm_guids.h"
 
-#ifndef _WIN32_WINNT
-#  define _WIN32_WINNT 0x0501  // WinXP
-#endif
-
-#include <windows.h>
-#ifdef ERROR
-#  undef ERROR  // unused by webmlive/collides with glog.
-#endif
-
-#endif  // _WIN32
-
-#endif  // HTTP_CLIENT_HTTP_CLIENT_BASE_H_
+// 30323449-0000-0010-8000-00AA00389B71 'I420'
+const GUID webmlive::MEDIASUBTYPE_I420 = {
+  0x30323449,
+  0x0000,
+  0x0010,
+  { 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 }
+};

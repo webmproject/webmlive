@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..\common;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include;$(ProjectDir)"
+				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;BOOST_NO_EXCEPTIONS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -51,6 +51,7 @@
 				WarnAsError="true"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4995;4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -120,7 +121,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..\common;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include"
+				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;BOOST_NO_EXCEPTIONS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
@@ -129,6 +130,7 @@
 				WarnAsError="true"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4995;4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -244,6 +246,14 @@
 				RelativePath=".\webm_encoder.h"
 				>
 			</File>
+			<File
+				RelativePath=".\win\webm_guids.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\win\webm_guids.h"
+				>
+			</File>
 			<Filter
 				Name="win"
 				>
@@ -261,6 +271,14 @@
 				</File>
 				<File
 					RelativePath=".\win\file_util_win.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\media_type_dshow.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\media_type_dshow.h"
 					>
 				</File>
 				<File
