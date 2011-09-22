@@ -36,6 +36,15 @@ const wchar_t* const kVorbisEncoderName = L"VorbisEncoder";
 const wchar_t* const kWebmMuxerName = L"WebmMuxer";
 const wchar_t* const kFileWriterName = L"FileWriter";
 
+// Converts a std::string to std::wstring.
+std::wstring string_to_wstring(std::string str) {
+  std::wostringstream wstr;
+  wstr << str.c_str();
+  return wstr.str();
+}
+
+}  // anonymous namespace
+
 // Converts media time (100 nanosecond ticks) to seconds.
 double media_time_to_seconds(REFERENCE_TIME media_time) {
   return media_time / 10000000.0;
@@ -45,14 +54,6 @@ double media_time_to_seconds(REFERENCE_TIME media_time) {
 REFERENCE_TIME seconds_to_media_time(double seconds) {
   return static_cast<REFERENCE_TIME>(seconds * 10000000);
 }
-
-// Converts a std::string to std::wstring.
-std::wstring string_to_wstring(std::string str) {
-  std::wostringstream wstr;
-  wstr << str.c_str();
-  return wstr.str();
-}
-}  // anonymous namespace
 
 WebmEncoderImpl::WebmEncoderImpl()
     : stop_(false),
