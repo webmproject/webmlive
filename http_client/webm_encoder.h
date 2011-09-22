@@ -8,7 +8,12 @@
 #ifndef HTTP_CLIENT_WEBM_ENCODER_H_
 #define HTTP_CLIENT_WEBM_ENCODER_H_
 
+
+// <string> includes <cstdlib> (indirectly), which leads to deprecation
+// warnings, disable them.
+#pragma warning(disable:4995)
 #include <string>
+#pragma warning(default:4995)
 
 #include "boost/scoped_ptr.hpp"
 #include "http_client/basictypes.h"
@@ -74,6 +79,8 @@ struct WebmEncoderConfig {
   std::string audio_device_name;
   // Name of the video device.  Leave empty to use system default.
   std::string video_device_name;
+  // Video capture settings.
+  VideoCaptureConfig video_config;
   // VP8 encoder settings.
   VpxConfig vpx_config;
 };
