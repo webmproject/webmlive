@@ -25,6 +25,11 @@ const int kUseEncoderDefault = -200;
 // Special value interpreted by |WebmEncoder| as "use capture device default".
 const int kUseDeviceDefault = -200;
 
+// Defaults for live encodes.
+// Audio capture defaults.
+const int kDefaultAudioChannels = kUseDeviceDefault;
+const int kDefaultAudioSampleRate = kUseDeviceDefault;
+const int kDefaultAudioSampleSize = kUseDeviceDefault;
 // Video capture defaults.
 const int kDefaultVideoWidth = kUseDeviceDefault;
 const int kDefaultVideoHeight = kUseDeviceDefault;
@@ -43,6 +48,14 @@ const int kDefaultVpxThreadCount = kUseEncoderDefault;
 const int kDefaultVpxTokenPartitions = kUseEncoderDefault;
 
 struct WebmEncoderConfig {
+  struct AudioCaptureConfig {
+    // Number of channels.
+    int channels;
+    // Sample rate.
+    int sample_rate;
+    // Sample size.
+    int sample_size;
+  };
   struct VideoCaptureConfig {
     // Width, in pixels.
     int width;
@@ -79,6 +92,8 @@ struct WebmEncoderConfig {
   std::string audio_device_name;
   // Name of the video device.  Leave empty to use system default.
   std::string video_device_name;
+  // Audio capture settings.
+  AudioCaptureConfig audio_config;
   // Video capture settings.
   VideoCaptureConfig video_config;
   // VP8 encoder settings.
