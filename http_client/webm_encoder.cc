@@ -51,6 +51,9 @@ double WebmEncoder::encoded_duration() {
 // Returns default |WebmEncoderConfig|.
 WebmEncoderConfig WebmEncoder::DefaultConfig() {
   WebmEncoderConfig c;
+  c.audio_config.channels = kDefaultAudioChannels;
+  c.audio_config.sample_rate = kDefaultAudioSampleRate;
+  c.audio_config.sample_size = kDefaultAudioSampleSize;
   c.video_config.width = kDefaultVideoWidth;
   c.video_config.height = kDefaultVideoHeight;
   c.video_config.frame_rate = kDefaultVideoFrameRate;

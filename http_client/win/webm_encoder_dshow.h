@@ -299,6 +299,8 @@ class PinInfo {
     kCannotSetFormat = -1,
     kSuccess = 0,
   };
+  typedef WebmEncoderConfig::AudioCaptureConfig AudioConfig;
+  typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
   // Copies supplied pin to |pin_|.
   explicit PinInfo(const IPinPtr& pin);
   ~PinInfo();
@@ -319,6 +321,11 @@ class PinInfo {
   AM_MEDIA_TYPE* get_format() const;
   // Attempts to set |pin_|'s format.
   int set_format(AM_MEDIA_TYPE* ptr_format);
+  // Enumerates pin media types searching for one that matches |config|. Returns
+  // a NULL pointer when available types are exhausted without finding a 
+  // suitable match.
+  AM_MEDIA_TYPE* FindMatchingFormat(const AudioConfig& config);
+  AM_MEDIA_TYPE* FindMatchingFormat(const VideoConfig& config);
  private:
   // Disallow construction without IPinPtr.
   PinInfo();
