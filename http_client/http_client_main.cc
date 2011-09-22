@@ -132,6 +132,17 @@ void parse_command_line(int argc, const char** argv,
       unparsed_vars.push_back(argv[++i]);
     } else if (!strcmp("--adev", argv[i])) {
       enc_config.audio_device_name = argv[++i];
+    } else if (!strcmp("--achannels", argv[i])) {
+      // TODO(tomfinegan): add audio configuration support and get rid of
+      //                   these warnings.
+      LOG(WARNING) << "Audio configuration not implemented.";
+      enc_config.audio_config.channels = strtol(argv[++i], &ptr_end, 10);
+    } else if (!strcmp("--arate", argv[i])) {
+      LOG(WARNING) << "Audio configuration not implemented.";
+      enc_config.audio_config.sample_rate = strtol(argv[++i], &ptr_end, 10);
+    } else if (!strcmp("--asize", argv[i])) {
+      LOG(WARNING) << "Audio configuration not implemented.";
+      enc_config.audio_config.sample_size = strtol(argv[++i], &ptr_end, 10);
     } else if (!strcmp("--stream_name", argv[i])) {
       uploader_settings.stream_name = argv[++i];
     } else if (!strcmp("--stream_id", argv[i])) {
