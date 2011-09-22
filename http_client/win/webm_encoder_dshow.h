@@ -24,6 +24,7 @@ namespace webmlive {
 // A slightly more brief version of the com_ptr_t definition macro.
 #define COMPTR_TYPEDEF(InterfaceName) \
   _COM_SMARTPTR_TYPEDEF(InterfaceName, IID_##InterfaceName)
+COMPTR_TYPEDEF(IAMStreamConfig);
 COMPTR_TYPEDEF(IBaseFilter);
 COMPTR_TYPEDEF(ICaptureGraphBuilder2);
 COMPTR_TYPEDEF(ICreateDevEnum);
@@ -145,8 +146,9 @@ class WebmEncoderImpl {
   int CreateGraph();
   // Creates video capture source filter instance and adds it to the graph.
   int CreateVideoSource();
-  // Configures the video capture source.
-  int ConfigureVideoSource();
+  // Configures the video capture source using |sub_type| and
+  // |config_.video_config|.
+  int ConfigureVideoSource(IPinPtr& video_source_pin, int sub_type);
   // Creates VP8 encoder filter instance and adds it to the graph.
   int CreateVpxEncoder();
   // Connects video source to VP8 encoder.
@@ -306,8 +308,6 @@ class PinInfo {
   bool IsVideo() const;
   // Returns true for pins with media type stream.
   bool IsStream() const;
-  // Utility function for free'ing |AM_MEDIA_TYPE| pointers.
-  static void FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type);
  private:
   // Disallow construction without IPinPtr.
   PinInfo();
@@ -332,7 +332,7 @@ class VideoPinInfo {
   // |PinInfo::IsVideo| returns false. Note that |pin| *must* be connected:
   // |VideoPinInfo| uses |ConnectionMediaType|.
   int Init(const IPinPtr& pin);
-  double frames_per_second() const;
+  double frame_rate() const;
  private:
   IPinPtr pin_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoPinInfo);
