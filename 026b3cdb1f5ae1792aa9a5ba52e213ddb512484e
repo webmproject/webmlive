@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//9gQ\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-23T15:24:07Z",
+      "side": 1,
+      "message": "Changed to SIZE_T since this is Windows only...",
+      "parentUuid": "AAAAFn//9pc\u003d",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//9pY\u003d",
         "filename": "http_client/win/media_type_dshow.cc",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2011-09-23T01:28:48Z",
       "side": 1,
       "message": "reinterpret_cast",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9gM\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-23T15:24:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//9pY\u003d",
       "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//9gI\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-23T15:24:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//9pE\u003d",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//9o8\u003d",
         "filename": "http_client/win/media_type_dshow.cc",
         "patchSetId": 1
@@ -64,6 +118,24 @@
       "writtenOn": "2011-09-23T01:28:48Z",
       "side": 1,
       "message": "reinterpret",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9gE\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-23T15:24:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//9o8\u003d",
       "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//9gA\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-23T15:24:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//9os\u003d",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//9oU\u003d",
         "filename": "http_client/win/media_type_dshow.cc",
         "patchSetId": 1
@@ -98,6 +188,24 @@
       "writtenOn": "2011-09-23T01:28:48Z",
       "side": 1,
       "message": "initializing this then changing in the else seems unnecessary",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9f8\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-23T15:24:07Z",
+      "side": 1,
+      "message": "Agreed, removed second assignment.",
+      "parentUuid": "AAAAFn//9oU\u003d",
       "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -121,6 +229,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//9fs\u003d",
+        "filename": "http_client/win/webm_encoder_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-23T15:24:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//9qM\u003d",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//9qE\u003d",
         "filename": "http_client/win/webm_guids.h",
         "patchSetId": 1
@@ -132,6 +258,24 @@
       "writtenOn": "2011-09-23T01:28:48Z",
       "side": 1,
       "message": "// namespace webmlive",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9fk\u003d",
+        "filename": "http_client/win/webm_guids.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-09-23T15:24:07Z",
+      "side": 1,
+      "message": "Done. This always feels excessive on a block with only one line. :)",
+      "parentUuid": "AAAAFn//9qE\u003d",
       "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
