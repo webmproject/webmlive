@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFn//9DM\u003d",
+        "filename": "http_client/http_client_main.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T22:06:57Z",
+      "side": 1,
+      "message": "then why not just pass NULL?",
+      "revId": "ec3cea63f8e157899be4d7e6e32765a67e00403c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9DE\u003d",
+        "filename": "http_client/webm_encoder.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T22:06:57Z",
+      "side": 1,
+      "message": "static is redundant in the namespace",
+      "revId": "ec3cea63f8e157899be4d7e6e32765a67e00403c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9C8\u003d",
+        "filename": "http_client/win/webm_encoder_dshow.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T22:06:57Z",
+      "side": 1,
+      "message": "so is this not needed?",
+      "revId": "ec3cea63f8e157899be4d7e6e32765a67e00403c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9Cw\u003d",
+        "filename": "http_client/win/webm_encoder_dshow.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 345,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T22:06:57Z",
+      "side": 1,
+      "message": "const",
+      "revId": "ec3cea63f8e157899be4d7e6e32765a67e00403c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9Co\u003d",
+        "filename": "http_client/win/webm_encoder_dshow.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 1342,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T22:06:57Z",
+      "side": 1,
+      "message": "const",
+      "revId": "ec3cea63f8e157899be4d7e6e32765a67e00403c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
