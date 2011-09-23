@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFn//9EI\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 253,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T21:57:37Z",
+      "side": 1,
+      "message": "(lint) Are you taking an address of a cast?  This is dangerous: could be a temp var.  Take the address before doing the cast, rather than after  [runtime/casting] [4]",
+      "revId": "0f15822758a35bed7f7d56d14ebd219adb3e9cc6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9EM\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 255,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T21:57:37Z",
+      "side": 1,
+      "message": "(lint) Are you taking an address of a cast?  This is dangerous: could be a temp var.  Take the address before doing the cast, rather than after  [runtime/casting] [4]",
+      "revId": "0f15822758a35bed7f7d56d14ebd219adb3e9cc6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9Ek\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T21:57:37Z",
+      "side": 1,
+      "message": "space between switch and (",
+      "revId": "0f15822758a35bed7f7d56d14ebd219adb3e9cc6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9Eg\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 271,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T21:57:37Z",
+      "side": 1,
+      "message": "space after \u0027,\u0027s",
+      "revId": "0f15822758a35bed7f7d56d14ebd219adb3e9cc6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9EE\u003d",
+        "filename": "http_client/win/media_type_dshow.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T21:57:37Z",
+      "side": 1,
+      "message": "(lint) Include the directory when naming .h files  [build/include] [4]",
+      "revId": "0f15822758a35bed7f7d56d14ebd219adb3e9cc6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9EA\u003d",
+        "filename": "http_client/win/media_type_dshow.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T21:57:37Z",
+      "side": 1,
+      "message": "(lint) Include the directory when naming .h files  [build/include] [4]",
+      "revId": "0f15822758a35bed7f7d56d14ebd219adb3e9cc6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
