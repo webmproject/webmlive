@@ -1,0 +1,140 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFn//9pc\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T01:28:48Z",
+      "side": 1,
+      "message": "should be size_t or windows style SIZE_T for the call to CoTaskMemAlloc",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9pY\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T01:28:48Z",
+      "side": 1,
+      "message": "reinterpret_cast",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9pE\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T01:28:48Z",
+      "side": 1,
+      "message": "()s around the condition",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9o8\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T01:28:48Z",
+      "side": 1,
+      "message": "reinterpret",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9os\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T01:28:48Z",
+      "side": 1,
+      "message": "const",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9oU\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T01:28:48Z",
+      "side": 1,
+      "message": "initializing this then changing in the else seems unnecessary",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9qM\u003d",
+        "filename": "http_client/win/webm_encoder_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T01:28:48Z",
+      "side": 1,
+      "message": "std::string could be a const\u0026",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//9qE\u003d",
+        "filename": "http_client/win/webm_guids.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-09-23T01:28:48Z",
+      "side": 1,
+      "message": "// namespace webmlive",
+      "revId": "026b3cdb1f5ae1792aa9a5ba52e213ddb512484e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
