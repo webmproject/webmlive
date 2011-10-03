@@ -63,6 +63,10 @@ void usage(const char** argv) {
   printf("                                   query string.\n" );
   printf("    --url <target URL>             Target for HTTP Posts.\n");
   printf("    --vdev <video source name>     Video capture device name.\n");
+  printf("  Audio source configuration options:\n");
+  printf("    --achannels <channels>         Number of audio channels.\n");
+  printf("    --arate <sample rate>          Audio sample rate.\n");
+  printf("    --asize <sample size>          Audio sample size.\n");
   printf("  Vorbis Encoder options:\n");
   printf("    --vorbis_bitrate <kbps>            Audio bitrate.\n");
   printf("  Video source configuration options:\n");
@@ -131,6 +135,12 @@ void parse_command_line(int argc, const char** argv,
       unparsed_vars.push_back(argv[++i]);
     } else if (!strcmp("--adev", argv[i])) {
       enc_config.audio_device_name = argv[++i];
+    } else if (!strcmp("--achannels", argv[i])) {
+      enc_config.audio_config.channels = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--arate", argv[i])) {
+      enc_config.audio_config.sample_rate = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--asize", argv[i])) {
+      enc_config.audio_config.sample_size = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--stream_name", argv[i])) {
       uploader_settings.stream_name = argv[++i];
     } else if (!strcmp("--stream_id", argv[i])) {
