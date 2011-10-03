@@ -49,7 +49,8 @@ std::wstring string_to_wstring(const std::string& str) {
 std::string wstring_to_string(const std::wstring& wstr) {
   // Conversion buffer for |wcstombs| calls.
   const size_t buf_size = wstr.length() + 1;
-  boost::scoped_array<char> temp_str(new (std::nothrow) char[buf_size]);
+  boost::scoped_array<char> temp_str(
+      new (std::nothrow) char[buf_size]);   // NOLINT
   if (!temp_str) {
     LOG(ERROR) << "can't convert wstring of length=" << wstr.length();
     return std::string("<empty>");
@@ -144,11 +145,6 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
   if (status) {
     LOG(ERROR) << "CreateAudioSource failed: " << status;
     return WebmEncoder::kNoAudioSource;
-  }
-  status = ConfigureAudioSource();
-  if (status) {
-    LOG(ERROR) << "ConfigureAudioSource failed: " << status;
-    return WebmEncoder::kAudioConfigureError;
   }
   status = CreateVorbisEncoder();
   if (status) {
@@ -317,7 +313,7 @@ int WebmEncoderImpl::CreateVideoSource() {
 // settings stored in |config_.video_config| with |VideoMediaType| to produce
 // an AM_MEDIA_TYPE struct suitable for use with IAMStreamConfig::SetFormat.
 // Returns |kSuccess| upon successful configuration.
-int WebmEncoderImpl::ConfigureVideoSource(PinInfo& pin_info, int sub_type) {
+int WebmEncoderImpl::ConfigureVideoSource(const IPinPtr& pin, int sub_type) {
   WebmEncoderConfig::VideoCaptureConfig& video_config = config_.video_config;
   if (video_config.width != kDefaultVideoWidth ||
       video_config.height != kDefaultVideoHeight ||
@@ -335,8 +331,9 @@ int WebmEncoderImpl::ConfigureVideoSource(PinInfo& pin_info, int sub_type) {
       LOG(ERROR) << "video sub type configuration failed.";
       return WebmEncoder::kVideoConfigureError;
     }
-    status =
-        pin_info.set_format(const_cast<AM_MEDIA_TYPE*>(video_format.get()));
+    PinFormat formatter(pin);
+    status = formatter.set_format(
+        const_cast<AM_MEDIA_TYPE*>(video_format.get()));
     if (status) {
       LOG(ERROR) << "cannot set pin format";
       return WebmEncoder::kVideoConfigureError;
@@ -385,11 +382,10 @@ int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
     LOG(ERROR) << "cannot find video input pin on VP8 encoder!";
     return kVideoConnectError;
   }
-  PinInfo video_source_info(video_source_pin);
   status = kVideoConnectError;
   HRESULT hr = E_FAIL;
   for (int i = 0; i < VideoMediaType::kNumVideoSubtypes; ++i) {
-    status = ConfigureVideoSource(video_source_info, i);
+    status = ConfigureVideoSource(video_source_pin, i);
     if (status == kSuccess) {
       LOG(INFO) << "Format " << i << " configuration OK.";
     } else {
@@ -406,7 +402,8 @@ int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
   if (status || hr != S_OK) {
     // All previous connection attempts failed. Try one last time using
     // |video_source_pin|'s default format.
-    status = video_source_info.set_format(NULL);
+    PinFormat formatter(video_source_pin);
+    status = formatter.set_format(NULL);
     if (status == kSuccess) {
       hr = graph_builder_->ConnectDirect(video_source_pin, vpx_input_pin,
                                          NULL);
@@ -573,14 +570,46 @@ int WebmEncoderImpl::CreateAudioSource() {
       return kCannotAddFilter;
     }
   }
-  // TODO(tomfinegan): set audio format instead of hoping for sane defaults.
   return kSuccess;
 }
 
-int WebmEncoderImpl::ConfigureAudioSource() {
-  // TODO(tomfinegan): support configuration of soundcards/webcams!
-  LOG(WARNING) << __FUNCTION__" not implemented, patches welcome!";
-  return WebmEncoder::kSuccess;
+// Configures audio source pin to match user settings.  Attempts to find a
+// matching media type, and uses it if successful. Constructs |AudioMediaType|
+// to configure pin with an AM_MEDIA_TYPE matching the user's settings if no
+// match is found. Returns kSuccess upon successful configuration.
+int WebmEncoderImpl::ConfigureAudioSource(const IPinPtr& pin) {
+  PinFormat formatter(pin);
+  MediaTypePtr audio_format;
+  int status = audio_format.Attach(
+      formatter.FindMatchingFormat(config_.audio_config));
+  if (status) {
+    // Try directly configuring the pin with user settings.
+    LOG(WARNING) << "no format matching requested audio settings.";
+    AudioMediaType user_audio_format;
+    status = user_audio_format.Init();
+    if (status) {
+      LOG(ERROR) << "audio media type init failed, status=" << status;
+      return WebmEncoder::kAudioConfigureError;
+    }
+    status = user_audio_format.Configure(config_.audio_config);
+    if (status) {
+      LOG(ERROR) << "audio media type configuration failed, status=" << status;
+      return WebmEncoder::kAudioConfigureError;
+    }
+    status = formatter.set_format(user_audio_format.get());
+    if (status) {
+      LOG(ERROR) << "pin did not accept user audio format, status=" << status;
+      return WebmEncoder::kAudioConfigureError;
+    }
+  } else {
+    // Pin lists a format matching user settings; use it.
+    status = formatter.set_format(audio_format.get());
+    if (status) {
+      LOG(ERROR) << "pin did not accept user audio format, status=" << status;
+      return WebmEncoder::kAudioConfigureError;
+    }
+  }
+  return kSuccess;
 }
 
 // Creates an instance of the Xiph.org Vorbis encoder filter, and adds it to
@@ -609,8 +638,8 @@ int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder() {
     LOG(ERROR) << "cannot look for pins on audio source!";
     return kAudioConnectError;
   }
-  IPinPtr audio_src_pin = pin_finder.FindAudioOutputPin(0);
-  if (!audio_src_pin) {
+  IPinPtr audio_source_pin = pin_finder.FindAudioOutputPin(0);
+  if (!audio_source_pin) {
     LOG(ERROR) << "cannot find output pin on audio source!";
     return kAudioConnectError;
   }
@@ -624,9 +653,25 @@ int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder() {
     LOG(ERROR) << "cannot find audio input pin on Vorbis encoder!";
     return kAudioConnectError;
   }
-  const HRESULT hr = graph_builder_->ConnectDirect(audio_src_pin,
-                                                   vorbis_input_pin,
-                                                   NULL);
+  status = ConfigureAudioSource(audio_source_pin);
+  if (status) {
+    LOG(WARNING) << "user settings not accepted by audio device, using "
+                 << "device defaults.";
+  }
+  HRESULT hr = graph_builder_->ConnectDirect(audio_source_pin,
+                                             vorbis_input_pin, NULL);
+  if (FAILED(hr) && status == kSuccess) {
+    // User format was accepted, but connection failed. Try again with device
+    // defaults.
+    LOG(WARNING) << "cannot connect audio device to vorbis encoder with user "
+                 << "settings, using device defaults.";
+    PinFormat formatter(audio_source_pin);
+    status = formatter.set_format(NULL);
+    if (status == kSuccess) {
+      hr = graph_builder_->ConnectDirect(audio_source_pin, vorbis_input_pin,
+                                         NULL);
+    }
+  }
   if (FAILED(hr)) {
     LOG(ERROR) << "cannot connect audio source to Vorbis encoder."
            << HRLOG(hr);
@@ -1284,40 +1329,6 @@ bool PinInfo::IsStream() const {
   return is_stream_pin;
 }
 
-// Returns |pin_| format via use of IAMStreamConfig::GetFormat, or returns NULL
-// on failure.
-AM_MEDIA_TYPE* PinInfo::get_format() const {
-  const IAMStreamConfigPtr config(pin_);
-  if (!config) {
-    LOG(ERROR) << "pin_ has no IAMStreamConfig interface.";
-    return NULL;
-  }
-  AM_MEDIA_TYPE* ptr_current_format = NULL;
-  const HRESULT hr = config->GetFormat(&ptr_current_format);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "IAMStreamConfig::GetFormat failed: " << HRLOG(hr);
-  }
-  return ptr_current_format;
-}
-
-// Sets |pin_| format via use of IAMStreamConfig::SetFormat. Returns
-// |kCannotSetFormat| on failure.
-int PinInfo::set_format(AM_MEDIA_TYPE* ptr_format) {
-  // Note: NULL |ptr_format| is OK-- some filters treat a NULL format as a
-  //       request to reset to the pin's default format.
-  const IAMStreamConfigPtr config(pin_);
-  if (!config) {
-    LOG(ERROR) << "pin_ has no IAMStreamConfig interface.";
-    return kCannotSetFormat;
-  }
-  const HRESULT hr = config->SetFormat(ptr_format);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot set pin_ format: " << HRLOG(hr);
-    return kCannotSetFormat;
-  }
-  return kSuccess;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // VideoPinInfo
 //
@@ -1371,6 +1382,120 @@ double VideoPinInfo::frame_rate() const {
     }
   }
   return frames_per_second;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// PinFormat
+//
+
+// Construct |PinFormat| for |pin|.
+PinFormat::PinFormat(const IPinPtr& pin)
+    : pin_(pin) {
+}
+
+PinFormat::~PinFormat() {
+}
+
+// Returns |pin_| format via use of IAMStreamConfig::GetFormat, or returns NULL
+// on failure.
+AM_MEDIA_TYPE* PinFormat::get_format() const {
+  const IAMStreamConfigPtr config(pin_);
+  if (!config) {
+    LOG(ERROR) << "pin_ has no IAMStreamConfig interface.";
+    return NULL;
+  }
+  AM_MEDIA_TYPE* ptr_current_format = NULL;
+  const HRESULT hr = config->GetFormat(&ptr_current_format);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "IAMStreamConfig::GetFormat failed: " << HRLOG(hr);
+  }
+  return ptr_current_format;
+}
+
+// Sets |pin_| format via use of IAMStreamConfig::SetFormat. Returns
+// |kCannotSetFormat| on failure.
+int PinFormat::set_format(const AM_MEDIA_TYPE* ptr_format) {
+  // Note: NULL |ptr_format| is OK-- some filters treat a NULL format as a
+  //       request to reset to the pin's default format.
+  const IAMStreamConfigPtr config(pin_);
+  if (!config) {
+    LOG(ERROR) << "pin_ has no IAMStreamConfig interface.";
+    return kCannotSetFormat;
+  }
+  const HRESULT hr = config->SetFormat(const_cast<AM_MEDIA_TYPE*>(ptr_format));
+  if (FAILED(hr)) {
+    LOG(ERROR) << "cannot set pin_ format: " << HRLOG(hr);
+    return kCannotSetFormat;
+  }
+  return kSuccess;
+}
+
+// Returns AM_MEDIA_TYPE pointer with settings matching those requested, or
+// NULL.
+AM_MEDIA_TYPE* PinFormat::FindMatchingFormat(const AudioConfig& config) {
+  IEnumMediaTypesPtr media_types;
+  HRESULT hr = pin_->EnumMediaTypes(&media_types);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "pin cannot enumerate media types.";
+    return NULL;
+  }
+  MediaTypePtr format;
+  for (;;) {
+    hr = media_types->Next(1, &format, NULL);
+    if (hr != S_OK) {
+      LOG(INFO) << "exhausted audio media types without finding a match.";
+      // be certain |format| is empty.
+      format.Free();
+      break;
+    }
+    AudioMediaType audio_format;
+    const int status = audio_format.Init(*format.get());
+    if (status) {
+      LOG(INFO) << "skipping unsupported audio media type.";
+      continue;
+    }
+    if (audio_format.channels() == config.channels &&
+        audio_format.sample_rate() == config.sample_rate &&
+        audio_format.sample_size() == config.sample_size) {
+      LOG(INFO) << "Found matching audio media type.";
+      break;
+    }
+  }
+  return format.Detach();
+}
+
+// Returns AM_MEDIA_TYPE pointer with settings matching those requested, or
+// NULL.
+AM_MEDIA_TYPE* PinFormat::FindMatchingFormat(const VideoConfig& config) {
+  IEnumMediaTypesPtr media_types;
+  HRESULT hr = pin_->EnumMediaTypes(&media_types);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "pin cannot enumerate media types.";
+    return NULL;
+  }
+  MediaTypePtr format;
+  for (;;) {
+    hr = media_types->Next(1, &format, NULL);
+    if (hr != S_OK) {
+      LOG(INFO) << "exhausted video media types without finding a match.";
+      // be certain |format| is empty.
+      format.Free();
+      break;
+    }
+    VideoMediaType video_format;
+    int status = video_format.Init(*format.get());
+    if (status) {
+      LOG(INFO) << "skipping unsupported video media type.";
+      continue;
+    }
+    if (video_format.width() == config.width &&
+        video_format.height() == config.height &&
+        video_format.frame_rate() == config.frame_rate) {
+      LOG(INFO) << "Found matching video media type.";
+      break;
+    }
+  }
+  return format.Detach();
 }
 
 }  // namespace webmlive
