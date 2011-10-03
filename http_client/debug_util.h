@@ -13,8 +13,8 @@
 
 // Extracts error from the HRESULT, and output its hex and decimal values.
 #define \
-    HRLOG(X) L" {" << #X << L"=" << X << L"/" << std::hex << X << std::dec \
-    << L" (" << hrtext(X) << L")}"
+    HRLOG(X) " {" << #X << "=" << X << "/" << std::hex << X << std::dec \
+    << " (" << hrtext(X) << ")}"
 // Converts 100ns units to seconds
 #define REFTIMETOSECONDS(X) (static_cast<double>(X) / 10000000.0f)
 #else  // _WIN32
