@@ -150,7 +150,7 @@ class WebmEncoderImpl {
   int CreateVideoSource();
   // Configures the video capture source using |sub_type| and
   // |config_.video_config|.
-  int ConfigureVideoSource(PinInfo& pin_info, int sub_type);
+  int ConfigureVideoSource(const IPinPtr& pin, int sub_type);
   // Creates VP8 encoder filter instance and adds it to the graph.
   int CreateVpxEncoder();
   // Connects video source to VP8 encoder.
@@ -162,7 +162,7 @@ class WebmEncoderImpl {
   // it to the graph.
   int CreateAudioSource();
   // Configures the audio capture source.
-  int ConfigureAudioSource();
+  int ConfigureAudioSource(const IPinPtr& pin);
   // Loads the Vorbis encoder and adds it to the graph.
   int CreateVorbisEncoder();
   // Connects audio source to Vorbis encoder.
@@ -314,11 +314,8 @@ class PinInfo {
   bool IsVideo() const;
   // Returns true for pins with media type stream.
   bool IsStream() const;
-  // Returns |pin_|'s current format, or NULL on failure. Caller must dispose
-  // of pointer returned.
-  AM_MEDIA_TYPE* get_format() const;
-  // Attempts to set |pin_|'s format.
-  int set_format(AM_MEDIA_TYPE* ptr_format);
+  // Returns |pin_|.
+  IPinPtr pin() const { return pin_; }
  private:
   // Disallow construction without IPinPtr.
   PinInfo();
@@ -348,6 +345,39 @@ class VideoPinInfo {
   IPinPtr pin_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoPinInfo);
 };
+
+// Utility class for accessing and manipulating pin media format.
+class PinFormat {
+ public:
+  enum {
+    kCannotSetFormat = -1,
+    kSuccess = 0,
+  };
+  typedef WebmEncoderConfig::AudioCaptureConfig AudioConfig;
+  typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
+  // Copies supplied pin to |pin_|.
+  explicit PinFormat(const IPinPtr& pin);
+  ~PinFormat();
+  // Returns |pin_|'s current format, or NULL on failure. Caller must dispose
+  // of pointer returned.
+  AM_MEDIA_TYPE* format() const;
+  // Attempts to set |pin_|'s format.
+  int set_format(const AM_MEDIA_TYPE* ptr_format);
+  // Enumerates pin media types searching for one that matches |config|.
+  // Returns a NULL pointer when available types are exhausted without finding
+  // a suitable match.
+  AM_MEDIA_TYPE* FindMatchingFormat(const AudioConfig& config);
+  AM_MEDIA_TYPE* FindMatchingFormat(const VideoConfig& config);
+  // Returns |pin_|.
+  IPinPtr pin() const { return pin_; }
+ private:
+  // Disallow construction without IPinPtr.
+  PinFormat();
+  // Copy of |ptr_pin| from |Init|
+  const IPinPtr pin_;
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(PinFormat);
+};
+
 
 }  // namespace webmlive
 
