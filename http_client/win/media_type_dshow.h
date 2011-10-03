@@ -21,6 +21,7 @@ namespace webmlive {
 class MediaType {
  public:
   enum {
+    kUnsupportedFormatTag = -8,
     kNullType = -7,  // |ptr_type_| NULL.
     kInvalidArg = -6,
     kUnsupportedSubType = -5,
@@ -36,12 +37,18 @@ class MediaType {
   const AM_MEDIA_TYPE* get() const;
   virtual int Init(const GUID& major_type, const GUID& format_type) = 0;
   virtual int Init(const AM_MEDIA_TYPE& media_type) = 0;
+  virtual int Init() = 0;
   // Utility functions for free'ing |AM_MEDIA_TYPE| pointers.
   static void FreeMediaType(AM_MEDIA_TYPE* ptr_media_type);
   static void FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type);
  private:
+  // Allocates memory for |ptr_type_|.
+  int AllocTypeStruct();
+  // Allocates memory for |ptr_type_->pbFormat|.
+  int AllocFormatBlob(SIZE_T blob_size);
   // Pointer to AM_MEDIA_TYPE memory allocated via CoTaskMemAlloc.
   AM_MEDIA_TYPE* ptr_type_;
+  friend class AudioMediaType;
   friend class VideoMediaType;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(MediaType);
 };
@@ -71,6 +78,9 @@ class VideoMediaType : public MediaType {
   virtual int Init(const GUID& major_type, const GUID& format_type);
   // Copies |media_type| and returns |kSuccess|.
   virtual int Init(const AM_MEDIA_TYPE& media_type);
+  // Allocates AM_MEDIA_TYPE with VIDEOINFOHEADER format blob, and sets
+  // contents to 0.
+  virtual int Init();
   // Configures format block using |sub_type| and |config|. Directly applies
   // settings specified by |config| and returns success for supported
   // |sub_type| values. Note that not all |VideoSubType| values are supported.
@@ -103,6 +113,59 @@ class VideoMediaType : public MediaType {
                                 VideoSubType sub_type,
                                 VIDEOINFOHEADER2* header);
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoMediaType);
+};
+
+// Audio specific AM_MEDIA_TYPE management class. Always allocates internal
+// storage for the AM_MEDIA_TYPE data.
+class AudioMediaType : public MediaType {
+ public:
+  typedef WebmEncoderConfig::AudioCaptureConfig AudioConfig;
+  AudioMediaType();
+  virtual ~AudioMediaType();
+  // Allocates AM_MEDIA_TYPE for specified |major_type| and |format_type|.
+  virtual int Init(const GUID& major_type, const GUID& format_type);
+  // Copies |media_type| and returns |kSuccess|.
+  virtual int Init(const AM_MEDIA_TYPE& media_type);
+  // Allocates AM_MEDIA_TYPE with WAVEFORMATEX format blob, and sets contents
+  // to 0.
+  virtual int Init();
+  // Validates |ptr_type_| and verifies that format blob has capacity for a
+  // WAVEFORMATEX struct.
+  bool IsValidWaveFormatExBlob() const;
+  int Configure(const AudioConfig& config);
+  int channels() const;
+  int sample_rate() const;
+  int sample_size() const;
+ private:
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(AudioMediaType);
+};
+
+// Wrapper class for automatic disposal of AM_MEDIA_TYPE pointers.
+class MediaTypePtr {
+ public:
+  enum {
+    kNullType = 1,
+    kSuccess = 0,
+  };
+  MediaTypePtr();
+  explicit MediaTypePtr(AM_MEDIA_TYPE* ptr_type);
+  ~MediaTypePtr();
+  // |Free()|s |ptr_type_| and takes ownership of |ptr_type|. Note that
+  // |ptr_type| and the format blob within must be memory allocated via
+  // CoTaskMemAlloc. Both pointers will be be passed to CoTaskMemFree in
+  // |~MediaTypePtr()|.
+  int Attach(AM_MEDIA_TYPE* ptr_type);
+  // |Free()|s |ptr_type_| and sets it to NULL.
+  void Free();
+  // Returns |ptr_type_| and sets internal copy to NULL.
+  AM_MEDIA_TYPE* Detach();
+  // Returns |ptr_type_|.
+  AM_MEDIA_TYPE* get() const { return ptr_type_; }
+  // |Free()|s and returns pointer to |ptr_type_|.
+  AM_MEDIA_TYPE** GetPtr();
+ private:
+  AM_MEDIA_TYPE* ptr_type_;
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(MediaTypePtr);
 };
 
 }  // namespace webmlive
