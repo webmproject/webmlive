@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAFn//4W0\u003d",
+        "filename": "http_client/http_client_main.cc",
+        "patchSetId": 21
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-10-04T21:50:35Z",
+      "side": 1,
+      "message": "Is there a chance of supplying a NULL to strtol if the value is left off on the command line?",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//4Z0\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 21
+      },
+      "lineNbr": 419,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-10-04T21:50:35Z",
+      "side": 1,
+      "message": "Just a note, the const additions to reinterpret aren\u0027t strictly necessary",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//4ZA\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 21
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-10-04T21:50:35Z",
+      "side": 1,
+      "message": "indent",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//4Yc\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 21
+      },
+      "lineNbr": 544,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-10-04T21:50:35Z",
+      "side": 1,
+      "message": "s/Rreturns/Returns/",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//4YU\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 21
+      },
+      "lineNbr": 569,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-10-04T21:50:35Z",
+      "side": 1,
+      "message": "Since it\u0027s not a simple accessor, maybe GetPtr",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//4YA\u003d",
+        "filename": "http_client/win/media_type_dshow.h",
+        "patchSetId": 21
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-10-04T21:50:35Z",
+      "side": 1,
+      "message": "hmm I see the symmetry you\u0027re going for here with get/get_ptr, so maybe it\u0027s ok even though not strictly following naming conventions.",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//4T0\u003d",
+        "filename": "http_client/win/webm_encoder_dshow.h",
+        "patchSetId": 21
+      },
+      "lineNbr": 381,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-10-04T21:50:35Z",
+      "side": 1,
+      "message": "drop this extra line",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
