@@ -111,6 +111,17 @@ int store_string_map_entries(const StringVector& unparsed_entries,
   return kSuccess;
 }
 
+// Returns true when |arg_index| + 1 is <= |argc|, and |argv[arg_index+1]| is
+// non-null. Command line parser helper function.
+bool arg_has_value(int arg_index, int argc, const char** argv) {
+  const int val_index = arg_index + 1;
+  const bool has_value = ((val_index < argc) && (argv[val_index] != NULL));
+  if (!has_value) {
+    LOG(WARNING) << "argument missing value: " << argv[arg_index];
+  }
+  return has_value;
+}
+
 // Parses command line and stores user settings.
 void parse_command_line(int argc, const char** argv,
                         WebmEncoderClientConfig& config) {
@@ -124,57 +135,74 @@ void parse_command_line(int argc, const char** argv,
         !strcmp("--help", argv[i])) {
       usage(argv);
       exit(EXIT_SUCCESS);
-    } else if (!strcmp("--file", argv[i])) {
+    } else if (!strcmp("--file", argv[i]) && arg_has_value(i, argc, argv)) {
       uploader_settings.local_file = argv[++i];
       enc_config.output_file_name = uploader_settings.local_file;
-    } else if (!strcmp("--url", argv[i])) {
+    } else if (!strcmp("--url", argv[i]) && arg_has_value(i, argc, argv)) {
       config.target_url = argv[++i];
-    } else if (!strcmp("--header", argv[i])) {
+    } else if (!strcmp("--header", argv[i]) && arg_has_value(i, argc, argv)) {
       unparsed_headers.push_back(argv[++i]);
-    } else if (!strcmp("--var", argv[i])) {
+    } else if (!strcmp("--var", argv[i]) && arg_has_value(i, argc, argv)) {
       unparsed_vars.push_back(argv[++i]);
-    } else if (!strcmp("--adev", argv[i])) {
+    } else if (!strcmp("--adev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.audio_device_name = argv[++i];
-    } else if (!strcmp("--achannels", argv[i])) {
+    } else if (!strcmp("--achannels", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.audio_config.channels = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--arate", argv[i])) {
+    } else if (!strcmp("--arate", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.audio_config.sample_rate = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--asize", argv[i])) {
+    } else if (!strcmp("--asize", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.audio_config.sample_size = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--stream_name", argv[i])) {
+    } else if (!strcmp("--stream_name", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       uploader_settings.stream_name = argv[++i];
-    } else if (!strcmp("--stream_id", argv[i])) {
+    } else if (!strcmp("--stream_id", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       uploader_settings.stream_id = argv[++i];
-    } else if (!strcmp("--form_post", argv[i])) {
+    } else if (!strcmp("--form_post", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
-    } else if (!strcmp("--vdev", argv[i])) {
+    } else if (!strcmp("--vdev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_device_name = argv[++i];
-    } else if (!strcmp("--vwidth", argv[i])) {
+    } else if (!strcmp("--vwidth", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_config.width = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vheight", argv[i])) {
+    } else if (!strcmp("--vheight", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_config.height = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vframe_rate", argv[i])) {
+    } else if (!strcmp("--vframe_rate", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.video_config.frame_rate = strtod(argv[++i], NULL);
-    } else if (!strcmp("--vorbis_bitrate", argv[i])) {
+    } else if (!strcmp("--vorbis_bitrate", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.vorbis_bitrate = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_keyframe_interval", argv[i])) {
+    } else if (!strcmp("--vpx_keyframe_interval", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.keyframe_interval = strtod(argv[++i], NULL);
-    } else if (!strcmp("--vpx_bitrate", argv[i])) {
+    } else if (!strcmp("--vpx_bitrate", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.bitrate = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_min_q", argv[i])) {
+    } else if (!strcmp("--vpx_min_q", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.min_quantizer = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_max_q", argv[i])) {
+    } else if (!strcmp("--vpx_max_q", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.max_quantizer = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_speed", argv[i])) {
+    } else if (!strcmp("--vpx_speed", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.speed = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_static_threshold", argv[i])) {
+    } else if (!strcmp("--vpx_static_threshold", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.static_threshold = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_threads", argv[i])) {
+    } else if (!strcmp("--vpx_threads", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.thread_count = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_token_partitions", argv[i])) {
+    } else if (!strcmp("--vpx_token_partitions", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.token_partitions = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_undershoot", argv[i])) {
+    } else if (!strcmp("--vpx_undershoot", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.undershoot = strtol(argv[++i], NULL, 10);
+    } else {
+      LOG(WARNING) << "argument unknown or unparseable: " << argv[i];
     }
   }
   // Store user HTTP headers.
