@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//4L0\u003d",
+        "filename": "http_client/http_client_main.cc",
+        "patchSetId": 21
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-05T00:35:17Z",
+      "side": 1,
+      "message": "Fixed in a separate commit.",
+      "parentUuid": "AAAAFn//4W0\u003d",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//4Z0\u003d",
         "filename": "http_client/win/media_type_dshow.cc",
         "patchSetId": 21
@@ -53,6 +71,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//4Ls\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 21
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-05T00:35:17Z",
+      "side": 1,
+      "message": "Oops, sorry. Fixed.",
+      "parentUuid": "AAAAFn//4ZA\u003d",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//4Yc\u003d",
         "filename": "http_client/win/media_type_dshow.cc",
         "patchSetId": 21
@@ -64,6 +100,24 @@
       "writtenOn": "2011-10-04T21:50:35Z",
       "side": 1,
       "message": "s/Rreturns/Returns/",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//4Lo\u003d",
+        "filename": "http_client/win/media_type_dshow.cc",
+        "patchSetId": 21
+      },
+      "lineNbr": 544,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-05T00:35:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//4Yc\u003d",
       "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -104,6 +158,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAFn//4Fc\u003d",
+        "filename": "http_client/win/media_type_dshow.h",
+        "patchSetId": 21
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-05T00:35:17Z",
+      "side": 1,
+      "message": "Changed to GetPtr. The symmetry was nice, but I think it\u0027s safer to use a name that draws a little bit of extra attention considering what happens underneath.",
+      "parentUuid": "AAAAFn//4YA\u003d",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAFn//4T0\u003d",
         "filename": "http_client/win/webm_encoder_dshow.h",
         "patchSetId": 21
@@ -115,6 +187,24 @@
       "writtenOn": "2011-10-04T21:50:35Z",
       "side": 1,
       "message": "drop this extra line",
+      "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAFn//4D8\u003d",
+        "filename": "http_client/win/webm_encoder_dshow.h",
+        "patchSetId": 21
+      },
+      "lineNbr": 381,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-10-05T00:35:17Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAFn//4T0\u003d",
       "revId": "cbdd44b882e1705aa1c97ae82e2a4450ef9f31b9",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
