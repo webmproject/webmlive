@@ -29,6 +29,7 @@ enum {
   kSuccess = 0,
 };
 
+const std::string kAgentQueryFragment = "&agent=p";
 const std::string kMetadataQueryFragment = "&metadata=1";
 const std::string kWebmItagQueryFragment = "&itag=43";
 typedef std::vector<std::string> StringVector;
@@ -236,6 +237,7 @@ int start_uploader(webmlive::HttpUploader& uploader,
     // rebuild the url with query params included
     url << config.target_url << "?ns=" << config.uploader_settings.stream_name
         << "&id=" << config.uploader_settings.stream_id
+        << kAgentQueryFragment
         << kWebmItagQueryFragment
         << kMetadataQueryFragment;
     config.target_url = url.str();
