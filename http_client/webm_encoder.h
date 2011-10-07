@@ -34,6 +34,7 @@ const int kDefaultVorbisBitrate = 128;
 // VP8 defaults.
 const double kDefaultVpxKeyframeInterval = 1.0;
 const int kDefaultVpxBitrate = 500;
+const int kDefaultVpxDecimate = kUseEncoderDefault;
 const int kDefaultVpxMinQ = 10;
 const int kDefaultVpxMaxQ = 46;
 const int kDefaultVpxSpeed = kUseEncoderDefault;
@@ -64,6 +65,8 @@ struct WebmEncoderConfig {
     double keyframe_interval;
     // Video bitrate, in kilobits.
     int bitrate;
+    // Video frame rate decimation factor.
+    int decimate;
     // Minimum quantizer value.
     int min_quantizer;
     // Maxium quantizer value.

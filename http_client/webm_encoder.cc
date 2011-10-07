@@ -59,6 +59,7 @@ WebmEncoderConfig WebmEncoder::DefaultConfig() {
   c.video_config.frame_rate = kDefaultVideoFrameRate;
   c.vorbis_bitrate = kDefaultVorbisBitrate;
   c.vpx_config.bitrate = kDefaultVpxBitrate;
+  c.vpx_config.decimate = kDefaultVpxDecimate;
   c.vpx_config.min_quantizer = kDefaultVpxMinQ;
   c.vpx_config.max_quantizer = kDefaultVpxMaxQ;
   c.vpx_config.keyframe_interval = kDefaultVpxKeyframeInterval;

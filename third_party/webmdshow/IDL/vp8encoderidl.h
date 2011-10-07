@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0555 */
-/* at Tue Aug 30 23:39:36 2011
+/* at Thu Oct 06 22:36:03 2011
  */
 /* Compiler settings for ..\IDL\vp8encoder.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
@@ -114,7 +114,7 @@ EXTERN_C const IID IID_IVP8Encoder;
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
-    MIDL_INTERFACE("ED311150-5211-11DF-94AF-0026B977EEAA")
+    MIDL_INTERFACE("ED311151-5211-11DF-94AF-0026B977EEAA")
     IVP8Encoder : public IUnknown
     {
     public:
@@ -325,6 +325,12 @@ EXTERN_C const IID IID_IVP8Encoder;
         
         virtual HRESULT STDMETHODCALLTYPE GetStaticThreshold( 
             /* [out] */ int *pStaticThreshold) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE SetDecimate( 
+            /* [in] */ int Decimate) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE GetDecimate( 
+            /* [out] */ int *pDecimate) = 0;
         
     };
     
@@ -624,6 +630,14 @@ EXTERN_C const IID IID_IVP8Encoder;
             IVP8Encoder * This,
             /* [out] */ int *pStaticThreshold);
         
+        HRESULT ( STDMETHODCALLTYPE *SetDecimate )( 
+            IVP8Encoder * This,
+            /* [in] */ int Decimate);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetDecimate )( 
+            IVP8Encoder * This,
+            /* [out] */ int *pDecimate);
+        
         END_INTERFACE
     } IVP8EncoderVtbl;
 
@@ -856,6 +870,12 @@ EXTERN_C const IID IID_IVP8Encoder;
 
 #define IVP8Encoder_GetStaticThreshold(This,pStaticThreshold)	\
     ( (This)->lpVtbl -> GetStaticThreshold(This,pStaticThreshold) ) 
+
+#define IVP8Encoder_SetDecimate(This,Decimate)	\
+    ( (This)->lpVtbl -> SetDecimate(This,Decimate) ) 
+
+#define IVP8Encoder_GetDecimate(This,pDecimate)	\
+    ( (This)->lpVtbl -> GetDecimate(This,pDecimate) ) 
 
 #endif /* COBJMACROS */
 

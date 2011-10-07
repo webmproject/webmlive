@@ -458,6 +458,13 @@ int WebmEncoderImpl::ConfigureVpxEncoder() {
     LOG(ERROR) << "cannot set VP8 encoder bitrate." << HRLOG(hr);
     return kVpxConfigureError;
   }
+  if (config.decimate != kUseEncoderDefault) {
+    hr = vp8_config->SetDecimate(config.decimate);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "cannot set VP8 encoder decimate value." << HRLOG(hr);
+      return kVpxConfigureError;
+    }
+  }
   // Set keyframe interval.
   hr = vp8_config->SetKeyframeMode(kKeyframeModeDisabled);
   if (FAILED(hr)) {
