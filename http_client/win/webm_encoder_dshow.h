@@ -40,6 +40,8 @@ COMPTR_TYPEDEF(IMediaSeeking);
 COMPTR_TYPEDEF(IMoniker);
 COMPTR_TYPEDEF(IPin);
 COMPTR_TYPEDEF(IPropertyBag);
+COMPTR_TYPEDEF(ISpecifyPropertyPages);
+
 
 // CLSID constants for directshow filters needed to encode WebM files.
 // Xiph.org Vorbis encoder CLSID
@@ -183,6 +185,8 @@ class WebmEncoderImpl {
   void set_encoded_duration(double current_duration);
   // WebM encoder thread function.
   void WebmEncoderThread();
+  // Flag set to true when audio is captured from the same filter as video.
+  bool audio_from_video_source_;
   // Stop flag used by |Stop| and |StopRequested|.
   bool stop_;
   // Encoded duration.
@@ -373,6 +377,15 @@ class PinFormat {
   const IPinPtr pin_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(PinFormat);
 };
+
+// Returns result of |ShowPropertyPage| after obtaining IUnknown interface
+// from |filter|.
+HRESULT ShowFilterPropertyPage(const IBaseFilterPtr& filter);
+// Returns result of |ShowPropertyPage| after obtaining IUnknown interface
+// from |pin|.
+HRESULT ShowPinPropertyPage(const IPinPtr& pin);
+// Returns HRESULT code from attempt to show property page for |ptr_iunknown|.
+HRESULT ShowPropertyPage(IUnknown* ptr_iunknown);
 
 }  // namespace webmlive
 

@@ -45,6 +45,8 @@ const int kDefaultVpxTokenPartitions = kUseEncoderDefault;
 
 struct WebmEncoderConfig {
   struct AudioCaptureConfig {
+    // Attempt manual configuration through source UI (if available).
+    bool manual_config;
     // Number of channels.
     int channels;
     // Sample rate.
@@ -53,6 +55,8 @@ struct WebmEncoderConfig {
     int sample_size;
   };
   struct VideoCaptureConfig {
+    // Attempt manual configuration through source UI (if available).
+    bool manual_config;
     // Width, in pixels.
     int width;
     // Height, in pixels.
