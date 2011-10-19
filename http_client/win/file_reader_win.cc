@@ -11,7 +11,6 @@
 
 #include <sstream>
 
-#include "file_util.h"
 #include "glog/logging.h"
 
 namespace webmlive {

@@ -199,19 +199,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\debug_util.h"
-				>
-			</File>
-			<File
 				RelativePath=".\file_reader.cc"
 				>
 			</File>
 			<File
 				RelativePath=".\file_reader.h"
-				>
-			</File>
-			<File
-				RelativePath=".\file_util.h"
 				>
 			</File>
 			<File
@@ -267,10 +259,6 @@
 				</File>
 				<File
 					RelativePath=".\win\file_reader_win.h"
-					>
-				</File>
-				<File
-					RelativePath=".\win\file_util_win.cc"
 					>
 				</File>
 				<File
