@@ -65,12 +65,15 @@ void usage(const char** argv) {
   printf("    --url <target URL>             Target for HTTP Posts.\n");
   printf("    --vdev <video source name>     Video capture device name.\n");
   printf("  Audio source configuration options:\n");
+  printf("    --amanual                      Attempt manual configuration.\n");
   printf("    --achannels <channels>         Number of audio channels.\n");
   printf("    --arate <sample rate>          Audio sample rate.\n");
   printf("    --asize <sample size>          Audio sample size.\n");
   printf("  Vorbis Encoder options:\n");
   printf("    --vorbis_bitrate <kbps>            Audio bitrate.\n");
   printf("  Video source configuration options:\n");
+  printf("    --vmanual                          Attempt manual\n");
+  printf("                                       configuration.\n");
   printf("    --vwidth <width>                   Width in pixels.\n");
   printf("    --vheight <height>                 Height in pixels.\n");
   printf("    --vframe_rate <width>              Frames per second.\n");
@@ -149,6 +152,8 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--achannels", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.audio_config.channels = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--amanual", argv[i])) {
+      enc_config.audio_config.manual_config = true;
     } else if (!strcmp("--arate", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.audio_config.sample_rate = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--asize", argv[i]) && arg_has_value(i, argc, argv)) {
@@ -164,6 +169,8 @@ void parse_command_line(int argc, const char** argv,
       uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
     } else if (!strcmp("--vdev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_device_name = argv[++i];
+    } else if (!strcmp("--vmanual", argv[i])) {
+      enc_config.video_config.manual_config = true;
     } else if (!strcmp("--vwidth", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_config.width = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vheight", argv[i]) && arg_has_value(i, argc, argv)) {
