@@ -234,13 +234,9 @@ class CaptureSourceLoader {
   // CLSID_AudioInputDeviceCategory or CLSID_VideoInputDeviceCategory.
   int Init(CLSID source_type);
   // Returns number of sources found by Init.
-  int GetNumSources() const {
-    return sources_.size();
-  }
+  int GetNumSources() const { return sources_.size(); }
   // Return source name for specified index.
-  std::wstring GetSourceName(int index) {
-    return sources_[index];
-  }
+  std::wstring GetSourceName(int index) { return sources_[index]; }
   // Returns filter for capture source at specified |index|.
   IBaseFilterPtr GetSource(int index);
   // Returns filter for capture source specified by |name|.

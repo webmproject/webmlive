@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "win/file_reader_win.h"
+#include "http_client/win/file_reader_win.h"
 
 #include <share.h>  // defines _SH_DENYNO, used with _wfsopen
 
@@ -105,8 +105,7 @@ int FileReaderImpl::Open(int mode) {
 // is returned. On failure reported by |fread|, |kReadError| is returned and
 // |clearerr| is not called.
 int FileReaderImpl::ReadFromStream(size_t num_bytes, uint8* ptr_buffer,
-                                   size_t& num_read)
-{
+                                   size_t& num_read) {
   num_read = fread(ptr_buffer, sizeof(uint8), num_bytes, ptr_file_);
   if (feof(ptr_file_)) {
     clearerr(ptr_file_);

@@ -5,9 +5,10 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "buffer_util.h"
+#include "http_client/buffer_util.h"
+
 #include "glog/logging.h"
-#include "webm_buffer_parser.h"
+#include "http_client/webm_buffer_parser.h"
 
 namespace webmlive {
 
@@ -123,7 +124,7 @@ int WebmChunkBuffer::BufferData(const uint8* const ptr_data, int32 length) {
 
 // Constructs and inits |parser_|.
 int WebmChunkBuffer::Init() {
-  parser_.reset(new (std::nothrow) WebmBufferParser());
+  parser_.reset(new (std::nothrow) WebmBufferParser());  // NOLINT
   if (!parser_) {
     LOG(ERROR) << "out of memory";
     return kOutOfMemory;

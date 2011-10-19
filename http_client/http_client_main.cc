@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "http_client_base.h"
+#include "http_client/http_client_base.h"
 
 #include <conio.h>
 #include <stdio.h>
@@ -15,11 +15,11 @@
 #include <vector>
 
 #include "boost/scoped_array.hpp"
-#include "buffer_util.h"
-#include "file_reader.h"
 #include "glog/logging.h"
-#include "http_uploader.h"
-#include "webm_encoder.h"
+#include "http_client/buffer_util.h"
+#include "http_client/file_reader.h"
+#include "http_client/http_uploader.h"
+#include "http_client/webm_encoder.h"
 
 namespace {
 enum {
@@ -59,9 +59,9 @@ void usage(const char** argv) {
   printf("    --form_post                    Send WebM chunks as file data\n");
   printf("                                   in an form (a la RFC 1867).\n");
   printf("    --stream_id <stream ID>        Stream ID to include in POST\n");
-  printf("                                   query string.\n" );
+  printf("                                   query string.\n" );  // NOLINT
   printf("    --stream_name <stream name>    Stream name to include in POST\n");
-  printf("                                   query string.\n" );
+  printf("                                   query string.\n" );  // NOLINT
   printf("    --url <target URL>             Target for HTTP Posts.\n");
   printf("    --vdev <video source name>     Video capture device name.\n");
   printf("  Audio source configuration options:\n");
@@ -80,7 +80,6 @@ void usage(const char** argv) {
   printf("    --vpx_keyframe_interval <seconds>  Time between keyframes.\n");
   printf("    --vpx_min_q <min q value>          Quantizer minimum.\n");
   printf("    --vpx_max_q <max q value>          Quantizer maximum.\n");
-  printf("    --vpx_speed <speed value>          Speed.\n");
   printf("    --vpx_static_threshold <threshold> Static threshold.\n");
   printf("    --vpx_speed <speed value>          Speed.\n");
   printf("    --vpx_threads <num threads>        Number of encode threads.\n");
@@ -92,8 +91,7 @@ void usage(const char** argv) {
 // Parses name value pairs in the format name:value from |unparsed_entries|,
 // and stores results in |out_map|.
 int store_string_map_entries(const StringVector& unparsed_entries,
-                             std::map<std::string, std::string>& out_map)
-{
+                             std::map<std::string, std::string>& out_map) {
   using std::string;
   using std::vector;
   StringVector::const_iterator entry_iter = unparsed_entries.begin();
@@ -217,14 +215,14 @@ void parse_command_line(int argc, const char** argv,
 }
 
 // Calls |Init| and |Run| on |encoder| to start the encode of a WebM file.
-int start_encoder(webmlive::WebmEncoder& encoder,
+int start_encoder(webmlive::WebmEncoder* ptr_encoder,
                   const webmlive::WebmEncoderConfig& settings) {
-  int status = encoder.Init(settings);
+  int status = ptr_encoder->Init(settings);
   if (status) {
     LOG(ERROR) << "encoder Init failed, status=" << status;
     return status;
   }
-  status = encoder.Run();
+  status = ptr_encoder->Run();
   if (status) {
     LOG(ERROR) << "encoder Run failed, status=" << status;
   }
@@ -233,7 +231,7 @@ int start_encoder(webmlive::WebmEncoder& encoder,
 
 // Calls |Init| and |Run| on |uploader| to start the uploader thread, which
 // uploads buffers when |UploadBuffer| is called on the uploader.
-int start_uploader(webmlive::HttpUploader& uploader,
+int start_uploader(webmlive::HttpUploader* ptr_uploader,
                    WebmEncoderClientConfig& config) {
   if (config.target_url.find('?') == std::string::npos) {
     // No query string-- reconstruct the URL.
@@ -251,22 +249,23 @@ int start_uploader(webmlive::HttpUploader& uploader,
     config.target_url.append(kMetadataQueryFragment);
   }
 
-  int status = uploader.Init(config.uploader_settings);
+  int status = ptr_uploader->Init(config.uploader_settings);
   if (status) {
     LOG(ERROR) << "uploader Init failed, status=" << status;
     return status;
   }
-  status = uploader.Run();
+  status = ptr_uploader->Run();
   if (status) {
     LOG(ERROR) << "uploader Run failed, status=" << status;
   }
   return status;
 }
 
-int client_main(WebmEncoderClientConfig& config) {
+int client_main(WebmEncoderClientConfig* ptr_config) {
   // Setup the file reader.  This is a little strange since |reader| actually
   // creates the output file that is used by the encoder.
-  webmlive::HttpUploaderSettings& uploader_settings = config.uploader_settings;
+  webmlive::HttpUploaderSettings& uploader_settings =
+      ptr_config->uploader_settings;
   webmlive::FileReader reader;
   int status = reader.CreateFile(uploader_settings.local_file);
   if (status) {
@@ -274,16 +273,16 @@ int client_main(WebmEncoderClientConfig& config) {
     return EXIT_FAILURE;
   }
   // Start encoding the WebM file.
-  webmlive::WebmEncoderConfig& enc_config = config.enc_config;
+  webmlive::WebmEncoderConfig& enc_config = ptr_config->enc_config;
   webmlive::WebmEncoder encoder;
-  status = start_encoder(encoder, enc_config);
+  status = start_encoder(&encoder, enc_config);
   if (status) {
     LOG(ERROR) << "start_encoder failed, status=" << status;
     return EXIT_FAILURE;
   }
   // Start the uploader thread.
   webmlive::HttpUploader uploader;
-  status = start_uploader(uploader, config);
+  status = start_uploader(&uploader, *ptr_config);
   if (status) {
     LOG(ERROR) << "start_uploader failed, status=" << status;
     encoder.Stop();
@@ -292,7 +291,8 @@ int client_main(WebmEncoderClientConfig& config) {
   const int32 kReadBufferSize = 100*1024;
   int32 read_buffer_size = kReadBufferSize;
   using boost::scoped_array;
-  scoped_array<uint8> read_buf(new (std::nothrow) uint8[kReadBufferSize]);
+  scoped_array<uint8> read_buf(
+      new (std::nothrow) uint8[kReadBufferSize]);  // NOLINT
   if (!read_buf) {
     uploader.Stop();
     encoder.Stop();
@@ -312,7 +312,7 @@ int client_main(WebmEncoderClientConfig& config) {
   int exit_code = EXIT_SUCCESS;
   webmlive::HttpUploaderStats stats;
   printf("\nPress the any key to quit...\n");
-  while(!_kbhit()) {
+  while (!_kbhit()) {
     // Output current duration and upload progress
     if (uploader.GetStats(&stats) == webmlive::HttpUploader::kSuccess) {
       printf("\rencoded duration: %04f seconds, uploaded: %I64d @ %d kBps",
@@ -336,7 +336,7 @@ int client_main(WebmEncoderClientConfig& config) {
       if (chunk_buffer.ChunkReady(&chunk_length)) {
         if (chunk_length > read_buffer_size) {
           // Reallocate the read buffer-- the chunk is too large.
-          read_buf.reset(new (std::nothrow) uint8[chunk_length]);
+          read_buf.reset(new (std::nothrow) uint8[chunk_length]);  // NOLINT
           if (!read_buf) {
             LOG(ERROR) << "read buffer reallocation failed";
             exit_code = EXIT_FAILURE;
@@ -355,14 +355,14 @@ int client_main(WebmEncoderClientConfig& config) {
           // post.  It is only present for the first post, which includes
           // the EBML header, MKV segment Info, and MKV segment tracks
           // elements.
-          std::string& url = config.target_url;
+          std::string& url = ptr_config->target_url;
           url.erase(url.find(kMetadataQueryFragment),
                     kMetadataQueryFragment.length());
         }
         // Start upload of the read buffer contents
         LOG(INFO) << "starting buffer upload, chunk_length=" << chunk_length;
         status = uploader.UploadBuffer(&read_buf[0], chunk_length,
-                                       config.target_url);
+                                       ptr_config->target_url);
         if (status) {
           LOG(ERROR) << "UploadBuffer failed, status=" << status;
           exit_code = EXIT_FAILURE;
@@ -401,7 +401,7 @@ int main(int argc, const char** argv) {
   }
   LOG(INFO) << "file: " << config.enc_config.output_file_name.c_str();
   LOG(INFO) << "url: " << config.target_url.c_str();
-  int exit_code = client_main(config);
+  int exit_code = client_main(&config);
   google::ShutdownGoogleLogging();
   return exit_code;
 }

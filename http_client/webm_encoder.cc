@@ -5,14 +5,14 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "webm_encoder.h"
+#include "http_client/webm_encoder.h"
 
 #include <cstdio>
 #include <sstream>
 
 #include "glog/logging.h"
 #ifdef _WIN32
-#include "win/webm_encoder_dshow.h"
+#include "http_client/win/webm_encoder_dshow.h"
 #endif
 
 namespace webmlive {
@@ -25,7 +25,7 @@ WebmEncoder::~WebmEncoder() {
 
 // Creates the encoder object and call its |Init| method.
 int WebmEncoder::Init(const WebmEncoderConfig& config) {
-  ptr_encoder_.reset(new (std::nothrow) WebmEncoderImpl());
+  ptr_encoder_.reset(new (std::nothrow) WebmEncoderImpl());  // NOLINT
   if (!ptr_encoder_) {
     LOG(ERROR) << "cannot construct encoder instance!";
     return kInitFailed;

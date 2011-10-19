@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "webm_buffer_parser.h"
+#include "http_client/webm_buffer_parser.h"
 
 #include "glog/logging.h"
 #include "libwebm/mkvparser.hpp"
@@ -28,7 +28,8 @@ class WebmBufferReader : public mkvparser::IMkvReader {
   int SetBufferWindow(const uint8* ptr_buffer, int32 length,
                       int64 bytes_consumed);
   // IMkvReader methods.
-  virtual int Read(int64 read_pos, long length_requested, uint8* ptr_buf);
+  virtual int Read(int64 read_pos, long length_requested,  // NOLINT
+                   uint8* ptr_buf);
   virtual int Length(int64* ptr_total, int64* ptr_available);
  private:
   // Buffer window pointer.
@@ -63,7 +64,7 @@ int WebmBufferReader::SetBufferWindow(const uint8* ptr_buffer, int32 length,
 }
 
 // Called by libwebm to read data from |ptr_buffer_|.
-int WebmBufferReader::Read(int64 read_pos, long length_requested,
+int WebmBufferReader::Read(int64 read_pos, long length_requested,  // NOLINT
                            uint8* ptr_buf) {
   if (!ptr_buf) {
     LOG(ERROR) << "NULL ptr_buf";
@@ -116,7 +117,7 @@ WebmBufferParser::~WebmBufferParser() {
 
 // Constructs |reader_|.
 int WebmBufferParser::Init() {
-  reader_.reset(new (std::nothrow) WebmBufferReader());
+  reader_.reset(new (std::nothrow) WebmBufferReader());  // NOLINT
   if (!reader_) {
     LOG(ERROR) << "out of memory";
     return kOutOfMemory;
@@ -218,7 +219,7 @@ int WebmBufferParser::ParseCluster(int32* ptr_element_size) {
   // - The last cluster was parsed.
   // In either case it's time to load a new one...
   int status;
-  long length = 0;
+  long length = 0;  // NOLINT
   if (!ptr_cluster_) {
     // Load/parse a cluster header...
     int64 current_pos = total_bytes_parsed_;

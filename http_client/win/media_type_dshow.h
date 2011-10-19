@@ -34,7 +34,7 @@ class MediaType {
   MediaType();
   virtual ~MediaType();
   // Returns |ptr_type_|.
-  const AM_MEDIA_TYPE* get() const;
+  const AM_MEDIA_TYPE* get() const { return ptr_type_; }
   virtual int Init(const GUID& major_type, const GUID& format_type) = 0;
   virtual int Init(const AM_MEDIA_TYPE& media_type) = 0;
   virtual int Init() = 0;

@@ -11,8 +11,9 @@
 #include <map>
 #include <string>
 
-#include "basictypes.h"
 #include "boost/scoped_ptr.hpp"
+#include "http_client/basictypes.h"
+#include "http_client/http_client_base.h"
 
 namespace webmlive {
 
@@ -84,8 +85,8 @@ class HttpUploader {
   // Constructs |HttpUploaderImpl|, which copies |settings|. Returns |kSuccess|
   // upon success.
   int Init(const HttpUploaderSettings& settings);
-  // Returns the current upload stats. Note, obtains lock before copying stats to
-  // |ptr_stats|.
+  // Returns the current upload stats. Note, obtains lock before copying stats
+  // to |ptr_stats|.
   int GetStats(HttpUploaderStats* ptr_stats);
   // Runs the uploader thread.
   int Run();
