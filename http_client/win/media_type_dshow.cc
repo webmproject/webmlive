@@ -26,10 +26,6 @@ MediaType::~MediaType() {
   FreeMediaType(ptr_type_);
 }
 
-const AM_MEDIA_TYPE* MediaType::get() const {
-  return ptr_type_;
-}
-
 // Utility function for cleaning up AM_MEDIA_TYPE and its format blob.
 void MediaType::FreeMediaType(AM_MEDIA_TYPE* ptr_media_type) {
   if (ptr_media_type) {

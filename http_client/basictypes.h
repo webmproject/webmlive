@@ -10,18 +10,18 @@
 
 typedef signed char         schar;
 typedef signed char         int8;
-typedef short               int16;
+typedef short               int16;   // NOLINT
 typedef int                 int32;
 typedef unsigned char       uint8;
-typedef unsigned short      uint16;
+typedef unsigned short      uint16;  // NOLINT
 typedef unsigned int        uint32;
 
 #if defined _MSC_VER || defined _WIN32
 typedef __int64             int64;
 typedef unsigned __int64    uint64;
 #else
-typedef long long           int64;
-typedef unsigned long long  uint64;
+typedef long long           int64;   // NOLINT
+typedef unsigned long long  uint64;  // NOLINT
 #endif
 
 #define WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(TypeName) \

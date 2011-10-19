@@ -11,9 +11,9 @@
 #include <string>
 #include <vector>
 
-#include "basictypes.h"
 #include "boost/scoped_ptr.hpp"
-#include "http_client_base.h"
+#include "http_client/basictypes.h"
+#include "http_client/http_client_base.h"
 
 namespace mkvparser {
 

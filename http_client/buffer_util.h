@@ -10,10 +10,10 @@
 
 #include <vector>
 
-#include "basictypes.h"
 #include "boost/scoped_ptr.hpp"
 #include "boost/thread/mutex.hpp"
-#include "http_client_base.h"
+#include "http_client/basictypes.h"
+#include "http_client/http_client_base.h"
 
 namespace webmlive {
 
@@ -92,7 +92,7 @@ class WebmChunkBuffer {
   int Init();
   // Returns the length of the currently parsed and buffered chunk, or 0 if
   // a complete chunk is not buffered.
-  int32 chunk_length() const { return chunk_length_; };
+  int32 chunk_length() const { return chunk_length_; }
  private:
   typedef std::vector<uint8> Buffer;
   // WebM data parser.

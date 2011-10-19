@@ -10,9 +10,9 @@
 
 #include <string>
 
-#include "basictypes.h"
 #include "boost/scoped_ptr.hpp"
-#include "http_client_base.h"
+#include "http_client/basictypes.h"
+#include "http_client/http_client_base.h"
 
 namespace webmlive {
 
@@ -47,7 +47,7 @@ class FileReader {
   // Calls |Read| on |ptr_reader_|.
   int Read(size_t num_bytes, uint8* ptr_buffer, size_t* ptr_num_read);
  private:
-   // Pointer to reader implementation.
+  // Pointer to reader implementation.
   boost::scoped_ptr<FileReaderImpl> ptr_reader_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(FileReader);
 };

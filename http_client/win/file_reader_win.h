@@ -5,15 +5,15 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef HTTP_CLIENT_FILE_READER_WIN_H_
-#define HTTP_CLIENT_FILE_READER_WIN_H_
+#ifndef HTTP_CLIENT_WIN_FILE_READER_WIN_H_
+#define HTTP_CLIENT_WIN_FILE_READER_WIN_H_
 
 #include <cstdio>
 #include <string>
 
-#include "basictypes.h"
-#include "file_reader.h"
-#include "http_client_base.h"
+#include "http_client/basictypes.h"
+#include "http_client/file_reader.h"
+#include "http_client/http_client_base.h"
 
 namespace webmlive {
 
@@ -43,8 +43,6 @@ class FileReaderImpl {
   // returned through |ptr_num_read|.  Calls |ReadFromStream| to do the actual
   // work.  Returns |kAtEOF| if end of file is reached during the read.
   int Read(size_t num_bytes, uint8* ptr_buffer, size_t* ptr_num_read);
-  // Returns total number of bytes read from the file.
-  int64 GetBytesRead() const { return bytes_read_; };
  private:
   // Creates or reopens the file based based on |mode| value.
   int Open(int mode);
@@ -63,6 +61,6 @@ class FileReaderImpl {
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(FileReaderImpl);
 };
 
-}
+}  // namespace webmlive
 
-#endif  // HTTP_CLIENT_FILE_READER_WIN_H_
+#endif  // HTTP_CLIENT_WIN_FILE_READER_WIN_H_

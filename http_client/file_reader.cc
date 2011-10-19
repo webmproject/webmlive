@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "file_reader.h"
+#include "http_client/file_reader.h"
 
 #include <cstdio>
 #include <sstream>
@@ -13,7 +13,7 @@
 
 #include "glog/logging.h"
 #ifdef _WIN32
-#include "win/file_reader_win.h"
+#include "http_client/win/file_reader_win.h"
 #endif
 
 namespace webmlive {
@@ -34,7 +34,7 @@ int FileReader::CreateFile(std::string file_path) {
 
 // Construct |ptr_reader_| and call its |CreateFile| method.
 int FileReader::CreateFile(std::wstring file_path) {
-  ptr_reader_.reset(new (std::nothrow) FileReaderImpl());
+  ptr_reader_.reset(new (std::nothrow) FileReaderImpl());  // NOLINT
   if (!ptr_reader_) {
     LOG(ERROR) << "ERROR: can't construct FileReaderImpl.";
     return kOpenFailed;

@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "http_uploader.h"
+#include "http_client/http_uploader.h"
 
 #include <time.h>
 
@@ -14,12 +14,11 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/condition.hpp"
 #include "boost/thread/thread.hpp"
-#include "buffer_util.h"
 #include "curl/curl.h"
 #include "curl/types.h"
 #include "curl/easy.h"
 #include "glog/logging.h"
-#include "http_client_base.h"
+#include "http_client/buffer_util.h"
 #include "libwebm/mkvparser.hpp"
 
 #define LOG_CURL_ERR(CURL_ERR, MSG_STR) \
@@ -89,7 +88,7 @@ class HttpUploaderImpl {
   // Libcurl progress callback function.  Acquires |mutex_| and updates
   // |stats_|.
   static int ProgressCallback(void* ptr_this,
-                              double, double, // we ignore download progress
+                              double, double,  // we ignore download progress
                               double upload_total, double upload_current);
   // Logs HTTP response data received by libcurl.
   static size_t WriteCallback(char* buffer, size_t size, size_t nitems,
@@ -154,14 +153,13 @@ HttpUploader::~HttpUploader() {
 }
 
 // Return result of |UploadeComplete| on |ptr_uploader_|.
-bool HttpUploader::UploadComplete()
-{
+bool HttpUploader::UploadComplete() {
   return ptr_uploader_->UploadComplete();
 }
 
 // Copy user settings, and setup the internal uploader object.
 int HttpUploader::Init(const HttpUploaderSettings& settings) {
-  ptr_uploader_.reset(new (std::nothrow) HttpUploaderImpl());
+  ptr_uploader_.reset(new (std::nothrow) HttpUploaderImpl());  // NOLINT
   if (!ptr_uploader_) {
     LOG(ERROR) << "can't construct HttpUploaderImpl.";
     return kInitFailed;
@@ -243,8 +241,7 @@ int HttpUploaderImpl::Init(const HttpUploaderSettings& settings) {
   settings_ = settings;
   // init libcurl
   ptr_curl_ = curl_easy_init();
-  if (!ptr_curl_)
-  {
+  if (!ptr_curl_) {
     LOG(ERROR) << "curl_easy_init failed!";
     return kLibCurlError;
   }
@@ -292,7 +289,8 @@ int HttpUploaderImpl::Run() {
   using boost::thread;
   using std::nothrow;
   upload_thread_ = shared_ptr<thread>(
-    new (nothrow) thread(bind(&HttpUploaderImpl::UploadThread, this)));
+      new (nothrow) thread(bind(&HttpUploaderImpl::UploadThread,  // NOLINT
+                                this)));
   return kSuccess;
 }
 
@@ -548,8 +546,8 @@ int HttpUploaderImpl::Upload() {
 // Idle the upload thread while awaiting user data.
 int HttpUploaderImpl::WaitForUserData() {
   boost::mutex::scoped_lock lock(mutex_);
-  buffer_ready_.wait(lock); // Unlock |mutex_| and idle the thread while we
-                            // wait for the next chunk of user data.
+  buffer_ready_.wait(lock);  // Unlock |mutex_| and idle the thread while we
+                             // wait for the next chunk of user data.
   return kSuccess;
 }
 
@@ -559,8 +557,9 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
                                        double download_current,
                                        double upload_total,
                                        double upload_current) {
-  download_total; download_current;   // we ignore download progress
-  upload_total; // we use |upload_total| only in DBGLOGs
+  // Ignore the download progress variables.
+  download_total;
+  download_current;
   HttpUploaderImpl* ptr_uploader_ =
     reinterpret_cast<HttpUploaderImpl*>(ptr_this);
   if (ptr_uploader_->StopRequested()) {
@@ -575,8 +574,8 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
   stats.bytes_per_second =
       (upload_current + stats.total_bytes_uploaded) /
       (ticks_elapsed / ticks_per_sec);
-  VLOG(4) << "total=" << int(upload_total) << " bytes_per_sec="
-          << int(stats.bytes_per_second);
+  VLOG(4) << "total=" << static_cast<int>(upload_total) << " bytes_per_sec="
+          << static_cast<int>(stats.bytes_per_second);
   return 0;
 }
 
