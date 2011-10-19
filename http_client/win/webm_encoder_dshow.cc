@@ -75,7 +75,8 @@ REFERENCE_TIME seconds_to_media_time(double seconds) {
 }
 
 WebmEncoderImpl::WebmEncoderImpl()
-    : stop_(false),
+    : audio_from_video_source_(false),
+      stop_(false),
       encoded_duration_(0.0),
       media_event_handle_(INVALID_HANDLE_VALUE) {
 }
@@ -315,6 +316,40 @@ int WebmEncoderImpl::CreateVideoSource() {
 // Returns |kSuccess| upon successful configuration.
 int WebmEncoderImpl::ConfigureVideoSource(const IPinPtr& pin, int sub_type) {
   WebmEncoderConfig::VideoCaptureConfig& video_config = config_.video_config;
+  if (video_config.manual_config) {
+    // Always disable manual configuration.
+    // |ConfigureVideoSource| is called in a loop, so this avoids making the
+    // user mess with the dialog repeatedly if/when manual settings disagree
+    // with the VP8 encoder filter.
+    video_config.manual_config = false;
+    bool filter_config_ok = false;
+    // Try showing |video_source_|'s property page.
+    HRESULT hr = show_filter_property_page(video_source_);
+    if (FAILED(hr)) {
+      LOG(WARNING) << "Unable to show video source filter property page."
+                   << HRLOG(hr);
+    } else {
+      filter_config_ok = true;
+    }
+    bool pin_config_ok = false;
+    // Try showing the pin property page. Extremely common video sources (I.E.
+    // Logitech webcams) show vastly different configuration options on the
+    // filter and pin property pages.
+    hr = show_pin_property_page(pin);
+    if (FAILED(hr)) {
+      LOG(WARNING) << "Unable to show video source pin property page."
+                   << HRLOG(hr);
+    } else {
+      pin_config_ok = true;
+    }
+    if (filter_config_ok || pin_config_ok) {
+      LOG(INFO) << "Manual video configuration successful.";
+      return kSuccess;
+    }
+    // Fall through and use settings in |video_config| when property page
+    // stuff fails.
+    LOG(WARNING) << "Manual video configuration failed.";
+  }
   if (video_config.width != kDefaultVideoWidth ||
       video_config.height != kDefaultVideoHeight ||
       video_config.frame_rate != kDefaultVideoFrameRate) {
@@ -546,8 +581,9 @@ int WebmEncoderImpl::CreateAudioSource() {
   }
   if (pin_finder.FindAudioOutputPin(0)) {
     // Use the video source filter audio output pin.
-    LOG(ERROR) << "Using video source filter audio output pin.";
+    LOG(INFO) << "Using video source filter audio output pin.";
     audio_source_ = video_source_;
+    audio_from_video_source_ = true;
   } else {
     // The video source doesn't have an audio output pin. Find an audio
     // capture source.
@@ -585,6 +621,39 @@ int WebmEncoderImpl::CreateAudioSource() {
 // to configure pin with an AM_MEDIA_TYPE matching the user's settings if no
 // match is found. Returns kSuccess upon successful configuration.
 int WebmEncoderImpl::ConfigureAudioSource(const IPinPtr& pin) {
+  if (config_.audio_config.manual_config) {
+    bool filter_config_ok = false, pin_config_ok = false;
+    // Manual audio configuration is enabled; try showing |audio_source_|'s
+    // property page, but only if the audio source is not a pin on
+    // |video_source_|. This is done to avoid any potential problems within
+    // the source filter that could be created by making filter level
+    // configuration changes through the property page after the video pin
+    // has been connected to the VP8 encoder filter.
+    if (!audio_from_video_source_) {
+      HRESULT hr = show_filter_property_page(audio_source_);
+      if (FAILED(hr)) {
+        LOG(WARNING) << "Unable to show audio source filter property page."
+                     << HRLOG(hr);
+      } else {
+        filter_config_ok = true;
+      }
+    } else {
+      HRESULT hr = show_pin_property_page(pin);
+      if (FAILED(hr)) {
+        LOG(WARNING) << "Unable to show video source pin property page."
+                     << HRLOG(hr);
+      } else {
+        pin_config_ok = true;
+      }
+    }
+    if (filter_config_ok || pin_config_ok) {
+      LOG(INFO) << "Manual audio configuration successful.";
+      return kSuccess;
+    }
+    // Fall through and use settings in |config_.audio_config| when property
+    // page stuff fails.
+    LOG(WARNING) << "Manual audio configuration failed.";
+  }
   PinFormat formatter(pin);
   MediaTypePtr audio_format;
   int status = audio_format.Attach(
@@ -632,7 +701,6 @@ int WebmEncoderImpl::CreateVorbisEncoder() {
     LOG(ERROR) << "cannot add Vorbis encoder to graph." << HRLOG(hr);
     return kCannotAddFilter;
   }
-  // TODO(tomfinegan): add Vorbis encoder configuration.
   return kSuccess;
 }
 
@@ -1503,6 +1571,79 @@ AM_MEDIA_TYPE* PinFormat::FindMatchingFormat(const VideoConfig& config) {
     }
   }
   return format.Detach();
+}
+
+// Displays |filter|'s property page.
+HRESULT show_filter_property_page(const IBaseFilterPtr& filter) {
+  if (!filter) {
+    LOG(ERROR) << "empty IBaseFilterPtr.";
+    return E_POINTER;
+  }
+  // Get |filter|'s IUnknown pointer.
+  IUnknownPtr iunknown(filter);
+  if (!iunknown) {
+    LOG(ERROR) << "filter does not support IUnknown?!";
+    return E_NOINTERFACE;
+  }
+  return show_property_page(iunknown.GetInterfacePtr());
+}
+
+// Displays |pin|'s property page.
+HRESULT show_pin_property_page(const IPinPtr& pin) {
+  if (!pin) {
+    LOG(ERROR) << "empty IPinPtr.";
+    return E_POINTER;
+  }
+  // Get |pin|'s IUnknown pointer.
+  IUnknownPtr iunknown(pin);
+  if (!iunknown) {
+    LOG(ERROR) << "pin does not support IUnknown?!";
+    return E_NOINTERFACE;
+  }
+  return show_property_page(iunknown.GetInterfacePtr());
+}
+
+// Displays property page for |ptr_iunknown|, and returns HRESULT code from
+// the windows COM API call.
+HRESULT show_property_page(IUnknown* ptr_iunknown) {
+  if (!ptr_iunknown) {
+    LOG(ERROR) << "Null IUnknown pointer.";
+    return E_POINTER;
+  }
+  ISpecifyPropertyPagesPtr prop(ptr_iunknown);
+  if (!prop) {
+    LOG(ERROR) << "ISpecifyPropertyPages not supported.";
+    return E_FAIL;
+  }
+  // Show |ptr_iunknown|'s page.
+  CAUUID caGUID;
+  HRESULT hr = prop->GetPages(&caGUID);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "filter has no property pages." << HRLOG(hr);
+    return hr;
+  }
+  // Release |prop| because this is what the MSDN sample does.
+  prop = 0;
+  hr = OleCreatePropertyFrame(NULL,                // Parent window
+                              0, 0,                // Reserved
+                              NULL,                // Caption for the dialog.
+                              1,                   // Number of objects.
+                              &ptr_iunknown,
+                              caGUID.cElems,       // Number of prop pages.
+                              caGUID.pElems,       // Array of page CLSIDs.
+                              0,                   // Locale identifier.
+                              0, NULL);            // Reserved
+  // Note: |OleCreatePropertyFrame| returns S_OK as long as the prop dialog is
+  //       shown. It does not mean that the user did anything in particular.
+  //       Log the return value if it isn't |S_OK|, because that would be
+  //       weird.
+  if (hr != S_OK) {
+    LOG(INFO) << "OleCreatePropertyFrame returned: " << HRLOG(hr);
+  }
+  if (caGUID.pElems) {
+    CoTaskMemFree(caGUID.pElems);
+  }
+  return hr;
 }
 
 }  // namespace webmlive
