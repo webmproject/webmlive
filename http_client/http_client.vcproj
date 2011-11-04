@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include"
+				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include;$(BASECLASSES);$(BASECLASSES)\.."
 				PreprocessorDefinitions="WIN32;_DEBUG;BOOST_NO_EXCEPTIONS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -121,7 +121,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include"
+				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include;$(BASECLASSES);$(BASECLASSES)\.."
 				PreprocessorDefinitions="WIN32;NDEBUG;BOOST_NO_EXCEPTIONS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
@@ -270,6 +270,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\win\video_sink_filter.cc"
+					>
+				</File>
+				<File
 					RelativePath=".\win\webm_encoder_dshow.cc"
 					>
 				</File>
@@ -319,6 +323,822 @@
 				</File>
 				<File
 					RelativePath="..\third_party\oggdsf\VorbisTypes.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="baseclasses"
+				>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\amextra.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\amextra.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\amfilter.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\amfilter.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\amvideo.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\arithutil.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\cache.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\checkbmi.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\combase.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\combase.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\cprop.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\cprop.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\ctlutil.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\ctlutil.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\ddmm.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\ddmm.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.1\Samples\multimedia\directshow\baseclasses\dllentry.cpp"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\dllsetup.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\dllsetup.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\dxmperf.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\fourcc.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\measure.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\msgthrd.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\mtype.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\mtype.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\outputq.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\outputq.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\perflog.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\perflog.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\perfstruct.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\pstream.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\pstream.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\pullpin.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\pullpin.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\refclock.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\refclock.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\reftime.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\renbase.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\renbase.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\schedule.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\schedule.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\seekpt.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\seekpt.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\source.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\source.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\streams.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\strmctl.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\strmctl.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\sysclock.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\sysclock.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\transfrm.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\transfrm.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\transip.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\transip.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\videoctl.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\videoctl.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\vtrans.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\vtrans.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\winctrl.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\winctrl.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\winutil.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\winutil.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\wxdebug.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\wxdebug.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\wxlist.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\wxlist.h"
+					>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\wxutil.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							WarningLevel="3"
+							WarnAsError="false"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.0\Samples\multimedia\directshow\baseclasses\wxutil.h"
 					>
 				</File>
 			</Filter>
