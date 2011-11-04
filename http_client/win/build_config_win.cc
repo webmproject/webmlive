@@ -29,3 +29,4 @@
 #pragma comment(lib, "quartz.lib")
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "strmiids.lib")
+#pragma comment(lib, "winmm.lib")
