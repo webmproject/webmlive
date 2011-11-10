@@ -540,7 +540,7 @@
 					>
 				</File>
 				<File
-					RelativePath="C:\Program Files\Microsoft SDKs\Windows\v7.1\Samples\multimedia\directshow\baseclasses\dllentry.cpp"
+					RelativePath="$(DIRECTSHOW_BASECLASSES)\dllentry.cpp"
 					>
 				</File>
 				<File
