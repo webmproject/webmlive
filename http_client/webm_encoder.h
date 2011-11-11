@@ -55,6 +55,12 @@ struct WebmEncoderConfig {
     int sample_size;
   };
   struct VideoCaptureConfig {
+    VideoCaptureConfig() {
+      manual_config = false;
+      width = kDefaultVideoWidth;
+      height = kDefaultVideoHeight;
+      frame_rate = kDefaultVideoFrameRate;
+    }
     // Attempt manual configuration through source UI (if available).
     bool manual_config;
     // Width, in pixels.
