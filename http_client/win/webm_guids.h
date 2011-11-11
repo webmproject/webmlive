@@ -12,6 +12,7 @@
 #include <objbase.h>
 
 namespace webmlive {
+  extern const CLSID CLSID_VideoSinkFilter;
   extern const GUID MEDIASUBTYPE_I420;
 }  // namespace webmlive
 
