@@ -6,13 +6,13 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include "win/media_type_dshow.h"
+#include "http_client/win/media_type_dshow.h"
 
 #include <mmreg.h>
 
 #include "glog/logging.h"
-#include "win/webm_encoder_dshow.h"
-#include "win/webm_guids.h"
+#include "http_client/win/webm_encoder_dshow.h"
+#include "http_client/win/webm_guids.h"
 
 namespace webmlive {
 
