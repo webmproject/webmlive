@@ -129,6 +129,7 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
     LOG(ERROR) << "CreateVideoSource failed: " << status;
     return WebmEncoder::kNoVideoSource;
   }
+#if 0
   status = CreateVpxEncoder();
   if (status) {
     LOG(ERROR) << "CreateVpxEncoder failed: " << status;
@@ -188,6 +189,7 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
     LOG(ERROR) << "ConnectWebmMuxerToFileWriter failed: " << status;
     return WebmEncoder::kFileWriteError;
   }
+#endif
   return kSuccess;
 }
 
