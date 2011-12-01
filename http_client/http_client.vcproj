@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include;$(DIRECTSHOW_BASECLASSES);$(DIRECTSHOW_BASECLASSES)\.."
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)..&quot;;&quot;$(ProjectDir)..\third_party&quot;;&quot;$(ProjectDir)..\third_party\boost\include&quot;;&quot;$(DIRECTSHOW_BASECLASSES)&quot;;&quot;$(DIRECTSHOW_BASECLASSES)\..&quot;;&quot;$(ProjectDir)..\third_party\libogg&quot;;&quot;$(ProjectDir)..\third_party\libvorbis&quot;;&quot;$(ProjectDir)..\third_party\libvpx\vpx&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;BOOST_NO_EXCEPTIONS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -123,7 +123,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include;$(DIRECTSHOW_BASECLASSES);$(DIRECTSHOW_BASECLASSES)\.."
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)..&quot;;&quot;$(ProjectDir)..\third_party&quot;;&quot;$(ProjectDir)..\third_party\boost\include&quot;;&quot;$(DIRECTSHOW_BASECLASSES)&quot;;&quot;$(DIRECTSHOW_BASECLASSES)\..&quot;;&quot;$(ProjectDir)..\third_party\libogg&quot;;&quot;$(ProjectDir)..\third_party\libvorbis&quot;;&quot;$(ProjectDir)..\third_party\libvpx\vpx&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;BOOST_NO_EXCEPTIONS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
@@ -1141,6 +1141,82 @@
 				</File>
 				<File
 					RelativePath="$(DIRECTSHOW_BASECLASSES)\wxutil.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="libvpx"
+				>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vp8.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vp8cx.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vp8dx.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vp8e.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vpx_codec.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vpx_codec_impl_bottom.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vpx_codec_impl_top.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vpx_decoder.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vpx_decoder_compat.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vpx_encoder.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vpx_image.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvpx\vpx\vpx_integer.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="libogg"
+				>
+				<File
+					RelativePath="..\third_party\libogg\ogg\ogg.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libogg\ogg\os_types.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="libvorbis"
+				>
+				<File
+					RelativePath="..\third_party\libvorbis\vorbis\codec.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libvorbis\vorbis\vorbisenc.h"
 					>
 				</File>
 			</Filter>

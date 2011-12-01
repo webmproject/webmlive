@@ -20,9 +20,15 @@
 #ifdef _DEBUG
 #pragma comment(lib, "../third_party/glog/win/x86/debug/libglog_static.lib")
 #pragma comment(lib, "../third_party/libwebm/win/x86/debug/libwebm.lib")
+#pragma comment(lib, "../third_party/libogg/win/x86/debug/libogg_static.lib")
+#pragma comment(lib, "../third_party/libvorbis/win/x86/debug/libvorbis_static.lib")
+#pragma comment(lib, "../third_party/libvpx/win/x86/debug/vpxmtd.lib")
 #else
 #pragma comment(lib, "../third_party/glog/win/x86/release/libglog_static.lib")
 #pragma comment(lib, "../third_party/libwebm/win/x86/release/libwebm.lib")
+#pragma comment(lib, "../third_party/libogg/win/x86/release/libogg_static.lib")
+#pragma comment(lib, "../third_party/libvorbis/win/x86/release/libvorbis_static.lib")
+#pragma comment(lib, "../third_party/libvpx/win/x86/release/vpxmt.lib")
 #endif
 
 // Windows API libraries
