@@ -38,7 +38,7 @@ const int kDefaultVideoFrameRate = kUseDeviceDefault;
 // Vorbis defaults.
 const int kDefaultVorbisBitrate = 128;
 // VP8 defaults.
-const double kDefaultVpxKeyframeInterval = 1.0;
+const int kDefaultVpxKeyframeInterval = 1000;
 const int kDefaultVpxBitrate = 500;
 const int kDefaultVpxDecimate = kUseEncoderDefault;
 const int kDefaultVpxMinQ = 10;
