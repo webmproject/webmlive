@@ -16,6 +16,9 @@
 #include "http_client/video_encoder.h"
 
 namespace webmlive {
+// All timestamps are in milliseconds.
+const int kTimebase = 1000;
+
 // Special value interpreted by |WebmEncoder| as "use implementation default".
 const int kUseEncoderDefault = -200;
 // Special value interpreted by |WebmEncoder| as "use capture device default".
