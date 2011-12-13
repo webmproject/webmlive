@@ -225,6 +225,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\video_encoder.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\video_encoder.h"
+				>
+			</File>
+			<File
 				RelativePath=".\webm_buffer_parser.cc"
 				>
 			</File>
