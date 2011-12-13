@@ -9,7 +9,10 @@
 #ifndef HTTP_CLIENT_VIDEO_ENCODER_H_
 #define HTTP_CLIENT_VIDEO_ENCODER_H_
 
+#include <queue>
+
 #include "boost/scoped_array.hpp"
+#include "boost/thread/mutex.hpp"
 #include "http_client/basictypes.h"
 #include "http_client/http_client_base.h"
 
@@ -60,6 +63,52 @@ class VideoFrame {
   int32 buffer_length_;
   VideoFormat format_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoFrame);
+};
+
+// Queue object used to pass video frames between threads. Uses two
+// |std::queue<VideoFrame*>|s and moves |VideoFrame| pointers between them to
+// provide a means by which the capture thread can pass samples to the video
+// encoder.
+class VideoFrameQueue {
+ public:
+  enum {
+    // |Push| called before |Init|.
+    kNoBuffers = -5,
+    // No |VideoFrame|s waiting in |active_frames_|.
+    kEmpty = -4,
+    // No |VideoFrame|s available in |frame_pool_|.
+    kFull = -3,
+    kNoMemory = -2,
+    kInvalidArg = -1,
+    kSuccess = 0,
+  };
+  // Number of |VideoFrame|'s to allocate and push into the |frame_pool_|.
+  static const int kMaxDepth = 4;
+  VideoFrameQueue();
+  ~VideoFrameQueue();
+  // Allocates |kMaxDepth| |VideoFrame|s, pushes them into |frame_pool_|, and
+  // returns |kSuccess|.
+  int Init();
+  // Grabs a |VideoFrame| from |frame_pool_|, copies the data from |ptr_frame|,
+  // and pushes it into |active_frames_|. Returns |kSuccess| if able to store
+  // the frame. Returns |kFull| when |frame_pool_| is empty.
+  int Push(VideoFrame* ptr_frame);
+  // Grabs a |VideoFrame| from |active_frames_| and copies it to |ptr_frame|.
+  // Returns |kSuccess| when able to copy the frame. Returns |kEmpty| when
+  // |active_frames_| contains no |VideoFrame|s.
+  int Pop(VideoFrame* ptr_frame);
+  // Drops all queued |VideoFrame|s by moving them all from |active_frames_| to
+  // |frame_pool_|.
+  void DropFrames();
+  // Copies |ptr_source| to |ptr_target| using |VideoFrame::Init| or
+  // |VideoFrame::Swap| based on presence of non-NULL buffer pointer in
+  // |ptr_target|.
+  static int CopyFrame(VideoFrame* ptr_source, VideoFrame* ptr_target);
+ private:
+  boost::mutex mutex_;
+  std::queue<VideoFrame*> frame_pool_;
+  std::queue<VideoFrame*> active_frames_;
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoFrameQueue);
 };
 
 // Pure interface class that provides a simple callback allowing the

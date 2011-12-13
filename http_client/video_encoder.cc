@@ -85,6 +85,122 @@ void VideoFrame::Swap(VideoFrame* ptr_frame) {
   ptr_frame->buffer_length_ = temp;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// VideoFrameQueue
+//
+
+VideoFrameQueue::VideoFrameQueue() {
+}
+
+VideoFrameQueue::~VideoFrameQueue() {
+  boost::mutex::scoped_lock lock(mutex_);
+  while (!frame_pool_.empty()) {
+    delete frame_pool_.front();
+    frame_pool_.pop();
+  }
+  while (!active_frames_.empty()) {
+    delete active_frames_.front();
+    active_frames_.pop();
+  }
+}
+
+// Obtains lock and populates |frame_pool_| with |VideoFrame| pointers.
+int VideoFrameQueue::Init() {
+  boost::mutex::scoped_lock lock(mutex_);
+  DCHECK(frame_pool_.empty());
+  DCHECK(active_frames_.empty());
+  for (int i = 0; i < kMaxDepth; ++i) {
+    VideoFrame* ptr_frame = new (std::nothrow) VideoFrame;
+    if (!ptr_frame) {
+      LOG(ERROR) << "VideoFrame allocation failed!";
+      return kNoMemory;
+    }
+    frame_pool_.push(ptr_frame);
+  }
+  return kSuccess;
+}
+
+// Obtains lock, copies |ptr_frame| data into |VideoFrame| from |frame_pool_|,
+// and moves the frame into |active_frames_|.
+int VideoFrameQueue::Push(VideoFrame* ptr_frame) {
+  if (!ptr_frame || !ptr_frame->buffer()) {
+    LOG(ERROR) << "VideoFrameQueue can't Push a NULL/empty VideoFrame!";
+    return kInvalidArg;
+  }
+  boost::mutex::scoped_lock lock(mutex_);
+  if (frame_pool_.empty()) {
+    VLOG(4) << "VideoFrameQueue full.";
+    return kFull;
+  }
+  // Copy user data into front frame from |frame_pool_|.
+  VideoFrame* ptr_pool_frame = frame_pool_.front();
+  if (CopyFrame(ptr_frame, ptr_pool_frame)) {
+    LOG(ERROR) << "VideoFrame CopyFrame failed!";
+    return kNoMemory;
+  }
+  // Move the now active frame from the pool into the active queue.
+  frame_pool_.pop();
+  active_frames_.push(ptr_pool_frame);
+  return kSuccess;
+}
+
+// Obtains lock, copies front |VideoFrame| from |active_frames_| to
+// |ptr_frame|, and moves the consumed |VideoFrame| back into |frame_pool_|.
+int VideoFrameQueue::Pop(VideoFrame* ptr_frame) {
+  if (!ptr_frame) {
+    LOG(ERROR) << "VideoFrameQueue can't Pop into a NULL VideoFrame!";
+    return kInvalidArg;
+  }
+  boost::mutex::scoped_lock lock(mutex_);
+  if (active_frames_.empty()) {
+    VLOG(4) << "VideoFrameQueue empty.";
+    return kEmpty;
+  }
+  // Copy active frame data to user frame.
+  VideoFrame* ptr_active_frame = active_frames_.front();
+  if (CopyFrame(ptr_active_frame, ptr_frame)) {
+    LOG(ERROR) << "CopyFrame failed!";
+    return kNoMemory;
+  }
+  // Put the now inactive frame back in the pool.
+  active_frames_.pop();
+  frame_pool_.push(ptr_active_frame);
+  return kSuccess;
+}
+
+// Obtains lock and drops any |VideoFrame|s in |active_frames_|.
+void VideoFrameQueue::DropFrames() {
+  boost::mutex::scoped_lock lock(mutex_);
+  while (!active_frames_.empty()) {
+    frame_pool_.push(active_frames_.front());
+    active_frames_.pop();
+  }
+}
+
+int VideoFrameQueue::CopyFrame(VideoFrame* ptr_source,
+                               VideoFrame* ptr_target) {
+  if (!ptr_source || !ptr_target) {
+    return kInvalidArg;
+  }
+  if (ptr_target->buffer()) {
+    ptr_target->Swap(ptr_source);
+  } else {
+    int status = ptr_target->InitI420(ptr_source->width(),
+                                      ptr_source->height(),
+                                      ptr_source->timestamp(),
+                                      ptr_source->buffer(),
+                                      ptr_source->buffer_length());
+    if (status) {
+      LOG(ERROR) << "VideoFrame Init failed! " << status;
+      return kNoMemory;
+    }
+  }
+  return kSuccess;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// VideoEncoder
+//
 
 }  // namespace webmlive
 
