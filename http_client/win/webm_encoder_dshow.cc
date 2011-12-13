@@ -494,7 +494,7 @@ int WebmEncoderImpl::ConfigureVpxEncoder() {
     LOG(ERROR) << "cannot set VP8 encoder bitrate mode." << HRLOG(hr);
     return kVpxConfigureError;
   }
-  const WebmEncoderConfig::VpxConfig& config = config_.vpx_config;
+  const VpxConfig& config = config_.vpx_config;
   hr = vp8_config->SetTargetBitrate(config.bitrate);
   if (FAILED(hr)) {
     LOG(ERROR) << "cannot set VP8 encoder bitrate." << HRLOG(hr);
