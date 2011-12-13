@@ -233,6 +233,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\vpx_encoder.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\vpx_encoder.h"
+				>
+			</File>
+			<File
 				RelativePath=".\webm_buffer_parser.cc"
 				>
 			</File>
