@@ -17,8 +17,10 @@
 
 #include "boost/scoped_array.hpp"
 #include "glog/logging.h"
+#include "http_client/video_encoder.h"
 #include "http_client/webm_encoder.h"
 #include "http_client/win/media_type_dshow.h"
+#include "http_client/win/video_sink_filter.h"
 #include "http_client/win/webm_guids.h"
 #include "oggdsf/IVorbisEncodeSettings.h"
 #include "oggdsf/VorbisTypes.h"
@@ -37,6 +39,7 @@ namespace webmlive {
 namespace {
 // DirectShow Filter name constants.
 const wchar_t* const kVideoSourceName = L"VideoSource";
+const wchar_t* const kVideoSinkName = L"VideoSink";
 const wchar_t* const kAudioSourceName = L"AudioSource";
 const wchar_t* const kVpxEncoderName =  L"VP8Encoder";
 const wchar_t* const kVorbisEncoderName = L"VorbisEncoder";
@@ -88,7 +91,8 @@ WebmEncoderImpl::WebmEncoderImpl()
     : audio_from_video_source_(false),
       stop_(false),
       encoded_duration_(0.0),
-      media_event_handle_(INVALID_HANDLE_VALUE) {
+      media_event_handle_(INVALID_HANDLE_VALUE),
+      ptr_video_callback_(NULL) {
 }
 
 WebmEncoderImpl::~WebmEncoderImpl() {
@@ -100,6 +104,7 @@ WebmEncoderImpl::~WebmEncoderImpl() {
   audio_source_ = 0;
   vpx_encoder_ = 0;
   video_source_ = 0;
+  video_sink_ = 0;
   media_event_handle_ = INVALID_HANDLE_VALUE;
   media_control_ = 0;
   media_event_ = 0;
@@ -114,7 +119,14 @@ WebmEncoderImpl::~WebmEncoderImpl() {
 // video source -> vp8 encoder    ->
 //                                   webm muxer -> file writer
 // audio source -> vorbis encoder ->
-int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
+int WebmEncoderImpl::Init(VideoFrameCallbackInterface* ptr_video_callback,
+                          const WebmEncoderConfig& config) {
+
+  if (!ptr_video_callback) {
+    LOG(ERROR) << "Null VideoFrameCallbackInterface.";
+    return kNullCallback;
+  }
+  ptr_video_callback_ = ptr_video_callback;
   config_ = config;
   const HRESULT hr = CoInitialize(NULL);
   if (FAILED(hr)) {
@@ -133,6 +145,16 @@ int WebmEncoderImpl::Init(const WebmEncoderConfig& config) {
   if (status) {
     LOG(ERROR) << "CreateVideoSource failed: " << status;
     return WebmEncoder::kNoVideoSource;
+  }
+  status = CreateVideoSink();
+  if (status) {
+    LOG(ERROR) << "CreateVideoSink failed: " << status;
+    return WebmEncoder::kNoVideoSource;
+  }
+  status = ConnectVideoSourceToVideoSink();
+  if (status) {
+    LOG(ERROR) << "ConnectVideoSourceToVideoSink failed: " << status;
+    return WebmEncoder::kVideoSinkError;
   }
 #if 0
   status = CreateVpxEncoder();
@@ -320,6 +342,100 @@ int WebmEncoderImpl::CreateVideoSource() {
   }
   // TODO(tomfinegan): set video format instead of hoping for sane defaults.
   return kSuccess;
+}
+
+int WebmEncoderImpl::CreateVideoSink() {
+  HRESULT status = E_FAIL;
+  const std::string filter_name = wstring_to_string(kVideoSinkName);
+  VideoSinkFilter* ptr_filter =
+      new (std::nothrow) VideoSinkFilter(filter_name.c_str(),  // NOLINT(nothrow)
+                                         NULL,
+                                         ptr_video_callback_,
+                                         &status);
+  if (!ptr_filter || FAILED(status)) {
+    LOG(ERROR) << "VideoSinkFilter construction failed" << HRLOG(status);
+    return kVideoSinkCreateError;
+  }
+  video_sink_ = ptr_filter;
+  status = graph_builder_->AddFilter(video_sink_, kVideoSinkName);
+  if (FAILED(status)) {
+    LOG(ERROR) << "cannot add video sink to graph" << HRLOG(status);
+    return kCannotAddFilter;
+  }
+  return kSuccess;
+}
+
+int WebmEncoderImpl::ConnectVideoSourceToVideoSink() {
+  PinFinder pin_finder;
+  int status = pin_finder.Init(video_source_);
+  if (status) {
+    LOG(ERROR) << "cannot look for pins on video source!";
+    return kVideoConnectError;
+  }
+  IPinPtr video_source_pin = pin_finder.FindVideoOutputPin(0);
+  if (!video_source_pin) {
+    LOG(ERROR) << "cannot find output pin on video source!";
+    return kVideoConnectError;
+  }
+  status = pin_finder.Init(video_sink_);
+  if (status) {
+    LOG(ERROR) << "cannot look for pins on video source!";
+    return kVideoConnectError;
+  }
+  IPinPtr sink_input_pin = pin_finder.FindVideoInputPin(0);
+  if (!sink_input_pin) {
+    LOG(ERROR) << "cannot find video input pin on video sink filter!";
+    return kVideoConnectError;
+  }
+  status = kVideoConnectError;
+  HRESULT hr = E_FAIL;
+  for (int i = 0; i < VideoMediaType::kNumVideoSubtypes; ++i) {
+    status = ConfigureVideoSource(video_source_pin, i);
+    if (status == kSuccess) {
+      LOG(INFO) << "Format " << i << " configuration OK.";
+    } else {
+      continue;
+    }
+    hr = graph_builder_->ConnectDirect(video_source_pin, sink_input_pin, NULL);
+    if (hr != S_OK) {
+      LOG(INFO) << "Format " << i << " connection failed.";
+    } else {
+      LOG(INFO) << "Format " << i << " connection OK.";
+      break;
+    }
+  }
+  if (status || hr != S_OK) {
+    // All previous connection attempts failed. Try one last time using
+    // |video_source_pin|'s default format.
+    PinFormat formatter(video_source_pin);
+    status = formatter.set_format(NULL);
+    if (status == kSuccess) {
+      hr = graph_builder_->ConnectDirect(video_source_pin, sink_input_pin,
+                                         NULL);
+      if (hr == S_OK) {
+        LOG(INFO) << "Connected with video source pin default format.";
+        status = kSuccess;
+      } else {
+        LOG(ERROR) << "Cannot connect video source to VP8 encoder.";
+        status = kVideoConnectError;
+      }
+    }
+  }
+  if (status == kSuccess && hr == S_OK) {
+    AM_MEDIA_TYPE media_type = {0};
+    // log the actual width/height/frame rate.
+    hr = video_source_pin->ConnectionMediaType(&media_type);
+    if (hr == S_OK) {
+      VideoMediaType video_format;
+      if (video_format.Init(media_type) == kSuccess) {
+        LOG(INFO) << "actual capture width=" << video_format.width()
+                  << " height=" << video_format.height()
+                  << " frame_rate=" << video_format.frame_rate();
+      }
+    }
+    MediaType::FreeMediaTypeData(&media_type);
+  }
+  return status;
 }
 
 // Attempts to configure |video_source_pin| media type through using user
