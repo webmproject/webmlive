@@ -117,7 +117,7 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
                           VideoFrameCallbackInterface* ptr_video_callback) {
   if (!ptr_video_callback) {
     LOG(ERROR) << "Null VideoFrameCallbackInterface.";
-    return kNullCallback;
+    return kInvalidArg;
   }
   ptr_video_callback_ = ptr_video_callback;
   config_ = config;
