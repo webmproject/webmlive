@@ -9,6 +9,28 @@
 #ifndef HTTP_CLIENT_VIDEO_ENCODER_H_
 #define HTTP_CLIENT_VIDEO_ENCODER_H_
 
+namespace webmlive {
+
+// Temporary forward declaration of |VideoFrame| for
+// |VideoFrameCallbackInterface|.
+class VideoFrame;
+
+// Pure interface class that provides a simple callback allowing the
+// implementor class to receive |VideoFrame| pointers.
+class VideoFrameCallbackInterface {
+ public:
+  enum {
+   // Returned by |OnVideoFrameReceived| when |ptr_frame| is NULL or empty.
+   kInvalidArg = -2,
+   kSuccess = 0,
+   // Returned by |OnVideoFrameReceived| when |ptr_frame| is dropped.
+   kDropped = 1,
+  };
+  // Passes a |VideoFrame| pointer to the |VideoFrameCallbackInterface|
+  // implementation.
+  virtual int32 OnVideoFrameReceived(VideoFrame* ptr_frame) = 0;
+};
+
 struct VpxConfig {
   // Time between keyframes, in seconds.
   double keyframe_interval;
@@ -31,4 +53,7 @@ struct VpxConfig {
   // Percentage to undershoot the requested datarate.
   int undershoot;
 };
+
+}  // namespace webmlive
+
 #endif  // HTTP_CLIENT_VIDEO_ENCODER_H_
