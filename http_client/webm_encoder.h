@@ -90,7 +90,7 @@ struct WebmEncoderConfig {
   VpxConfig vpx_config;
 };
 
-class WebmEncoderImpl;
+class MediaSourceImpl;
 
 // Basic encoder interface class intended to hide platform specific encoder
 // implementation details.
@@ -150,7 +150,7 @@ class WebmEncoder : public VideoFrameCallbackInterface {
  private:
   // TODO(tomfinegan): WebmEncoderImpl needs a rename.
   // Pointer to platform specific audio/video source object implementation.
-  boost::scoped_ptr<WebmEncoderImpl> ptr_media_source_;
+  boost::scoped_ptr<MediaSourceImpl> ptr_media_source_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoder);
 };
 

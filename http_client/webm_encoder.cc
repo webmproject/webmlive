@@ -25,7 +25,7 @@ WebmEncoder::~WebmEncoder() {
 
 // Creates the encoder object and call its |Init| method.
 int WebmEncoder::Init(const WebmEncoderConfig& config) {
-  ptr_media_source_.reset(new (std::nothrow) WebmEncoderImpl());  // NOLINT
+  ptr_media_source_.reset(new (std::nothrow) MediaSourceImpl());  // NOLINT
   if (!ptr_media_source_) {
     LOG(ERROR) << "cannot construct media source!";
     return kInitFailed;
