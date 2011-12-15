@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAGX//ua4\u003d",
+        "filename": "http_client/win/video_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2011-12-15T23:48:16Z",
+      "side": 1,
+      "message": "Technically this isn\u0027t an error, as far as DirectShow is concerned.  When a sample has no time tag, this is interpreted to mean \"render this sample immediately\".  Your case might very well be different.",
+      "revId": "9db673cdee68970a29717987dc803a9e8f339124",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//ua0\u003d",
+        "filename": "http_client/win/video_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2011-12-15T23:48:16Z",
+      "side": 1,
+      "message": "Note that you cannot assume that you have an end_time here; you only check for !FAILED but that\u0027s not the same as S_OK.  There is a specific success for that means \"this sample has a start time, but no stop time\", and it\u0027s a success code.  If you require both start and stop timestamps, then you need to test the condition (hr !\u003d S_OK).",
+      "revId": "9db673cdee68970a29717987dc803a9e8f339124",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//uag\u003d",
+        "filename": "http_client/win/video_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 273,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2011-12-15T23:48:16Z",
+      "side": 1,
+      "message": "It\u0027s a pity that you copy the frame here.  DShow is designed to avoid copying samples -- that\u0027s why you pass around objects by reference, that implement the IMediaSample type.  It would have been hipper you had a custom allocator, with a custom media sample, that also supports a VideoFrame interface.  Then your allocator pool could serve the same purpose as your VideoFrameQueue.",
+      "revId": "9db673cdee68970a29717987dc803a9e8f339124",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
