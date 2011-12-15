@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAGX//uuc\u003d",
+        "filename": "http_client/video_encoder.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2011-12-15T15:48:37Z",
+      "side": 1,
+      "message": "Seems a little complicated. Not sure why you didn\u0027t just use one queue to store the video frames with a check on size in Push(). I wouldn\u0027t hold it up for this though.",
+      "revId": "b166c1c94a13db50b2221a5d84f4491749543dc0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//uu0\u003d",
+        "filename": "http_client/video_encoder.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2011-12-15T15:48:37Z",
+      "side": 1,
+      "message": "I think there should be a newline before comments for readability. \n\nI don\u0027t know if it explicitly calls it out in the style guide, but here is a block of code that shows a newline:\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml?showone\u003dFunction_Declarations_and_Definitions#Function_Declarations_and_Definitions\n\nHere is an example in chromium:\nhttp://codesearch.google.com/#OAMlx_jo-ck/src/base/memory/scoped_ptr.h\u0026exact_package\u003dchromium\u0026q\u003dclass%20scoped_ptr\u0026type\u003dcs",
+      "revId": "b166c1c94a13db50b2221a5d84f4491749543dc0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
