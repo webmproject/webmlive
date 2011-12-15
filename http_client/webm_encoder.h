@@ -13,6 +13,7 @@
 #include "boost/scoped_ptr.hpp"
 #include "http_client/basictypes.h"
 #include "http_client/http_client_base.h"
+#include "http_client/video_encoder.h"
 
 namespace webmlive {
 // Special value interpreted by |WebmEncoder| as "use implementation default".
