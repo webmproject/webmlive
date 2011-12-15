@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAGX//uuY\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2011-12-15T15:50:11Z",
+      "side": 1,
+      "message": "Should be on separate lines.\n\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml?showone\u003dConstructor_Initializer_Lists#Constructor_Initializer_Lists",
+      "revId": "7f29daaa77d42a4c7cf56fade6282087c2873ee4",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//uuQ\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2011-12-15T15:50:11Z",
+      "side": 1,
+      "message": "Probably should be one per line:\n\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml?showone\u003dFunction_Calls#Function_Calls",
+      "revId": "7f29daaa77d42a4c7cf56fade6282087c2873ee4",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//uuM\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2011-12-15T15:50:11Z",
+      "side": 1,
+      "message": "Error, need to set buffer_length_ if (data_length \u003c buffer_length_)",
+      "revId": "7f29daaa77d42a4c7cf56fade6282087c2873ee4",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
