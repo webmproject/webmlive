@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//t9E\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:15:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//uQU\u003d",
+      "revId": "9fbd5baa3be5c79127c4e2c9976e90874ffd1ce3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//uQQ\u003d",
         "filename": "http_client/video_encoder.cc",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2011-12-16T02:12:01Z",
       "side": 1,
       "message": "I would have almost called this action Commit",
+      "revId": "9fbd5baa3be5c79127c4e2c9976e90874ffd1ce3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//t9A\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:15:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//uQQ\u003d",
       "revId": "9fbd5baa3be5c79127c4e2c9976e90874ffd1ce3",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//t88\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:15:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//uQM\u003d",
+      "revId": "9fbd5baa3be5c79127c4e2c9976e90874ffd1ce3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//uQI\u003d",
         "filename": "http_client/video_encoder.cc",
         "patchSetId": 3
@@ -64,6 +118,24 @@
       "writtenOn": "2011-12-16T02:12:01Z",
       "side": 1,
       "message": "this should be ptr_frame-\u003eClone/CopyFrom",
+      "revId": "9fbd5baa3be5c79127c4e2c9976e90874ffd1ce3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//t84\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 150,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:15:21Z",
+      "side": 1,
+      "message": "Renamed CopyFrame to MoveFrame, and made it non-static and private. It now uses VideoFrame::Clone when it can\u0027t Swap.",
+      "parentUuid": "AAAAGX//uQI\u003d",
       "revId": "9fbd5baa3be5c79127c4e2c9976e90874ffd1ce3",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//t80\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:15:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//uQA\u003d",
+      "revId": "9fbd5baa3be5c79127c4e2c9976e90874ffd1ce3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//uP4\u003d",
         "filename": "http_client/video_encoder.cc",
         "patchSetId": 3
@@ -104,6 +194,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//t8E\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:15:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//uP4\u003d",
+      "revId": "9fbd5baa3be5c79127c4e2c9976e90874ffd1ce3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//uP0\u003d",
         "filename": "http_client/video_encoder.h",
         "patchSetId": 3
@@ -115,6 +223,24 @@
       "writtenOn": "2011-12-16T02:12:01Z",
       "side": 1,
       "message": "kMaxLength / QueueLength?",
+      "revId": "9fbd5baa3be5c79127c4e2c9976e90874ffd1ce3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//t7c\u003d",
+        "filename": "http_client/video_encoder.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:15:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//uP0\u003d",
       "revId": "9fbd5baa3be5c79127c4e2c9976e90874ffd1ce3",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
