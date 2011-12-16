@@ -16,6 +16,24 @@
       "revId": "039aed67d1f1d3da6e523150e0408de9af8865ee",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//t+s\u003d",
+        "filename": "http_client/video_encoder.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:13:06Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//uSY\u003d",
+      "revId": "039aed67d1f1d3da6e523150e0408de9af8865ee",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
