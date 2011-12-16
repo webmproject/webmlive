@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//t3Y\u003d",
+        "filename": "http_client/win/video_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:17:02Z",
+      "side": 1,
+      "message": "Added some code to handle missing sample times.",
+      "parentUuid": "AAAAGX//ua4\u003d",
+      "revId": "9db673cdee68970a29717987dc803a9e8f339124",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//ua0\u003d",
         "filename": "http_client/win/video_sink_filter.cc",
         "patchSetId": 1
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//t3c\u003d",
+        "filename": "http_client/win/video_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:17:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//ua0\u003d",
+      "revId": "9db673cdee68970a29717987dc803a9e8f339124",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//uag\u003d",
         "filename": "http_client/win/video_sink_filter.cc",
         "patchSetId": 1
@@ -47,6 +83,24 @@
       "writtenOn": "2011-12-15T23:48:16Z",
       "side": 1,
       "message": "It\u0027s a pity that you copy the frame here.  DShow is designed to avoid copying samples -- that\u0027s why you pass around objects by reference, that implement the IMediaSample type.  It would have been hipper you had a custom allocator, with a custom media sample, that also supports a VideoFrame interface.  Then your allocator pool could serve the same purpose as your VideoFrameQueue.",
+      "revId": "9db673cdee68970a29717987dc803a9e8f339124",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//t3g\u003d",
+        "filename": "http_client/win/video_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 273,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-16T21:17:02Z",
+      "side": 1,
+      "message": "Added a TODO.",
+      "parentUuid": "AAAAGX//uag\u003d",
       "revId": "9db673cdee68970a29717987dc803a9e8f339124",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
