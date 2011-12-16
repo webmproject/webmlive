@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//ttg\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 4
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-16T23:46:23Z",
+      "side": 1,
+      "message": "I think in thisstyle this can be a const member function, no?",
+      "parentUuid": "AAAAGX//tuA\u003d",
+      "revId": "cd270302c054686b208cd86b4ab1bcfa03df380d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//tuM\u003d",
         "filename": "http_client/video_encoder.cc",
         "patchSetId": 4
