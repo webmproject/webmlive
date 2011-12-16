@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAGX//uRU\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-16T01:55:30Z",
+      "side": 1,
+      "message": "const",
+      "revId": "0aa8db2812f2dff11c6142bdbd8088948670fe9d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//uQ8\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-16T01:55:30Z",
+      "side": 1,
+      "message": "Consider implementing a  CopyFrom() or Clone() to allow a single copy to a temporary.",
+      "revId": "0aa8db2812f2dff11c6142bdbd8088948670fe9d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//uRM\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-16T01:55:30Z",
+      "side": 1,
+      "message": "extra whitespace",
+      "revId": "0aa8db2812f2dff11c6142bdbd8088948670fe9d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//uQc\u003d",
+        "filename": "http_client/video_encoder.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-16T01:55:30Z",
+      "side": 1,
+      "message": "s/must must/must/",
+      "revId": "0aa8db2812f2dff11c6142bdbd8088948670fe9d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
