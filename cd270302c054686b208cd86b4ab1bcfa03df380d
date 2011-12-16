@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAGX//tuA\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 4
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-16T23:27:38Z",
+      "side": 1,
+      "message": "This works, typically I think the opposite (Clone(const\u0026 src)).",
+      "revId": "cd270302c054686b208cd86b4ab1bcfa03df380d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//tuM\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 4
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-16T23:27:38Z",
+      "side": 1,
+      "message": "\u003e\u003e Consider implementing a CopyFrom() or Clone() to allow a single copy to a temporary.\n\n\u003e Done.\n\nI meant for it to be used here too to make the function a bit more readable.l",
+      "revId": "cd270302c054686b208cd86b4ab1bcfa03df380d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
