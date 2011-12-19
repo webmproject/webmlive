@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAGX//tcg\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-19T21:25:21Z",
+      "side": 1,
+      "message": "VideoFrame* const",
+      "revId": "15c8c80fc8fba755769d0550fee1feadcac3d5c7",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//tcQ\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-19T21:25:21Z",
+      "side": 1,
+      "message": "VideoFrame* const",
+      "revId": "15c8c80fc8fba755769d0550fee1feadcac3d5c7",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
