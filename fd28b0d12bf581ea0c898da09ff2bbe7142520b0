@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAGX//tg4\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2011-12-19T19:11:46Z",
+      "side": 1,
+      "message": "You probably want buffer_capacity_ (or something) and buffer_length_. Otherwise you may be reallocating for space you already have. I.E. First init 100 bytes, 2nd init 10 bytes, 3rd init 50 bytes triggers a reset().",
+      "revId": "fd28b0d12bf581ea0c898da09ff2bbe7142520b0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
