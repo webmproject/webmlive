@@ -69,6 +69,11 @@ std::string wstring_to_string(const std::wstring& wstr) {
 }
 }  // anonymous namespace
 
+// Converts media time (100 nanosecond ticks) to milliseconds.
+int64 media_time_to_milliseconds(REFERENCE_TIME media_time) {
+  return media_time / 10000;
+}
+
 // Converts media time (100 nanosecond ticks) to seconds.
 double media_time_to_seconds(REFERENCE_TIME media_time) {
   return media_time / 10000000.0;
