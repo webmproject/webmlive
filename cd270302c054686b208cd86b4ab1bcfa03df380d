@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//tkc\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 4
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-19T17:24:54Z",
+      "side": 1,
+      "message": "Ah... so I got it backwards. Hmm... I sort of like that this results in it becoming a const member, though.",
+      "parentUuid": "AAAAGX//ttg\u003d",
+      "revId": "cd270302c054686b208cd86b4ab1bcfa03df380d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//tuM\u003d",
         "filename": "http_client/video_encoder.cc",
         "patchSetId": 4
@@ -48,6 +66,24 @@
       "writtenOn": "2011-12-16T23:27:38Z",
       "side": 1,
       "message": "\u003e\u003e Consider implementing a CopyFrom() or Clone() to allow a single copy to a temporary.\n\n\u003e Done.\n\nI meant for it to be used here too to make the function a bit more readable.l",
+      "revId": "cd270302c054686b208cd86b4ab1bcfa03df380d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//tkQ\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 4
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-19T17:24:54Z",
+      "side": 1,
+      "message": "Sorry, I didn\u0027t catch that...\n\nI think it\u0027s because the main reason I wrote a Swap method in the first place was to abuse scoped_array::swap underneath whenever possible (to avoid memcpy\u0027ing the frame data). \n\nHow would I implement Clone without always copying the buffer? At that point it would probably be better named CloneFrameInfo, with a CloneFrameData to accompany it. \n\nMaybe I\u0027m just not getting it. :)",
+      "parentUuid": "AAAAGX//tuM\u003d",
       "revId": "cd270302c054686b208cd86b4ab1bcfa03df380d",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
