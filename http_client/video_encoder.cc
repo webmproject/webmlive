@@ -244,5 +244,13 @@ int32 VideoFrameQueue::ExchangeFrames(VideoFrame* ptr_source,
 // VideoEncoder
 //
 
+///////////////////////////////////////////////////////////////////////////////
+// VideoFrameCallbackInterface
+//
+
+VideoFrameCallbackInterface::~VideoFrameCallbackInterface() {
+}
+
+
 }  // namespace webmlive
 

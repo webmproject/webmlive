@@ -140,6 +140,7 @@ class VideoFrameCallbackInterface {
     // Returned by |OnVideoFrameReceived| when |ptr_frame| is dropped.
     kDropped = 1,
   };
+  virtual ~VideoFrameCallbackInterface();
   // Passes a |VideoFrame| pointer to the |VideoFrameCallbackInterface|
   // implementation.
   virtual int32 OnVideoFrameReceived(VideoFrame* ptr_frame) = 0;
