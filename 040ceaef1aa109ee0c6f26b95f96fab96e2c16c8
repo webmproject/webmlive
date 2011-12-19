@@ -16,6 +16,24 @@
       "revId": "040ceaef1aa109ee0c6f26b95f96fab96e2c16c8",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//tiY\u003d",
+        "filename": "http_client/win/webm_encoder_dshow.cc",
+        "patchSetId": 4
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-19T18:31:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//ttU\u003d",
+      "revId": "040ceaef1aa109ee0c6f26b95f96fab96e2c16c8",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
