@@ -87,6 +87,24 @@
       "revId": "cd270302c054686b208cd86b4ab1bcfa03df380d",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//te8\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 4
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-19T20:28:40Z",
+      "side": 1,
+      "message": "Avoiding the allocation makes sense, I was focusing more on the temporary variables and some of the duplicating copying. Rather than confuse things with more functions (or abuse Clone with buffer_length_\u003d0), it\u0027s probably best to keep this.",
+      "parentUuid": "AAAAGX//tkQ\u003d",
+      "revId": "cd270302c054686b208cd86b4ab1bcfa03df380d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
