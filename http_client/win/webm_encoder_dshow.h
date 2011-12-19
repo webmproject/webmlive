@@ -77,7 +77,8 @@ const CLSID CLSID_VP8Encoder = {
   {0x94, 0xAF, 0x00, 0x26, 0xB9, 0x77, 0xEE, 0xAA}
 };
 
-// Utility functions for conversion between seconds and 100ns ticks.
+// Utility functions for time conversions.
+int64 media_time_to_milliseconds(REFERENCE_TIME media_time);
 double media_time_to_seconds(REFERENCE_TIME media_time);
 REFERENCE_TIME seconds_to_media_time(double seconds);
 
