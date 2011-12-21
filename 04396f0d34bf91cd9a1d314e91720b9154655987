@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAGX//r90\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-21T22:22:16Z",
+      "side": 1,
+      "message": "if this is going to grow you could wrap this codec_control functionality in a function to avoid the status/error block dups.",
+      "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//r9A\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-21T22:22:16Z",
+      "side": 1,
+      "message": "I don\u0027t think you need ?: here.",
+      "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//r84\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 183,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-21T22:22:16Z",
+      "side": 1,
+      "message": "break not specifically needed here.",
+      "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//r8w\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 188,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-21T22:22:16Z",
+      "side": 1,
+      "message": "!!() to avoid any potential warnings",
+      "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//r8s\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2011-12-21T22:22:16Z",
+      "side": 1,
+      "message": "uint8* const",
+      "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
