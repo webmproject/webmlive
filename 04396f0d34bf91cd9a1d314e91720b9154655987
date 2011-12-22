@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//rpE\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-22T03:31:53Z",
+      "side": 1,
+      "message": "Wrote template function CodecControl.",
+      "parentUuid": "AAAAGX//r90\u003d",
+      "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//r9A\u003d",
         "filename": "http_client/vpx_encoder.cc",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2011-12-21T22:22:16Z",
       "side": 1,
       "message": "I don\u0027t think you need ?: here.",
+      "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//rp4\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-22T03:31:53Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//r9A\u003d",
       "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//rp8\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 183,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-22T03:31:53Z",
+      "side": 1,
+      "message": "Removed switch entirely in favor of const bool \u003d condition.",
+      "parentUuid": "AAAAGX//r84\u003d",
+      "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//r8w\u003d",
         "filename": "http_client/vpx_encoder.cc",
         "patchSetId": 2
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//rp0\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 188,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-22T03:31:53Z",
+      "side": 1,
+      "message": "This?\n\nis_keyframe \u003d !!(pkt-\u003edata.frame.flags \u0026 VPX_FRAME_IS_KEY);\n\nDone, but I don\u0027t know why-- something gcc is going to punish me with when I start the port?",
+      "parentUuid": "AAAAGX//r8w\u003d",
+      "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//r8s\u003d",
         "filename": "http_client/vpx_encoder.cc",
         "patchSetId": 2
@@ -81,6 +153,24 @@
       "writtenOn": "2011-12-21T22:22:16Z",
       "side": 1,
       "message": "uint8* const",
+      "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//rpw\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-22T03:31:53Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAGX//r8s\u003d",
       "revId": "04396f0d34bf91cd9a1d314e91720b9154655987",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
