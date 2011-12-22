@@ -190,9 +190,16 @@ class VideoEncoder {
   };
   VideoEncoder();
   ~VideoEncoder();
+
+  // Constructs |VpxEncoder| and returns the result of |VpxEncoder::Init|.
+  // Returns |kSuccess| when successful. Returns |kNoMemory| when unable to
+  // construct |VpxEncoder|.
   int32 Init(const WebmEncoderConfig& config);
+
+  // Calls |VpxEncoder::EncodeFrame| and returns the result.
   int32 EncodeFrame(const VideoFrame& raw_frame, VideoFrame* ptr_vp8_frame);
- private:
+
+private:
   boost::scoped_ptr<VpxEncoder> ptr_vpx_encoder_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoEncoder);
 };
