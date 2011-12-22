@@ -12,6 +12,7 @@
 #include <queue>
 
 #include "boost/scoped_array.hpp"
+#include "boost/scoped_ptr.hpp"
 #include "boost/thread/mutex.hpp"
 #include "http_client/basictypes.h"
 #include "http_client/http_client_base.h"
@@ -167,6 +168,33 @@ struct VpxConfig {
   int token_partitions;
   // Percentage to undershoot the requested datarate.
   int undershoot;
+};
+
+// Forward declaration of |VpxEncoder| class for use in |VideoEncoder|. The
+// libvpx implementation details are kept hidden because use of the includes
+// produces C4505 warnings with MSVC at warning level 4.
+class VpxEncoder;
+struct WebmEncoderConfig;
+
+class VideoEncoder {
+ public:
+  enum {
+    // Libvpx reported an error.
+    kCodecError = -101,
+    // Encoder error not originating from libvpx.
+    kEncoderError = -100,
+    kNoMemory = -2,
+    kInvalidArg = -1,
+    kSuccess = 0,
+    kDropped = 1,
+  };
+  VideoEncoder();
+  ~VideoEncoder();
+  int32 Init(const WebmEncoderConfig& config);
+  int32 EncodeFrame(const VideoFrame& raw_frame, VideoFrame* ptr_vp8_frame);
+ private:
+  boost::scoped_ptr<VpxEncoder> ptr_vpx_encoder_;
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoEncoder);
 };
 
 }  // namespace webmlive
