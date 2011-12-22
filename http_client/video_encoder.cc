@@ -12,6 +12,14 @@
 
 #include "glog/logging.h"
 
+#if defined _MSC_VER
+// Disable warning C4505(unreferenced local function has been removed) in MSVC.
+// At the time this comment was written the warning is emitted 27 times for
+// vp8.h and vp8cx.h (included by vpx_encoder.h).
+#pragma warning(disable:4505)
+#endif
+#include "http_client/vpx_encoder.h"
+
 namespace webmlive {
 
 VideoFrame::VideoFrame()
@@ -244,13 +252,35 @@ int32 VideoFrameQueue::ExchangeFrames(VideoFrame* ptr_source,
 // VideoEncoder
 //
 
+VideoEncoder::VideoEncoder() {
+}
+
+VideoEncoder::~VideoEncoder() {
+}
+
+int32 VideoEncoder::Init(const WebmEncoderConfig& config) {
+  ptr_vpx_encoder_.reset(new (std::nothrow) VpxEncoder());
+  if (!ptr_vpx_encoder_) {
+    return kNoMemory;
+  }
+  return ptr_vpx_encoder_->Init(config);
+}
+
+int32 VideoEncoder::EncodeFrame(const VideoFrame& raw_frame,
+                                VideoFrame* ptr_vp8_frame) {
+  if (!ptr_vpx_encoder_) {
+    LOG(ERROR) << "VideoEncoder has NULL encoder, not Init'd";
+    return kEncoderError;
+  }
+  return ptr_vpx_encoder_->EncodeFrame(raw_frame, ptr_vp8_frame);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // VideoFrameCallbackInterface
 //
 
 VideoFrameCallbackInterface::~VideoFrameCallbackInterface() {
 }
-
 
 }  // namespace webmlive
 
