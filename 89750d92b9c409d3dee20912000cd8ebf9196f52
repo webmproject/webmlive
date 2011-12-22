@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAGX//rjo\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 183,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-22T16:17:39Z",
+      "side": 1,
+      "message": "But it\u0027s just a function arg... why?",
+      "parentUuid": "AAAAGX//rnQ\u003d",
+      "revId": "89750d92b9c409d3dee20912000cd8ebf9196f52",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAGX//rnM\u003d",
         "filename": "http_client/vpx_encoder.cc",
         "patchSetId": 6
@@ -30,6 +48,24 @@
       "writtenOn": "2011-12-22T06:03:03Z",
       "side": 1,
       "message": "would defining the variable within the case ...: {} statement avoid this?",
+      "revId": "89750d92b9c409d3dee20912000cd8ebf9196f52",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAGX//rjk\u003d",
+        "filename": "http_client/vpx_encoder.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2011-12-22T16:17:39Z",
+      "side": 1,
+      "message": "Got rid of the snarky comment and extra variable.",
+      "parentUuid": "AAAAGX//rnM\u003d",
       "revId": "89750d92b9c409d3dee20912000cd8ebf9196f52",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
