@@ -11,6 +11,8 @@
 #include <string>
 
 #include "boost/scoped_ptr.hpp"
+#include "boost/shared_ptr.hpp"
+#include "boost/thread/thread.hpp"
 #include "http_client/basictypes.h"
 #include "http_client/http_client_base.h"
 #include "http_client/video_encoder.h"
@@ -92,11 +94,15 @@ struct WebmEncoderConfig {
 
 class MediaSourceImpl;
 
-// Basic encoder interface class intended to hide platform specific encoder
-// implementation details.
+// Top level WebM encoder class. Manages capture from A/V input devices, VP8 
+// encoding, Vorbis encoding, and muxing into a WebM stream.
 class WebmEncoder : public VideoFrameCallbackInterface {
  public:
   enum {
+    // VideoFrame dropped.
+    kVideoFrameDropped = -116,
+    // AV capture source stopped on its own.
+    kAVCaptureStopped = -115,
     // AV capture implementation unable to setup video frame sink.
     kVideoSinkError = -114,
     // Encoder implementation unable to configure audio source.
@@ -148,11 +154,30 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   virtual int32 OnVideoFrameReceived(VideoFrame* ptr_frame);
 
  private:
+
+  // Returns true when user wants the encode thread to stop.
+  bool StopRequested();
+  void EncoderThread();
+
+  bool stop_;
+
   // Pointer to platform specific audio/video source object implementation.
   boost::scoped_ptr<MediaSourceImpl> ptr_media_source_;
+  // Mutex providing synchronization between user interface and encoder thread.
+  boost::mutex mutex_;
+
+  // Encoder thread object.
+  boost::shared_ptr<boost::thread> encode_thread_;
+  // Queue used to push video frames from |MediaSourceImpl| into 
+  // |EncoderThread|.
+  VideoFrameQueue video_queue_;
+  // Most recent frame from |video_queue_|.
+  VideoFrame video_frame_;
+
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoder);
 };
 
 }  // namespace webmlive
 
 #endif  // HTTP_CLIENT_WEBM_ENCODER_H_
+
