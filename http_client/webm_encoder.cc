@@ -25,27 +25,27 @@ WebmEncoder::~WebmEncoder() {
 
 // Creates the encoder object and call its |Init| method.
 int WebmEncoder::Init(const WebmEncoderConfig& config) {
-  ptr_encoder_.reset(new (std::nothrow) WebmEncoderImpl());  // NOLINT
-  if (!ptr_encoder_) {
-    LOG(ERROR) << "cannot construct encoder instance!";
+  ptr_media_source_.reset(new (std::nothrow) WebmEncoderImpl());  // NOLINT
+  if (!ptr_media_source_) {
+    LOG(ERROR) << "cannot construct media source!";
     return kInitFailed;
   }
-  return ptr_encoder_->Init(config);
+  return ptr_media_source_->Init(this, config);
 }
 
 // Returns result of encoder object's |Run| method.
 int WebmEncoder::Run() {
-  return ptr_encoder_->Run();
+  return ptr_media_source_->Run();
 }
 
 // Returns result of encoder object's |Stop| method.
 void WebmEncoder::Stop() {
-  ptr_encoder_->Stop();
+  ptr_media_source_->Stop();
 }
 
 // Returns encoded duration in seconds.
 double WebmEncoder::encoded_duration() {
-  return ptr_encoder_->encoded_duration();
+  return ptr_media_source_->encoded_duration();
 }
 
 // VideoFrameCallbackInterface

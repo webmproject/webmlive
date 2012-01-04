@@ -97,6 +97,8 @@ class WebmEncoderImpl;
 class WebmEncoder : public VideoFrameCallbackInterface {
  public:
   enum {
+    // AV capture implementation unable to setup video frame sink.
+    kVideoSinkError = -114,
     // Encoder implementation unable to configure audio source.
     kAudioConfigureError = -113,
     // Encoder implementation unable to configure video source.
@@ -146,8 +148,9 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   virtual int32 OnVideoFrameReceived(VideoFrame* ptr_frame);
 
  private:
-  // Encoder object.
-  boost::scoped_ptr<WebmEncoderImpl> ptr_encoder_;
+  // TODO(tomfinegan): WebmEncoderImpl needs a rename.
+  // Pointer to platform specific audio/video source object implementation.
+  boost::scoped_ptr<WebmEncoderImpl> ptr_media_source_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoder);
 };
 
