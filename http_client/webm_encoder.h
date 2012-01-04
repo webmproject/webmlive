@@ -94,7 +94,7 @@ class WebmEncoderImpl;
 
 // Basic encoder interface class intended to hide platform specific encoder
 // implementation details.
-class WebmEncoder {
+class WebmEncoder : public VideoFrameCallbackInterface {
  public:
   enum {
     // Encoder implementation unable to configure audio source.
@@ -141,6 +141,10 @@ class WebmEncoder {
   double encoded_duration();
   // Returns |WebmEncoderConfig| with fields set to default values.
   static WebmEncoderConfig DefaultConfig();
+
+  // VideoFrameCallbackInterface methods
+  virtual int32 OnVideoFrameReceived(VideoFrame* ptr_frame);
+
  private:
   // Encoder object.
   boost::scoped_ptr<WebmEncoderImpl> ptr_encoder_;

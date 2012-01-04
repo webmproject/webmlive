@@ -48,6 +48,19 @@ double WebmEncoder::encoded_duration() {
   return ptr_encoder_->encoded_duration();
 }
 
+// VideoFrameCallbackInterface
+int WebmEncoder::OnVideoFrameReceived(VideoFrame* ptr_frame) {
+  if (!ptr_frame) {
+    LOG(ERROR) << "OnVideoFrameReceived NULL Frame!";
+    return VideoFrameCallbackInterface::kInvalidArg;
+  }
+  return kSuccess;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// WebmEncoderConfig
+//
+
 // Returns default |WebmEncoderConfig|.
 WebmEncoderConfig WebmEncoder::DefaultConfig() {
   WebmEncoderConfig c;
