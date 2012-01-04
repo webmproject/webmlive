@@ -30,6 +30,10 @@ int WebmEncoder::Init(const WebmEncoderConfig& config) {
     LOG(ERROR) << "cannot construct media source!";
     return kInitFailed;
   }
+  if (video_queue_.Init()) {
+    LOG(ERROR) << "VideoFrameQueue Init failed!";
+    return kInitFailed;
+  }
   return ptr_media_source_->Init(this, config);
 }
 
@@ -65,10 +69,14 @@ double WebmEncoder::encoded_duration() {
 
 // VideoFrameCallbackInterface
 int WebmEncoder::OnVideoFrameReceived(VideoFrame* ptr_frame) {
-  if (!ptr_frame) {
-    LOG(ERROR) << "OnVideoFrameReceived NULL Frame!";
-    return VideoFrameCallbackInterface::kInvalidArg;
+  int status = video_queue_.Commit(ptr_frame);
+  if (status) {
+    if (status != VideoFrameQueue::kFull) {
+      LOG(ERROR) << "VideoFrameQueue Push failed! " << status;
+    }
+    return kVideoFrameDropped;
   }
+  LOG(INFO) << "OnVideoFrameReceived pushed frame.";
   return kSuccess;
 }
 
@@ -100,6 +108,18 @@ void WebmEncoder::EncoderThread() {
       if (status) {
         LOG(ERROR) << "Media source in bad state, stopping... " << status;
         break;
+      }
+      status = video_queue_.Read(&video_frame_);
+      if (status) {
+        if (status != VideoFrameQueue::kEmpty) {
+          // Really an error; not just an empty queue.
+          LOG(ERROR) << "VideoFrameQueue Pop failed! " << status;
+          break;
+        } else {
+          VLOG(4) << "No frames in VideoFrameQueue";
+        }
+      } else {
+        LOG(INFO) << "Encoder thread popped frame.";
       }
       // TODO(tomfinegan): This is just a placeholder thats intended to keep
       //                   this tight loop from spinning like mad until the
