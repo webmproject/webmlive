@@ -87,7 +87,7 @@ REFERENCE_TIME seconds_to_media_time(double seconds) {
   return static_cast<REFERENCE_TIME>(seconds * 10000000);
 }
 
-WebmEncoderImpl::WebmEncoderImpl()
+MediaSourceImpl::MediaSourceImpl()
     : audio_from_video_source_(false),
       stop_(false),
       encoded_duration_(0.0),
@@ -95,7 +95,7 @@ WebmEncoderImpl::WebmEncoderImpl()
       ptr_video_callback_(NULL) {
 }
 
-WebmEncoderImpl::~WebmEncoderImpl() {
+MediaSourceImpl::~MediaSourceImpl() {
   // Manually release directshow interfaces to avoid problems related to
   // destruction order of com_ptr_t members.
   file_writer_ = 0;
@@ -116,7 +116,7 @@ WebmEncoderImpl::~WebmEncoderImpl() {
 
 // Builds a DirectShow filter graph that looks like this:
 // video source -> video sink
-int WebmEncoderImpl::Init(VideoFrameCallbackInterface* ptr_video_callback,
+int MediaSourceImpl::Init(VideoFrameCallbackInterface* ptr_video_callback,
                           const WebmEncoderConfig& config) {
 
   if (!ptr_video_callback) {
@@ -222,7 +222,7 @@ int WebmEncoderImpl::Init(VideoFrameCallbackInterface* ptr_video_callback,
 // - |media_event_| (and media event handle: |media_event_handle_|)
 // - |media_seeking_|
 // Then starts the encoder thread.
-int WebmEncoderImpl::Run() {
+int MediaSourceImpl::Run() {
   if (encode_thread_) {
     LOG(ERROR) << "non-null encode thread. Already running?";
     return WebmEncoder::kRunFailed;
@@ -253,14 +253,14 @@ int WebmEncoderImpl::Run() {
   using boost::thread;
   using std::nothrow;
   encode_thread_ = shared_ptr<thread>(
-      new (nothrow) thread(bind(&WebmEncoderImpl::WebmEncoderThread,  // NOLINT
+      new (nothrow) thread(bind(&MediaSourceImpl::WebmEncoderThread,  // NOLINT
                                 this)));
   return kSuccess;
 }
 
 // Obtains lock on |mutex_|, sets |stop_| to true, and waits for the encode
 // thread to finish via call to |join| on |encode_thread_|.
-void WebmEncoderImpl::Stop() {
+void MediaSourceImpl::Stop() {
   assert(encode_thread_);
   boost::mutex::scoped_lock lock(mutex_);
   stop_ = true;
@@ -269,7 +269,7 @@ void WebmEncoderImpl::Stop() {
 }
 
 // Obtains lock on |mutex_| and returns |encoded_duration_|.
-double WebmEncoderImpl::encoded_duration() {
+double MediaSourceImpl::encoded_duration() {
   boost::mutex::scoped_lock lock(mutex_);
   return encoded_duration_;
 }
@@ -277,7 +277,7 @@ double WebmEncoderImpl::encoded_duration() {
 // Tries to obtain lock on |mutex_| and returns value of |stop_| if lock is
 // obtained. Assumes no stop requested and returns false if unable to obtain
 // the lock.
-bool WebmEncoderImpl::StopRequested() {
+bool MediaSourceImpl::StopRequested() {
   bool stop_requested = false;
   boost::mutex::scoped_try_lock lock(mutex_);
   if (lock.owns_lock()) {
@@ -289,7 +289,7 @@ bool WebmEncoderImpl::StopRequested() {
 // Creates the graph builder, |graph_builder_|, and capture graph builder,
 // |capture_graph_builder_|, and passes |graph_builder_| to
 // |capture_graph_builder_|.
-int WebmEncoderImpl::CreateGraph() {
+int MediaSourceImpl::CreateGraph() {
   HRESULT hr = graph_builder_.CreateInstance(CLSID_FilterGraph);
   if (FAILED(hr)) {
     LOG(ERROR) << "graph builder creation failed." << HRLOG(hr);
@@ -311,7 +311,7 @@ int WebmEncoderImpl::CreateGraph() {
 // Uses |CaptureSourceLoader| to find a video capture source.  If successful
 // an instance of the source filter is created and added to the filter graph.
 // Note: the first device found is used unconditionally.
-int WebmEncoderImpl::CreateVideoSource() {
+int MediaSourceImpl::CreateVideoSource() {
   CaptureSourceLoader loader;
   int status = loader.Init(CLSID_VideoInputDeviceCategory);
   if (status) {
@@ -341,7 +341,7 @@ int WebmEncoderImpl::CreateVideoSource() {
   return kSuccess;
 }
 
-int WebmEncoderImpl::CreateVideoSink() {
+int MediaSourceImpl::CreateVideoSink() {
   HRESULT status = E_FAIL;
   const std::string filter_name = wstring_to_string(kVideoSinkName);
   VideoSinkFilter* ptr_filter =
@@ -362,7 +362,7 @@ int WebmEncoderImpl::CreateVideoSink() {
   return kSuccess;
 }
 
-int WebmEncoderImpl::ConnectVideoSourceToVideoSink() {
+int MediaSourceImpl::ConnectVideoSourceToVideoSink() {
   PinFinder pin_finder;
   int status = pin_finder.Init(video_source_);
   if (status) {
@@ -439,7 +439,7 @@ int WebmEncoderImpl::ConnectVideoSourceToVideoSink() {
 // settings stored in |config_.video_config| with |VideoMediaType| to produce
 // an AM_MEDIA_TYPE struct suitable for use with IAMStreamConfig::SetFormat.
 // Returns |kSuccess| upon successful configuration.
-int WebmEncoderImpl::ConfigureVideoSource(const IPinPtr& pin, int sub_type) {
+int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin, int sub_type) {
   WebmEncoderConfig::VideoCaptureConfig& video_config = config_.video_config;
   if (video_config.manual_config) {
     // Always disable manual configuration.
@@ -503,7 +503,7 @@ int WebmEncoderImpl::ConfigureVideoSource(const IPinPtr& pin, int sub_type) {
 }
 
 // Creates the VP8 encoder filter and adds it to the graph.
-int WebmEncoderImpl::CreateVpxEncoder() {
+int MediaSourceImpl::CreateVpxEncoder() {
   HRESULT hr = vpx_encoder_.CreateInstance(CLSID_VP8Encoder);
   if (FAILED(hr)) {
     LOG(ERROR) << "VP8 encoder creation failed." << HRLOG(hr);
@@ -520,7 +520,7 @@ int WebmEncoderImpl::CreateVpxEncoder() {
 // Locates the output pin on |video_source_| and the input pin on
 // |vpx_encoder_|, configures the output pin with user settings, and attempts
 // to connect the pins directly. Returns kSuccess if able to make a connection.
-int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
+int MediaSourceImpl::ConnectVideoSourceToVpxEncoder() {
   PinFinder pin_finder;
   int status = pin_finder.Init(video_source_);
   if (status) {
@@ -594,7 +594,7 @@ int WebmEncoderImpl::ConnectVideoSourceToVpxEncoder() {
 }
 
 // Sets minimal settings required for a realtime encode.
-int WebmEncoderImpl::ConfigureVpxEncoder() {
+int MediaSourceImpl::ConfigureVpxEncoder() {
   _COM_SMARTPTR_TYPEDEF(IVP8Encoder, __uuidof(IVP8Encoder));
   IVP8EncoderPtr vp8_config(vpx_encoder_);
   if (!vp8_config) {
@@ -693,7 +693,7 @@ int WebmEncoderImpl::ConfigureVpxEncoder() {
 // created and added to the filter graph.
 // Note: in the |CaptureSourceLoader| case, the first device found is used
 // unconditionally.
-int WebmEncoderImpl::CreateAudioSource() {
+int MediaSourceImpl::CreateAudioSource() {
   // Check for an audio pin on the video source.
   // TODO(tomfinegan): We assume that the user wants to use the audio feed
   //                   exposed by the video capture source. This behavior
@@ -745,7 +745,7 @@ int WebmEncoderImpl::CreateAudioSource() {
 // matching media type, and uses it if successful. Constructs |AudioMediaType|
 // to configure pin with an AM_MEDIA_TYPE matching the user's settings if no
 // match is found. Returns kSuccess upon successful configuration.
-int WebmEncoderImpl::ConfigureAudioSource(const IPinPtr& pin) {
+int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin) {
   if (config_.audio_config.manual_config) {
     bool filter_config_ok = false, pin_config_ok = false;
     // Manual audio configuration is enabled; try showing |audio_source_|'s
@@ -817,7 +817,7 @@ int WebmEncoderImpl::ConfigureAudioSource(const IPinPtr& pin) {
 
 // Creates an instance of the Xiph.org Vorbis encoder filter, and adds it to
 // the filter graph.
-int WebmEncoderImpl::CreateVorbisEncoder() {
+int MediaSourceImpl::CreateVorbisEncoder() {
   HRESULT hr = vorbis_encoder_.CreateInstance(CLSID_VorbisEncoder);
   if (FAILED(hr)) {
     LOG(ERROR) << "Vorbis encoder creation failed." << HRLOG(hr);
@@ -833,7 +833,7 @@ int WebmEncoderImpl::CreateVorbisEncoder() {
 
 // Locates the output pin on |audio_source_| and the input pin on
 // |vorbis_encoder_|, and connects them directly.
-int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder() {
+int MediaSourceImpl::ConnectAudioSourceToVorbisEncoder() {
   PinFinder pin_finder;
   int status = pin_finder.Init(audio_source_);
   if (status) {
@@ -883,7 +883,7 @@ int WebmEncoderImpl::ConnectAudioSourceToVorbisEncoder() {
 }
 
 // Obtains vorbis encoder configuration interface and applies user settings.
-int WebmEncoderImpl::ConfigureVorbisEncoder() {
+int MediaSourceImpl::ConfigureVorbisEncoder() {
   // At present only vorbis audio bitrate configuration is exposed; do nothing
   // and return kSuccess if the user has not specified a bitrate.
   if (config_.vorbis_bitrate != kUseEncoderDefault) {
@@ -903,7 +903,7 @@ int WebmEncoderImpl::ConfigureVorbisEncoder() {
 }
 
 // Creates the WebM muxer filter and adds it to the filter graph.
-int WebmEncoderImpl::CreateWebmMuxer() {
+int MediaSourceImpl::CreateWebmMuxer() {
   HRESULT hr = webm_muxer_.CreateInstance(CLSID_WebmMux);
   if (FAILED(hr)) {
     LOG(ERROR) << "webm muxer creation failed." << HRLOG(hr);
@@ -931,7 +931,7 @@ int WebmEncoderImpl::CreateWebmMuxer() {
 
 // Finds the output pins on the encoder filters, and connects them directly to
 // the input pins on the WebM muxer filter.
-int WebmEncoderImpl::ConnectEncodersToWebmMuxer() {
+int MediaSourceImpl::ConnectEncodersToWebmMuxer() {
   PinFinder pin_finder;
   int status = pin_finder.Init(vpx_encoder_);
   if (status) {
@@ -988,7 +988,7 @@ int WebmEncoderImpl::ConnectEncodersToWebmMuxer() {
 
 // Creates the file writer filter, adds it to the graph, and sets the output
 // file name.
-int WebmEncoderImpl::CreateFileWriter() {
+int MediaSourceImpl::CreateFileWriter() {
   HRESULT hr = file_writer_.CreateInstance(CLSID_FileWriter);
   if (FAILED(hr)) {
     LOG(ERROR) << "file writer creation failed." << HRLOG(hr);
@@ -1016,7 +1016,7 @@ int WebmEncoderImpl::CreateFileWriter() {
 
 // Locates the output pin on |webm_muxer_|, and connects it directly to the
 // input pin on |file_writer_|.
-int WebmEncoderImpl::ConnectWebmMuxerToFileWriter() {
+int MediaSourceImpl::ConnectWebmMuxerToFileWriter() {
   PinFinder pin_finder;
   int status = pin_finder.Init(webm_muxer_);
   if (status) {
@@ -1049,7 +1049,7 @@ int WebmEncoderImpl::ConnectWebmMuxerToFileWriter() {
 
 // Checks |media_event_handle_| and reads the event from |media_event_| when
 // signaled.  Responds only to completion and error events.
-int WebmEncoderImpl::HandleMediaEvent() {
+int MediaSourceImpl::HandleMediaEvent() {
   int status = kSuccess;
   const DWORD wait_status = WaitForSingleObject(media_event_handle_, 0);
   const bool media_event_recvd = (wait_status == WAIT_OBJECT_0);
@@ -1083,7 +1083,7 @@ int WebmEncoderImpl::HandleMediaEvent() {
 }
 
 // Obtain the lock on |mutex_| and update |encoded_duration_|.
-void WebmEncoderImpl::set_encoded_duration(double current_duration) {
+void MediaSourceImpl::set_encoded_duration(double current_duration) {
   boost::mutex::scoped_lock lock(mutex_);
   encoded_duration_ = current_duration;
 }
@@ -1091,7 +1091,7 @@ void WebmEncoderImpl::set_encoded_duration(double current_duration) {
 // Encoder thread. Runs until one of the following is true:
 // - |StopRequested| returns true.
 // - |HandleMediaEvent| receives an error or completion event.
-void WebmEncoderImpl::WebmEncoderThread() {
+void MediaSourceImpl::WebmEncoderThread() {
   CoInitialize(NULL);
   HRESULT hr = media_control_->Run();
   if (FAILED(hr)) {
