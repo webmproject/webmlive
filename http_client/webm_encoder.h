@@ -97,6 +97,8 @@ class WebmEncoderImpl;
 class WebmEncoder : public VideoFrameCallbackInterface {
  public:
   enum {
+    // AV capture implementation unable to setup video frame sink.
+    kVideoSinkError = -114,
     // Encoder implementation unable to configure audio source.
     kAudioConfigureError = -113,
     // Encoder implementation unable to configure video source.
