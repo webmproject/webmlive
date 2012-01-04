@@ -143,17 +143,17 @@ class MediaSourceImpl {
   // |WebmEncoder| status code upon failure.
   int Init(const WebmEncoderConfig& config,
            VideoFrameCallbackInterface* ptr_video_callback);
-  // Runs encoder thread. Returns |kSuccess| upon success, or a |WebmEncoder|
+  // Runs filter graph. Returns |kSuccess| upon success, or a |WebmEncoder|
   // status code upon failure.
   int Run();
-  // Stops encoder thread.
+  // Monitors filter graph state.
+  int CheckStatus();
+  // Stops filter graph.
   void Stop();
   // Returns encoded duration in seconds.
   double encoded_duration();
 
  private:
-  // Returns true when user wants the encode thread to stop.
-  bool StopRequested();
   // Creates filter graph and graph builder interfaces.
   int CreateGraph();
   // Creates video capture source filter instance and adds it to the graph.
@@ -165,6 +165,8 @@ class MediaSourceImpl {
   // Configures the video capture source using |sub_type| and
   // |config_.video_config|.
   int ConfigureVideoSource(const IPinPtr& pin, int sub_type);
+  // Obtains interfaces and data needed to monitor and control the graph.
+  int InitGraphControl();
   // Creates VP8 encoder filter instance and adds it to the graph.
   int CreateVpxEncoder();
   // Connects video source to VP8 encoder.
@@ -199,10 +201,6 @@ class MediaSourceImpl {
   void WebmEncoderThread();
   // Flag set to true when audio is captured from the same filter as video.
   bool audio_from_video_source_;
-  // Stop flag used by |Stop| and |StopRequested|.
-  bool stop_;
-  // Encoded duration.
-  double encoded_duration_;
   // Handle to graph media event. Used to check for graph error and completion.
   HANDLE media_event_handle_;
   // Graph builder interfaces
@@ -220,8 +218,6 @@ class MediaSourceImpl {
   IMediaControlPtr media_control_;
   // Media event interface used when |media_event_handle_| is signaled.
   IMediaEventPtr media_event_;
-  // Graph seek interface used to obtain encoded duration.
-  IMediaSeekingPtr media_seeking_;
   // Mutex providing synchronization between user interface and encoder thread.
   boost::mutex mutex_;
   // Encoder thread object.
