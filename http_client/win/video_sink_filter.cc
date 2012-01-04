@@ -12,7 +12,7 @@
 #include <vfwmsgs.h>
 
 #include "glog/logging.h"
-#include "http_client/win/webm_encoder_dshow.h"
+#include "http_client/win/media_source_dshow.h"
 #include "http_client/win/webm_guids.h"
 #include "webmdshow/common/hrtext.hpp"
 #include "webmdshow/common/odbgstream.hpp"

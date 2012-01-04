@@ -272,6 +272,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\win\media_source_dshow.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\media_source_dshow.h"
+					>
+				</File>
+				<File
 					RelativePath=".\win\media_type_dshow.cc"
 					>
 				</File>
@@ -285,14 +293,6 @@
 				</File>
 				<File
 					RelativePath=".\win\video_sink_filter.h"
-					>
-				</File>
-				<File
-					RelativePath=".\win\webm_encoder_dshow.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\win\webm_encoder_dshow.h"
 					>
 				</File>
 				<File

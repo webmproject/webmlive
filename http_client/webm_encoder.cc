@@ -12,7 +12,7 @@
 
 #include "glog/logging.h"
 #ifdef _WIN32
-#include "http_client/win/webm_encoder_dshow.h"
+#include "http_client/win/media_source_dshow.h"
 #endif
 
 namespace webmlive {

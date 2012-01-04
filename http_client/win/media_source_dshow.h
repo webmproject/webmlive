@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef HTTP_CLIENT_WIN_WEBM_ENCODER_DSHOW_H_
-#define HTTP_CLIENT_WIN_WEBM_ENCODER_DSHOW_H_
+#ifndef HTTP_CLIENT_WIN_MEDIA_SOURCE_DSHOW_H_
+#define HTTP_CLIENT_WIN_MEDIA_SOURCE_DSHOW_H_
 
 #include <comdef.h>
 #include <dshow.h>
@@ -390,4 +390,4 @@ HRESULT ShowPropertyPage(IUnknown* ptr_iunknown);
 
 }  // namespace webmlive
 
-#endif  // HTTP_CLIENT_WIN_WEBM_ENCODER_DSHOW_H_
+#endif  // HTTP_CLIENT_WIN_MEDIA_SOURCE_DSHOW_H_

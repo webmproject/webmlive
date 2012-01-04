@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "http_client/win/webm_encoder_dshow.h"
+#include "http_client/win/media_source_dshow.h"
 
 #include <initguid.h>  // MUST be included before VorbisTypes.h to avoid
                        // undefined external error for
