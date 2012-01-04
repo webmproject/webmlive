@@ -92,7 +92,7 @@ class VideoFrameCallbackInterface;
 
 // WebM encoder object. Currently supports only live encoding from the primary
 // video and audio input devices on the user system.
-class WebmEncoderImpl {
+class MediaSourceImpl {
  public:
   enum {
     // Internal status codes for the DirectShow encoder.
@@ -142,8 +142,8 @@ class WebmEncoderImpl {
     // Graph completion event received.
     kGraphCompleted = 1,
   };
-  WebmEncoderImpl();
-  ~WebmEncoderImpl();
+  MediaSourceImpl();
+  ~MediaSourceImpl();
   // TODO(tomfinegan): fix the misleading comment.
   // Creates WebM encoder graph. Returns |kSuccess| upon success, or a
   // |WebmEncoder| status code upon failure.
@@ -241,7 +241,7 @@ class WebmEncoderImpl {
   WebmEncoderConfig config_;
   // Video frame callback.
   VideoFrameCallbackInterface* ptr_video_callback_;
-  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoderImpl);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(MediaSourceImpl);
 };
 
 // Utility class for finding and loading capture devices available through
