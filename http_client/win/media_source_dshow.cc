@@ -89,8 +89,6 @@ REFERENCE_TIME seconds_to_media_time(double seconds) {
 
 MediaSourceImpl::MediaSourceImpl()
     : audio_from_video_source_(false),
-      stop_(false),
-      encoded_duration_(0.0),
       media_event_handle_(INVALID_HANDLE_VALUE),
       ptr_video_callback_(NULL) {
 }
@@ -108,7 +106,6 @@ MediaSourceImpl::~MediaSourceImpl() {
   media_event_handle_ = INVALID_HANDLE_VALUE;
   media_control_ = 0;
   media_event_ = 0;
-  media_seeking_ = 0;
   capture_graph_builder_ = 0;
   graph_builder_ = 0;
   CoUninitialize();
@@ -152,6 +149,11 @@ int MediaSourceImpl::Init(VideoFrameCallbackInterface* ptr_video_callback,
   if (status) {
     LOG(ERROR) << "ConnectVideoSourceToVideoSink failed: " << status;
     return WebmEncoder::kVideoSinkError;
+  }
+  status = InitGraphControl();
+  if (status) {
+    LOG(ERROR) << "ConnectVideoSourceToVideoSink failed: " << status;
+    return WebmEncoder::kEncodeMonitorError;
   }
 #if 0
   status = CreateVpxEncoder();
@@ -217,73 +219,42 @@ int MediaSourceImpl::Init(VideoFrameCallbackInterface* ptr_video_callback,
   return kSuccess;
 }
 
-// Creates graph control and observation interfaces:
-// - |media_control_|
-// - |media_event_| (and media event handle: |media_event_handle_|)
-// - |media_seeking_|
-// Then starts the encoder thread.
+// Runs the filter graph via |IMediaControl::Run|. Note that the Run call is
+// asynchronous, and typically returns S_FALSE to report that the run request
+// is in progress but has not completed.
 int MediaSourceImpl::Run() {
-  if (encode_thread_) {
-    LOG(ERROR) << "non-null encode thread. Already running?";
+  CoInitialize(NULL);
+  HRESULT hr = media_control_->Run();
+  if (FAILED(hr)) {
+    LOG(ERROR) << "media control Run failed, cannot run capture!" << HRLOG(hr);
     return WebmEncoder::kRunFailed;
   }
-  media_control_ = IMediaControlPtr(graph_builder_);
-  if (!media_control_) {
-    LOG(ERROR) << "cannot create media control.";
-    return WebmEncoder::kEncodeControlError;
-  }
-  media_event_ = IMediaEventPtr(graph_builder_);
-  if (!media_event_) {
-    LOG(ERROR) << "cannot create media event.";
-    return WebmEncoder::kEncodeMonitorError;
-  }
-  OAEVENT* const ptr_handle = reinterpret_cast<OAEVENT*>(&media_event_handle_);
-  const HRESULT hr = media_event_->GetEventHandle(ptr_handle);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "could not media event handle!" << HRLOG(hr);
-    return WebmEncoder::kEncodeMonitorError;
-  }
-  media_seeking_ = IMediaSeekingPtr(graph_builder_);
-  if (!media_seeking_) {
-    LOG(ERROR) << "cannot create media seeking interface.";
-    return WebmEncoder::kEncodeMonitorError;
-  }
-  using boost::bind;
-  using boost::shared_ptr;
-  using boost::thread;
-  using std::nothrow;
-  encode_thread_ = shared_ptr<thread>(
-      new (nothrow) thread(bind(&MediaSourceImpl::WebmEncoderThread,  // NOLINT
-                                this)));
   return kSuccess;
 }
 
-// Obtains lock on |mutex_|, sets |stop_| to true, and waits for the encode
-// thread to finish via call to |join| on |encode_thread_|.
-void MediaSourceImpl::Stop() {
-  assert(encode_thread_);
-  boost::mutex::scoped_lock lock(mutex_);
-  stop_ = true;
-  lock.unlock();
-  encode_thread_->join();
-}
-
-// Obtains lock on |mutex_| and returns |encoded_duration_|.
-double MediaSourceImpl::encoded_duration() {
-  boost::mutex::scoped_lock lock(mutex_);
-  return encoded_duration_;
-}
-
-// Tries to obtain lock on |mutex_| and returns value of |stop_| if lock is
-// obtained. Assumes no stop requested and returns false if unable to obtain
-// the lock.
-bool MediaSourceImpl::StopRequested() {
-  bool stop_requested = false;
-  boost::mutex::scoped_try_lock lock(mutex_);
-  if (lock.owns_lock()) {
-    stop_requested = stop_;
+// Confirms that the filter graph is running via use of |HandleMediaEvent| to
+// check for abort and completion events. Actual FILTER_STATE (as reported by
+// |IMediaControl::GetState|) is ignored to avoid complicating |CheckStatus|
+// with code that waits for the transition from |State_Stopped| to
+// |State_Running|.
+int MediaSourceImpl::CheckStatus() {
+  int status = HandleMediaEvent();
+  if (status == kGraphAborted || status == kGraphCompleted) {
+    LOG(ERROR) << "Capture graph stopped!";
+    return WebmEncoder::kAVCaptureStopped;
   }
-  return stop_requested;
+  return kSuccess;
+}
+
+// Stops the filter graph via call to |IMediaControl::Stop|.
+void MediaSourceImpl::Stop() {
+  const HRESULT hr = media_control_->Stop();
+  if (FAILED(hr)) {
+    LOG(ERROR) << "media control Stop failed! error=" << HRLOG(hr);
+  } else {
+    LOG(INFO) << "graph stopping. status=" << HRLOG(hr);
+  }
+  CoUninitialize();
 }
 
 // Creates the graph builder, |graph_builder_|, and capture graph builder,
@@ -500,6 +471,26 @@ int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin, int sub_type) {
     }
   }
   return WebmEncoder::kSuccess;
+}
+
+int MediaSourceImpl::InitGraphControl() {
+  media_control_ = IMediaControlPtr(graph_builder_);
+  if (!media_control_) {
+    LOG(ERROR) << "cannot create media control.";
+    return WebmEncoder::kEncodeControlError;
+  }
+  media_event_ = IMediaEventPtr(graph_builder_);
+  if (!media_event_) {
+    LOG(ERROR) << "cannot create media event.";
+    return WebmEncoder::kEncodeMonitorError;
+  }
+  OAEVENT* const ptr_handle = reinterpret_cast<OAEVENT*>(&media_event_handle_);
+  const HRESULT hr = media_event_->GetEventHandle(ptr_handle);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "could not media event handle!" << HRLOG(hr);
+    return WebmEncoder::kEncodeMonitorError;
+  }
+  return kSuccess;
 }
 
 // Creates the VP8 encoder filter and adds it to the graph.
@@ -1080,46 +1071,6 @@ int MediaSourceImpl::HandleMediaEvent() {
     }
   }
   return status;
-}
-
-// Obtain the lock on |mutex_| and update |encoded_duration_|.
-void MediaSourceImpl::set_encoded_duration(double current_duration) {
-  boost::mutex::scoped_lock lock(mutex_);
-  encoded_duration_ = current_duration;
-}
-
-// Encoder thread. Runs until one of the following is true:
-// - |StopRequested| returns true.
-// - |HandleMediaEvent| receives an error or completion event.
-void MediaSourceImpl::WebmEncoderThread() {
-  CoInitialize(NULL);
-  HRESULT hr = media_control_->Run();
-  if (FAILED(hr)) {
-    LOG(ERROR) << "media control Run failed, cannot run encode!" << HRLOG(hr);
-  } else {
-    for (;;) {
-      int status = HandleMediaEvent();
-      bool stop_event_recvd =
-          (status == kGraphAborted || status == kGraphCompleted);
-      if (stop_event_recvd || StopRequested()) {
-        break;
-      }
-      REFERENCE_TIME current_duration = 0;
-      hr = media_seeking_->GetCurrentPosition(&current_duration);
-      if (SUCCEEDED(hr)) {
-        set_encoded_duration(media_time_to_seconds(current_duration));
-      }
-      SwitchToThread();  // yield our time slice if another thread is waiting.
-    }
-    hr = media_control_->Stop();
-    if (FAILED(hr)) {
-      LOG(ERROR) << "media control Stop failed! error=" << HRLOG(hr);
-    } else {
-      LOG(INFO) << "graph stopping. status=" << HRLOG(hr);
-    }
-  }
-  CoUninitialize();
-  LOG(INFO) << "Done.";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
