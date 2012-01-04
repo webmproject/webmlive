@@ -17,17 +17,21 @@
 
 namespace webmlive {
 
-WebmEncoder::WebmEncoder() {
+WebmEncoder::WebmEncoder() : stop_(false) {
 }
 
 WebmEncoder::~WebmEncoder() {
 }
 
-// Creates the encoder object and call its |Init| method.
+// Creates the encoder object and calls its |Init| method.
 int WebmEncoder::Init(const WebmEncoderConfig& config) {
   ptr_media_source_.reset(new (std::nothrow) MediaSourceImpl());  // NOLINT
   if (!ptr_media_source_) {
     LOG(ERROR) << "cannot construct media source!";
+    return kInitFailed;
+  }
+  if (video_queue_.Init()) {
+    LOG(ERROR) << "VideoFrameQueue Init failed!";
     return kInitFailed;
   }
   return ptr_media_source_->Init(this, config);
@@ -35,26 +39,96 @@ int WebmEncoder::Init(const WebmEncoderConfig& config) {
 
 // Returns result of encoder object's |Run| method.
 int WebmEncoder::Run() {
-  return ptr_media_source_->Run();
+  if (encode_thread_) {
+    LOG(ERROR) << "non-null encode thread. Already running?";
+    return kRunFailed;
+  }
+  using boost::bind;
+  using boost::shared_ptr;
+  using boost::thread;
+  using std::nothrow;
+  encode_thread_ = shared_ptr<thread>(
+      new (nothrow) thread(bind(&WebmEncoder::EncoderThread,  // NOLINT
+                                this)));
+  return kSuccess;
 }
 
-// Returns result of encoder object's |Stop| method.
+// Sets |stop_| to true and waits for |EncoderThread| to finish.
 void WebmEncoder::Stop() {
-  ptr_media_source_->Stop();
+  assert(encode_thread_);
+  boost::mutex::scoped_lock lock(mutex_);
+  stop_ = true;
+  lock.unlock();
+  encode_thread_->join();
 }
 
 // Returns encoded duration in seconds.
 double WebmEncoder::encoded_duration() {
-  return ptr_media_source_->encoded_duration();
+  return 0.0;
 }
 
 // VideoFrameCallbackInterface
 int WebmEncoder::OnVideoFrameReceived(VideoFrame* ptr_frame) {
-  if (!ptr_frame) {
-    LOG(ERROR) << "OnVideoFrameReceived NULL Frame!";
-    return VideoFrameCallbackInterface::kInvalidArg;
+  int status = video_queue_.Push(ptr_frame);
+  if (status) {
+    if (status != VideoFrameQueue::kFull) {
+      LOG(ERROR) << "VideoFrameQueue Push failed! " << status;
+    }
+    return kVideoFrameDropped;
   }
+  LOG(INFO) << "OnVideoFrameReceived pushed frame.";
   return kSuccess;
+}
+
+// Tries to obtain lock on |mutex_| and returns value of |stop_| if lock is
+// obtained. Assumes no stop requested and returns false if unable to obtain
+// the lock.
+bool WebmEncoder::StopRequested() {
+  bool stop_requested = false;
+  boost::mutex::scoped_try_lock lock(mutex_);
+  if (lock.owns_lock()) {
+    stop_requested = stop_;
+  }
+  return stop_requested;
+}
+
+void WebmEncoder::EncoderThread() {
+  LOG(INFO) << "EncoderThread started.";
+  int status = ptr_media_source_->Run();
+  if (status) {
+    // media source Run failed; fatal
+    LOG(ERROR) << "Unable to run the media source! " << status;
+  } else {
+    for (;;) {
+      if (StopRequested()) {
+        LOG(INFO) << "StopRequested returned true, stopping...";
+        break;
+      }
+      status = ptr_media_source_->CheckStatus();
+      if (status) {
+        LOG(ERROR) << "Media source in bad state, stopping... " << status;
+        break;
+      }
+      status = video_queue_.Pop(&video_frame_);
+      if (status) {
+        if (status != VideoFrameQueue::kEmpty) {
+          // Really an error; not just an empty queue.
+          LOG(ERROR) << "VideoFrameQueue Pop failed! " << status;
+          break;
+        } else {
+          VLOG(4) << "No frames in VideoFrameQueue";
+        }
+      } else {
+        LOG(INFO) << "Encoder thread popped frame.";
+      }
+      // TODO(tomfinegan): This is just a placeholder thats intended to keep
+      //                   this tight loop from spinning like mad until the
+      //                   vp8 encoder integration is complete
+      SwitchToThread();
+    }
+    ptr_media_source_->Stop();
+  }
+  LOG(INFO) << "EncoderThread finished.";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,3 +161,4 @@ WebmEncoderConfig WebmEncoder::DefaultConfig() {
 }
 
 }  // namespace webmlive
+
