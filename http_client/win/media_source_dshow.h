@@ -85,14 +85,9 @@ REFERENCE_TIME seconds_to_media_time(double seconds);
 class PinInfo;
 class VideoFrameCallbackInterface;
 
-// TODO(tomfinegan): this file, and WebmEncoderImpl will require a rename after
-//                   conversion to the v2 design (where DShow is used only as
-//                   the means by which a/v data is captured). AVSourceImpl
-//                   or something should do...
-
 // WebM encoder object. Currently supports only live encoding from the primary
 // video and audio input devices on the user system.
-class WebmEncoderImpl {
+class MediaSourceImpl {
  public:
   enum {
     // Internal status codes for the DirectShow encoder.
@@ -142,8 +137,8 @@ class WebmEncoderImpl {
     // Graph completion event received.
     kGraphCompleted = 1,
   };
-  WebmEncoderImpl();
-  ~WebmEncoderImpl();
+  MediaSourceImpl();
+  ~MediaSourceImpl();
   // TODO(tomfinegan): fix the misleading comment.
   // Creates WebM encoder graph. Returns |kSuccess| upon success, or a
   // |WebmEncoder| status code upon failure.
@@ -241,7 +236,7 @@ class WebmEncoderImpl {
   WebmEncoderConfig config_;
   // Video frame callback.
   VideoFrameCallbackInterface* ptr_video_callback_;
-  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoderImpl);
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(MediaSourceImpl);
 };
 
 // Utility class for finding and loading capture devices available through
