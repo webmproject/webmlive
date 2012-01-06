@@ -91,6 +91,8 @@ class VideoFrameCallbackInterface;
 // users through VideoFrameCallbackInterface.
 class MediaSourceImpl {
  public:
+  typedef WebmEncoderConfig::AudioCaptureConfig AudioConfig;
+  typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
   enum {
     // Error creating the video sink filter.
     kVideoSinkCreateError = -222,
@@ -153,6 +155,20 @@ class MediaSourceImpl {
   // Returns encoded duration in seconds.
   double encoded_duration();
 
+  // Configuration accessors.
+  AudioConfig requested_audio_config() const {
+    return requested_audio_config_;
+  };
+  AudioConfig actual_audio_config() const {
+    return actual_audio_config_;
+  };
+  VideoConfig requested_video_config() const {
+    return requested_video_config_;
+  };
+  VideoConfig actual_video_config() const {
+    return actual_video_config_;
+  };
+
  private:
   // Creates filter graph and graph builder interfaces.
   int CreateGraph();
@@ -163,7 +179,7 @@ class MediaSourceImpl {
   // Connects the video source and sink filters.
   int ConnectVideoSourceToVideoSink();
   // Configures the video capture source using |sub_type| and
-  // |config_.video_config|.
+  // |config_.requested_video_config|.
   int ConfigureVideoSource(const IPinPtr& pin, int sub_type);
   // Obtains interfaces and data needed to monitor and control the graph.
   int InitGraphControl();
@@ -228,9 +244,16 @@ class MediaSourceImpl {
   std::wstring audio_device_name_;
   // Video device friendly name.
   std::wstring video_device_name_;
-  // User settings.
-  WebmEncoderConfig config_;
-  // Video frame callback.
+  // Requested audio settings.
+  AudioConfig requested_audio_config_;
+  // Actual audio settings.
+  AudioConfig actual_audio_config_;
+  // Requested video settings.
+  VideoConfig requested_video_config_;
+  // Actual video settings.
+  VideoConfig actual_video_config_;
+  // Callback interface used by video sink filter to deliver raw frames to
+  // |WebmEncoder::EncoderThread|.
   VideoFrameCallbackInterface* ptr_video_callback_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(MediaSourceImpl);
 };

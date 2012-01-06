@@ -51,6 +51,12 @@ const int kDefaultVpxTokenPartitions = kUseEncoderDefault;
 
 struct WebmEncoderConfig {
   struct AudioCaptureConfig {
+    AudioCaptureConfig() {
+      manual_config = false;
+      channels = kDefaultAudioChannels;
+      sample_rate = kDefaultAudioSampleRate;
+      sample_size = kDefaultAudioSampleSize;
+    }
     // Attempt manual configuration through source UI (if available).
     bool manual_config;
     // Number of channels.
@@ -84,10 +90,14 @@ struct WebmEncoderConfig {
   std::string audio_device_name;
   // Name of the video device.  Leave empty to use system default.
   std::string video_device_name;
-  // Audio capture settings.
-  AudioCaptureConfig audio_config;
-  // Video capture settings.
-  VideoCaptureConfig video_config;
+  // Requested audio capture settings.
+  AudioCaptureConfig requested_audio_config;
+  // Actual audio capture settings.
+  AudioCaptureConfig actual_audio_config;
+  // Requested video capture settings.
+  VideoCaptureConfig requested_video_config;
+  // Actual video capture settings.
+  VideoCaptureConfig actual_video_config;
   // VP8 encoder settings.
   VpxConfig vpx_config;
 };

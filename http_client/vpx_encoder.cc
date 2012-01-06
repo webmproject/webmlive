@@ -51,8 +51,8 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
   //                   DShow filter to check settings.
 
   // Copy user configuration values into libvpx configuration struct
-  libvpx_config.g_h = user_config.video_config.height;
-  libvpx_config.g_w = user_config.video_config.width;
+  libvpx_config.g_h = user_config.actual_video_config.height;
+  libvpx_config.g_w = user_config.actual_video_config.width;
   libvpx_config.rc_target_bitrate = config_.bitrate;
   libvpx_config.rc_min_quantizer = config_.min_quantizer;
   libvpx_config.rc_max_quantizer = config_.max_quantizer;

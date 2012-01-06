@@ -35,7 +35,13 @@ int WebmEncoder::Init(const WebmEncoderConfig& config) {
     return kInitFailed;
   }
   config_ = config;
-  return ptr_media_source_->Init(config_, this);
+  status = ptr_media_source_->Init(config_, this);
+  if (status) {
+    LOG(ERROR) << "media source Init failed " << status;
+    return kInitFailed;
+  }
+  config_.actual_video_config = ptr_media_source_->actual_video_config();
+  return kSuccess;
 }
 
 int WebmEncoder::Run() {
@@ -139,14 +145,22 @@ void WebmEncoder::EncoderThread() {
 // Returns default |WebmEncoderConfig|.
 WebmEncoderConfig WebmEncoder::DefaultConfig() {
   WebmEncoderConfig c;
-  c.audio_config.manual_config = false;
-  c.audio_config.channels = kDefaultAudioChannels;
-  c.audio_config.sample_rate = kDefaultAudioSampleRate;
-  c.audio_config.sample_size = kDefaultAudioSampleSize;
-  c.video_config.manual_config = false;
-  c.video_config.width = kDefaultVideoWidth;
-  c.video_config.height = kDefaultVideoHeight;
-  c.video_config.frame_rate = kDefaultVideoFrameRate;
+
+  // Use the configuration ctors to default the requested capture
+  // configurations....
+  c.requested_audio_config = WebmEncoderConfig::AudioCaptureConfig();
+  c.requested_video_config = WebmEncoderConfig::VideoCaptureConfig();
+
+  // And 0 the actual configurations.
+  c.actual_audio_config.manual_config = false;
+  c.actual_audio_config.channels = 0;
+  c.actual_audio_config.sample_rate = 0;
+  c.actual_audio_config.sample_size = 0;
+  c.actual_video_config.manual_config = false;
+  c.actual_video_config.width = 0;
+  c.actual_video_config.height = 0;
+  c.actual_video_config.frame_rate = 0;
+
   c.vorbis_bitrate = kDefaultVorbisBitrate;
   c.vpx_config.bitrate = kDefaultVpxBitrate;
   c.vpx_config.decimate = kDefaultVpxDecimate;

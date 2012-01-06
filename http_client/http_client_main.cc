@@ -152,13 +152,15 @@ void parse_command_line(int argc, const char** argv,
       enc_config.audio_device_name = argv[++i];
     } else if (!strcmp("--achannels", argv[i]) &&
                arg_has_value(i, argc, argv)) {
-      enc_config.audio_config.channels = strtol(argv[++i], NULL, 10);
+      enc_config.requested_audio_config.channels = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--amanual", argv[i])) {
-      enc_config.audio_config.manual_config = true;
+      enc_config.requested_audio_config.manual_config = true;
     } else if (!strcmp("--arate", argv[i]) && arg_has_value(i, argc, argv)) {
-      enc_config.audio_config.sample_rate = strtol(argv[++i], NULL, 10);
+      enc_config.requested_audio_config.sample_rate =
+          strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--asize", argv[i]) && arg_has_value(i, argc, argv)) {
-      enc_config.audio_config.sample_size = strtol(argv[++i], NULL, 10);
+      enc_config.requested_audio_config.sample_size =
+          strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--stream_name", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       uploader_settings.stream_name = argv[++i];
@@ -171,14 +173,14 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vdev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_device_name = argv[++i];
     } else if (!strcmp("--vmanual", argv[i])) {
-      enc_config.video_config.manual_config = true;
+      enc_config.requested_video_config.manual_config = true;
     } else if (!strcmp("--vwidth", argv[i]) && arg_has_value(i, argc, argv)) {
-      enc_config.video_config.width = strtol(argv[++i], NULL, 10);
+      enc_config.requested_video_config.width = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vheight", argv[i]) && arg_has_value(i, argc, argv)) {
-      enc_config.video_config.height = strtol(argv[++i], NULL, 10);
+      enc_config.requested_video_config.height = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vframe_rate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
-      enc_config.video_config.frame_rate = strtod(argv[++i], NULL);
+      enc_config.requested_video_config.frame_rate = strtod(argv[++i], NULL);
     } else if (!strcmp("--vorbis_bitrate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vorbis_bitrate = strtol(argv[++i], NULL, 10);

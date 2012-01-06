@@ -120,7 +120,8 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
     return kInvalidArg;
   }
   ptr_video_callback_ = ptr_video_callback;
-  config_ = config;
+  requested_audio_config_ = config.requested_audio_config;
+  requested_video_config_ = config.requested_video_config;
   const HRESULT hr = CoInitialize(NULL);
   if (FAILED(hr)) {
     LOG(ERROR) << "CoInitialize failed: " << HRLOG(hr);
@@ -131,8 +132,8 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
     LOG(ERROR) << "CreateGraphInterfaces failed: " << status;
     return WebmEncoder::kInitFailed;
   }
-  if (!config_.video_device_name.empty()) {
-    video_device_name_ = string_to_wstring(config_.video_device_name);
+  if (!config.video_device_name.empty()) {
+    video_device_name_ = string_to_wstring(config.video_device_name);
   }
   status = CreateVideoSource();
   if (status) {
@@ -393,9 +394,9 @@ int MediaSourceImpl::ConnectVideoSourceToVideoSink() {
         LOG(INFO) << "actual capture width=" << video_format.width()
                   << " height=" << video_format.height()
                   << " frame_rate=" << video_format.frame_rate();
-        config_.video_config.width = video_format.width();
-        config_.video_config.height = video_format.height();
-        config_.video_config.frame_rate = video_format.frame_rate();
+        actual_video_config_.width = video_format.width();
+        actual_video_config_.height = video_format.height();
+        actual_video_config_.frame_rate = video_format.frame_rate();
       }
     }
     MediaType::FreeMediaTypeData(&media_type);
@@ -403,12 +404,13 @@ int MediaSourceImpl::ConnectVideoSourceToVideoSink() {
   return status;
 }
 
-// Attempts to configure |video_source_pin| media type through using user
-// settings stored in |config_.video_config| with |VideoMediaType| to produce
-// an AM_MEDIA_TYPE struct suitable for use with IAMStreamConfig::SetFormat.
-// Returns |kSuccess| upon successful configuration.
+// Attempts to configure |video_source_pin| media type through use of user
+// settings stored in |config_.requested_video_config| with |VideoMediaType|
+// to produce an AM_MEDIA_TYPE struct suitable for use with
+// IAMStreamConfig::SetFormat. Returns |kSuccess| upon successful
+// configuration.
 int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin, int sub_type) {
-  WebmEncoderConfig::VideoCaptureConfig& video_config = config_.video_config;
+  VideoConfig& video_config = requested_video_config_;
   if (video_config.manual_config) {
     // Always disable manual configuration.
     // |ConfigureVideoSource| is called in a loop, so this avoids making the
@@ -550,7 +552,7 @@ int MediaSourceImpl::CreateAudioSource() {
 // to configure pin with an AM_MEDIA_TYPE matching the user's settings if no
 // match is found. Returns kSuccess upon successful configuration.
 int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin) {
-  if (config_.audio_config.manual_config) {
+  if (requested_audio_config_.manual_config) {
     bool filter_config_ok = false, pin_config_ok = false;
     // Manual audio configuration is enabled; try showing |audio_source_|'s
     // property page, but only if the audio source is not a pin on
@@ -588,7 +590,7 @@ int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin) {
   PinFormat formatter(pin);
   MediaTypePtr audio_format;
   int status = audio_format.Attach(
-      formatter.FindMatchingFormat(config_.audio_config));
+      formatter.FindMatchingFormat(requested_audio_config_));
   if (status) {
     // Try directly configuring the pin with user settings.
     LOG(WARNING) << "no format matching requested audio settings.";
@@ -598,7 +600,7 @@ int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin) {
       LOG(ERROR) << "audio media type init failed, status=" << status;
       return WebmEncoder::kAudioConfigureError;
     }
-    status = user_audio_format.Configure(config_.audio_config);
+    status = user_audio_format.Configure(requested_audio_config_);
     if (status) {
       LOG(ERROR) << "audio media type configuration failed, status=" << status;
       return WebmEncoder::kAudioConfigureError;
@@ -686,6 +688,7 @@ int MediaSourceImpl::ConnectAudioSourceToVorbisEncoder() {
   return kSuccess;
 }
 
+#if 0
 // Obtains vorbis encoder configuration interface and applies user settings.
 int MediaSourceImpl::ConfigureVorbisEncoder() {
   // At present only vorbis audio bitrate configuration is exposed; do nothing
@@ -705,6 +708,7 @@ int MediaSourceImpl::ConfigureVorbisEncoder() {
   }
   return kSuccess;
 }
+#endif
 
 // Creates the WebM muxer filter and adds it to the filter graph.
 int MediaSourceImpl::CreateWebmMuxer() {
