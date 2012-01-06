@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAG3//81Y\u003d",
+        "filename": "http_client/win/media_source_dshow.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-06T21:33:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAG3//9JI\u003d",
+      "revId": "b89900528002ce5acbfd7cb09d9f711cc107a4a1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAG3//9JE\u003d",
         "filename": "http_client/win/media_source_dshow.cc",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2012-01-06T03:53:15Z",
       "side": 1,
       "message": "long line. you could break at the ( for the ctor.\n\nalso, * const",
+      "revId": "b89900528002ce5acbfd7cb09d9f711cc107a4a1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAG3//81M\u003d",
+        "filename": "http_client/win/media_source_dshow.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 348,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-06T21:33:51Z",
+      "side": 1,
+      "message": "\u003e long line. you could break at the ( for the ctor.\n\nDropped the (nothrow)-- it angers lint anyway.\n\n\u003e also, * const\n\nDone.",
+      "parentUuid": "AAAAG3//9JE\u003d",
       "revId": "b89900528002ce5acbfd7cb09d9f711cc107a4a1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAG3//80w\u003d",
+        "filename": "http_client/win/media_source_dshow.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 352,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-06T21:33:51Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAG3//9JA\u003d",
+      "revId": "b89900528002ce5acbfd7cb09d9f711cc107a4a1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAG3//9I0\u003d",
         "filename": "http_client/win/media_source_dshow.cc",
         "patchSetId": 2
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAG3//80Y\u003d",
+        "filename": "http_client/win/media_source_dshow.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 398,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-06T21:33:51Z",
+      "side": 1,
+      "message": "Done, at least I think I did as suggested.",
+      "parentUuid": "AAAAG3//9I0\u003d",
+      "revId": "b89900528002ce5acbfd7cb09d9f711cc107a4a1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAG3//9Iw\u003d",
         "filename": "http_client/win/media_source_dshow.cc",
         "patchSetId": 2
@@ -81,6 +153,24 @@
       "writtenOn": "2012-01-06T03:53:15Z",
       "side": 1,
       "message": "redundant given the if block it\u0027s contained in.",
+      "revId": "b89900528002ce5acbfd7cb09d9f711cc107a4a1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAG3//8xw\u003d",
+        "filename": "http_client/win/media_source_dshow.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 414,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-06T21:33:51Z",
+      "side": 1,
+      "message": "Removed.",
+      "parentUuid": "AAAAG3//9Iw\u003d",
       "revId": "b89900528002ce5acbfd7cb09d9f711cc107a4a1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
