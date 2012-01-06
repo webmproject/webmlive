@@ -83,6 +83,12 @@ double media_time_to_seconds(REFERENCE_TIME media_time);
 REFERENCE_TIME seconds_to_media_time(double seconds);
 
 class PinInfo;
+class VideoFrameCallbackInterface;
+
+// TODO(tomfinegan): this file, and WebmEncoderImpl will require a rename after
+//                   conversion to the v2 design (where DShow is used only as
+//                   the means by which a/v data is captured). AVSourceImpl
+//                   or something should do...
 
 // WebM encoder object. Currently supports only live encoding from the primary
 // video and audio input devices on the user system.
@@ -90,6 +96,10 @@ class WebmEncoderImpl {
  public:
   enum {
     // Internal status codes for the DirectShow encoder.
+    // Null |VideoFrameCallbackInterface| pointer passed to |Init|.
+    kNullCallback = -223,
+    // Error creating the video sink filter.
+    kVideoSinkCreateError = -222,
     // Error configuring Vorbis encoder.
     kVorbisConfigureError = -221,
     // Unable to obtain Vorbis encoder configuration interface.
@@ -134,9 +144,10 @@ class WebmEncoderImpl {
   };
   WebmEncoderImpl();
   ~WebmEncoderImpl();
-  // Creates WebM encoder graph. Returns |kSuccess| upon success, or a
+  // Creates video capture graph. Returns |kSuccess| upon success, or a
   // |WebmEncoder| status code upon failure.
-  int Init(const WebmEncoderConfig& config);
+  int Init(const WebmEncoderConfig& config,
+           VideoFrameCallbackInterface* ptr_video_callback);
   // Runs encoder thread. Returns |kSuccess| upon success, or a |WebmEncoder|
   // status code upon failure.
   int Run();
@@ -144,6 +155,7 @@ class WebmEncoderImpl {
   void Stop();
   // Returns encoded duration in seconds.
   double encoded_duration();
+
  private:
   // Returns true when user wants the encode thread to stop.
   bool StopRequested();
@@ -151,6 +163,10 @@ class WebmEncoderImpl {
   int CreateGraph();
   // Creates video capture source filter instance and adds it to the graph.
   int CreateVideoSource();
+  // Creates the video sink filter instance and adds it to the graph.
+  int CreateVideoSink();
+  // Connects the video source and sink filters.
+  int ConnectVideoSourceToVideoSink();
   // Configures the video capture source using |sub_type| and
   // |config_.video_config|.
   int ConfigureVideoSource(const IPinPtr& pin, int sub_type);
@@ -200,6 +216,7 @@ class WebmEncoderImpl {
   // Directshow filters used in the encoder graph.
   IBaseFilterPtr audio_source_;
   IBaseFilterPtr video_source_;
+  IBaseFilterPtr video_sink_;
   IBaseFilterPtr vorbis_encoder_;
   IBaseFilterPtr vpx_encoder_;
   IBaseFilterPtr webm_muxer_;
@@ -222,6 +239,8 @@ class WebmEncoderImpl {
   std::wstring video_device_name_;
   // User settings.
   WebmEncoderConfig config_;
+  // Video frame callback.
+  VideoFrameCallbackInterface* ptr_video_callback_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoderImpl);
 };
 
@@ -246,6 +265,7 @@ class CaptureSourceLoader {
   IBaseFilterPtr GetSource(int index);
   // Returns filter for capture source specified by |name|.
   IBaseFilterPtr GetSource(const std::wstring name);
+
  private:
   // Finds and stores all source devices of |source_type_| in |sources_|.
   int FindAllSources();
@@ -287,6 +307,7 @@ class PinFinder {
   IPinPtr FindStreamOutputPin(int index) const;
   // Returns input pin at index.
   IPinPtr FindInputPin(int index) const;
+
  private:
   // Filter pin enumerator interface.
   IEnumPinsPtr pin_enum_;
@@ -317,6 +338,7 @@ class PinInfo {
   bool IsStream() const;
   // Returns |pin_|.
   IPinPtr pin() const { return pin_; }
+
  private:
   // Disallow construction without IPinPtr.
   PinInfo();
@@ -342,6 +364,7 @@ class VideoPinInfo {
   // |VideoPinInfo| uses |ConnectionMediaType|.
   int Init(const IPinPtr& pin);
   double frame_rate() const;
+
  private:
   IPinPtr pin_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoPinInfo);
@@ -371,6 +394,7 @@ class PinFormat {
   AM_MEDIA_TYPE* FindMatchingFormat(const VideoConfig& config);
   // Returns |pin_|.
   IPinPtr pin() const { return pin_; }
+
  private:
   // Disallow construction without IPinPtr.
   PinFormat();

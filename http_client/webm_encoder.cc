@@ -30,7 +30,7 @@ int WebmEncoder::Init(const WebmEncoderConfig& config) {
     LOG(ERROR) << "cannot construct media source!";
     return kInitFailed;
   }
-  return ptr_media_source_->Init(this, config);
+  return ptr_media_source_->Init(config, this);
 }
 
 // Returns result of encoder object's |Run| method.
