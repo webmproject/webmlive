@@ -17,13 +17,13 @@
 
 namespace webmlive {
 
-WebmEncoder::WebmEncoder() {
+WebmEncoder::WebmEncoder() : stop_(false) {
 }
 
 WebmEncoder::~WebmEncoder() {
 }
 
-// Creates the encoder object and call its |Init| method.
+// Constructs media source object and calls its |Init| method.
 int WebmEncoder::Init(const WebmEncoderConfig& config) {
   ptr_media_source_.reset(new (std::nothrow) MediaSourceImpl());  // NOLINT
   if (!ptr_media_source_) {
@@ -33,19 +33,34 @@ int WebmEncoder::Init(const WebmEncoderConfig& config) {
   return ptr_media_source_->Init(config, this);
 }
 
-// Returns result of encoder object's |Run| method.
 int WebmEncoder::Run() {
-  return ptr_media_source_->Run();
+  if (encode_thread_) {
+    LOG(ERROR) << "non-null encode thread. Already running?";
+    return kRunFailed;
+  }
+  using boost::bind;
+  using boost::shared_ptr;
+  using boost::thread;
+  using std::nothrow;
+  encode_thread_ = shared_ptr<thread>(
+      new (nothrow) thread(bind(&WebmEncoder::EncoderThread,  // NOLINT
+                                this)));
+  return kSuccess;
 }
 
-// Returns result of encoder object's |Stop| method.
+// Sets |stop_| to true and calls join on |encode_thread_| to wait for
+// |EncoderThread| to finish.
 void WebmEncoder::Stop() {
-  ptr_media_source_->Stop();
+  assert(encode_thread_);
+  boost::mutex::scoped_lock lock(mutex_);
+  stop_ = true;
+  lock.unlock();
+  encode_thread_->join();
 }
 
 // Returns encoded duration in seconds.
 double WebmEncoder::encoded_duration() {
-  return ptr_media_source_->encoded_duration();
+  return 0.0;
 }
 
 // VideoFrameCallbackInterface
@@ -55,6 +70,45 @@ int WebmEncoder::OnVideoFrameReceived(VideoFrame* ptr_frame) {
     return VideoFrameCallbackInterface::kInvalidArg;
   }
   return kSuccess;
+}
+
+// Tries to obtain lock on |mutex_| and returns value of |stop_| if lock is
+// obtained. Assumes no stop requested and returns false if unable to obtain
+// the lock.
+bool WebmEncoder::StopRequested() {
+  bool stop_requested = false;
+  boost::mutex::scoped_try_lock lock(mutex_);
+  if (lock.owns_lock()) {
+    stop_requested = stop_;
+  }
+  return stop_requested;
+}
+
+void WebmEncoder::EncoderThread() {
+  LOG(INFO) << "EncoderThread started.";
+  int status = ptr_media_source_->Run();
+  if (status) {
+    // media source Run failed; fatal
+    LOG(ERROR) << "Unable to run the media source! " << status;
+  } else {
+    for (;;) {
+      if (StopRequested()) {
+        LOG(INFO) << "StopRequested returned true, stopping...";
+        break;
+      }
+      status = ptr_media_source_->CheckStatus();
+      if (status) {
+        LOG(ERROR) << "Media source in bad state, stopping... " << status;
+        break;
+      }
+      // TODO(tomfinegan): This is just a placeholder thats intended to keep
+      //                   this tight loop from spinning like mad until the
+      //                   vp8 encoder integration is complete
+      SwitchToThread();
+    }
+    ptr_media_source_->Stop();
+  }
+  LOG(INFO) << "EncoderThread finished.";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,3 +141,4 @@ WebmEncoderConfig WebmEncoder::DefaultConfig() {
 }
 
 }  // namespace webmlive
+
