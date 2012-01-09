@@ -185,6 +185,8 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   VideoFrameQueue video_queue_;
   // Most recent frame from |video_queue_|.
   VideoFrame video_frame_;
+  // Video encoder.
+  VideoEncoder video_encoder_;
   // Encoder configuration.
   WebmEncoderConfig config_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoder);
