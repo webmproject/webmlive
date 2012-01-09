@@ -34,7 +34,8 @@ int WebmEncoder::Init(const WebmEncoderConfig& config) {
     LOG(ERROR) << "VideoFrameQueue Init failed!";
     return kInitFailed;
   }
-  return ptr_media_source_->Init(config, this);
+  config_ = config;
+  return ptr_media_source_->Init(config_, this);
 }
 
 int WebmEncoder::Run() {

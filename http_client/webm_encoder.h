@@ -133,6 +133,7 @@ class WebmEncoder : public VideoFrameCallbackInterface {
     kInitFailed = -101,
     // Cannot run the encoder.
     kRunFailed = -100,
+    kInvaligArg = -1,
     kSuccess = 0,
   };
   WebmEncoder();
@@ -149,6 +150,7 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   double encoded_duration();
   // Returns |WebmEncoderConfig| with fields set to default values.
   static WebmEncoderConfig DefaultConfig();
+  WebmEncoderConfig config() const { return config_; }
 
   // VideoFrameCallbackInterface methods
   // Method used by MediaSourceImpl to push video frames into |EncoderThread|.
@@ -173,6 +175,8 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   VideoFrameQueue video_queue_;
   // Most recent frame from |video_queue_|.
   VideoFrame video_frame_;
+  // Encoder configuration.
+  WebmEncoderConfig config_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoder);
 };
 
