@@ -80,7 +80,8 @@ void usage(const char** argv) {
   printf("  VPX Encoder options:\n");
   printf("    --vpx_bitrate <kbps>               Video bitrate.\n");
   printf("    --vpx_decimate <decimate factor>   FPS reduction factor.\n");
-  printf("    --vpx_keyframe_interval <seconds>  Time between keyframes.\n");
+  printf("    --vpx_keyframe_interval <milliseconds>  Time between\n");
+  printf("                                            keyframes.\n");
   printf("    --vpx_min_q <min q value>          Quantizer minimum.\n");
   printf("    --vpx_max_q <max q value>          Quantizer maximum.\n");
   printf("    --vpx_static_threshold <threshold> Static threshold.\n");
@@ -183,7 +184,7 @@ void parse_command_line(int argc, const char** argv,
       enc_config.vorbis_bitrate = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_keyframe_interval", argv[i]) &&
                arg_has_value(i, argc, argv)) {
-      enc_config.vpx_config.keyframe_interval = strtod(argv[++i], NULL);
+      enc_config.vpx_config.keyframe_interval = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_bitrate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.bitrate = strtol(argv[++i], NULL, 10);
