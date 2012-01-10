@@ -312,6 +312,10 @@
 				Name="libwebm"
 				>
 				<File
+					RelativePath="..\third_party\libwebm\mkvmuxer.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\third_party\libwebm\mkvparser.hpp"
 					>
 				</File>
