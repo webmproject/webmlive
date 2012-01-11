@@ -184,7 +184,9 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   // |EncoderThread|.
   VideoFrameQueue video_queue_;
   // Most recent frame from |video_queue_|.
-  VideoFrame video_frame_;
+  VideoFrame raw_frame_;
+  // Most recent frame from |video_encoder_|.
+  VideoFrame vp8_frame_;
   // Video encoder.
   VideoEncoder video_encoder_;
   // Encoder configuration.
