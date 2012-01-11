@@ -201,11 +201,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\file_reader.cc"
+				RelativePath=".\data_sink.cc"
 				>
 			</File>
 			<File
-				RelativePath=".\file_reader.h"
+				RelativePath=".\data_sink.h"
 				>
 			</File>
 			<File
@@ -256,19 +256,19 @@
 				RelativePath=".\webm_encoder.h"
 				>
 			</File>
+			<File
+				RelativePath=".\webm_mux.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\webm_mux.h"
+				>
+			</File>
 			<Filter
 				Name="win"
 				>
 				<File
 					RelativePath=".\win\build_config_win.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\win\file_reader_win.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\win\file_reader_win.h"
 					>
 				</File>
 				<File
@@ -321,6 +321,14 @@
 				</File>
 				<File
 					RelativePath="..\third_party\libwebm\mkvreader.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libwebm\mkvwriter.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libwebm\webmids.hpp"
 					>
 				</File>
 			</Filter>
