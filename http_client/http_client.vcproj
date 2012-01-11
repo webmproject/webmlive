@@ -256,6 +256,14 @@
 				RelativePath=".\webm_encoder.h"
 				>
 			</File>
+			<File
+				RelativePath=".\webm_mux.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\webm_mux.h"
+				>
+			</File>
 			<Filter
 				Name="win"
 				>
