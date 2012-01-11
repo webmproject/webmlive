@@ -121,7 +121,11 @@ void WebmEncoder::EncoderThread() {
         LOG(ERROR) << "Media source in bad state, stopping... " << status;
         break;
       }
-      status = video_queue_.Read(&video_frame_);
+
+      // Read a frame for |video_queue_|. Sets |got_frame| to true if a frame
+      // is available.
+      bool got_frame = false;
+      status = video_queue_.Read(&raw_frame_);
       if (status) {
         if (status != VideoFrameQueue::kEmpty) {
           // Really an error; not just an empty queue.
@@ -131,12 +135,18 @@ void WebmEncoder::EncoderThread() {
           VLOG(4) << "No frames in VideoFrameQueue";
         }
       } else {
-        LOG(INFO) << "Encoder thread popped frame.";
+        LOG(INFO) << "Encoder thread read raw frame.";
+        got_frame = true;
       }
-      // TODO(tomfinegan): This is just a placeholder thats intended to keep
-      //                   this tight loop from spinning like mad until the
-      //                   vp8 encoder integration is complete
-      SwitchToThread();
+
+      // Encode a video frame if the |video_queue_| Read was successful.
+      if (got_frame) {
+        status = video_encoder_.EncodeFrame(raw_frame_, &vp8_frame_);
+        if (status) {
+          LOG(ERROR) << "Video frame encode failed " << status;
+          break;
+        }
+      }
     }
     ptr_media_source_->Stop();
   }

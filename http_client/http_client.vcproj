@@ -256,6 +256,14 @@
 				RelativePath=".\webm_encoder.h"
 				>
 			</File>
+			<File
+				RelativePath=".\webm_mux.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\webm_mux.h"
+				>
+			</File>
 			<Filter
 				Name="win"
 				>
@@ -321,6 +329,14 @@
 				</File>
 				<File
 					RelativePath="..\third_party\libwebm\mkvreader.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libwebm\mkvwriter.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libwebm\webmids.hpp"
 					>
 				</File>
 			</Filter>
