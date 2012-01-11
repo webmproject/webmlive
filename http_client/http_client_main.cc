@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -17,7 +17,6 @@
 #include "boost/scoped_array.hpp"
 #include "glog/logging.h"
 #include "http_client/buffer_util.h"
-#include "http_client/file_reader.h"
 #include "http_client/http_uploader.h"
 #include "http_client/webm_encoder.h"
 
@@ -224,46 +223,43 @@ void parse_command_line(int argc, const char** argv,
   store_string_map_entries(unparsed_vars, uploader_settings.form_variables);
 }
 
-// Calls |Init| and |Run| on |encoder| to start the encode of a WebM file.
-int start_encoder(const webmlive::WebmEncoderConfig& settings,
-                  webmlive::WebmEncoder* ptr_encoder) {
-  int status = ptr_encoder->Init(settings);
-  if (status) {
-    LOG(ERROR) << "encoder Init failed, status=" << status;
-    return status;
-  }
-  status = ptr_encoder->Run();
-  if (status) {
-    LOG(ERROR) << "encoder Run failed, status=" << status;
-  }
-  return status;
-}
-
 // Calls |Init| and |Run| on |uploader| to start the uploader thread, which
 // uploads buffers when |UploadBuffer| is called on the uploader.
 int start_uploader(WebmEncoderClientConfig* ptr_config,
                    webmlive::HttpUploader* ptr_uploader) {
-  if (ptr_config->target_url.find('?') == std::string::npos) {
-    // No query string-- reconstruct the URL.
-    std::ostringstream url;
-    // rebuild the url with query params included
-    url << ptr_config->target_url
-        << "?ns=" << ptr_config->uploader_settings.stream_name
-        << "&id=" << ptr_config->uploader_settings.stream_id
-        << kAgentQueryFragment
-        << kWebmItagQueryFragment
-        << kMetadataQueryFragment;
-    ptr_config->target_url = url.str();
-  } else {
-    // The user specified a query string; assume that the user knows what
-    // they're doing, and append only |kMetadataQueryFragment|.
-    ptr_config->target_url.append(kMetadataQueryFragment);
-  }
   int status = ptr_uploader->Init(ptr_config->uploader_settings);
   if (status) {
     LOG(ERROR) << "uploader Init failed, status=" << status;
     return status;
   }
+
+  if (ptr_config->target_url.find('?') == std::string::npos) {
+    // When the URL lacks a query string the URL must be reconstructed.
+    std::ostringstream url;
+
+    // Rebuild it with query params included.
+    url << ptr_config->target_url
+        << "?ns=" << ptr_config->uploader_settings.stream_name
+        << "&id=" << ptr_config->uploader_settings.stream_id
+        << kAgentQueryFragment
+        << kWebmItagQueryFragment;
+
+    ptr_config->target_url = url.str();
+  }
+
+  // Queue the target URLs.
+  // Store the target for all but the first upload in |base_url|.
+  std::string base_url = ptr_config->target_url;
+
+  // Update the target URL to notify the server it that the chunk in the first
+  // upload is metadata.
+  ptr_config->target_url.append(kMetadataQueryFragment);
+  ptr_uploader->EnqueueTargetUrl(ptr_config->target_url);
+
+  // Now add the URL that's used for all subsequent uploads.
+  ptr_uploader->EnqueueTargetUrl(base_url);
+
+  // Run the uploader (it goes idle and waits for a buffer).
   status = ptr_uploader->Run();
   if (status) {
     LOG(ERROR) << "uploader Run failed, status=" << status;
@@ -272,56 +268,35 @@ int start_uploader(WebmEncoderClientConfig* ptr_config,
 }
 
 int client_main(WebmEncoderClientConfig* ptr_config) {
-  // Setup the file reader.  This is a little strange since |reader| actually
-  // creates the output file that is used by the encoder.
-  webmlive::HttpUploaderSettings& uploader_settings =
-      ptr_config->uploader_settings;
-  webmlive::FileReader reader;
-  int status = reader.CreateFile(uploader_settings.local_file);
-  if (status) {
-    LOG(ERROR) << "file reader init failed, status=" << status;
-    return EXIT_FAILURE;
-  }
-  // Start encoding the WebM file.
   webmlive::WebmEncoderConfig& enc_config = ptr_config->enc_config;
+  webmlive::HttpUploader uploader;
+
+  // Init the WebM encoder.
   webmlive::WebmEncoder encoder;
-  status = start_encoder(enc_config, &encoder);
+  int status = encoder.Init(enc_config, &uploader);
   if (status) {
     LOG(ERROR) << "start_encoder failed, status=" << status;
     return EXIT_FAILURE;
   }
+
   // Start the uploader thread.
-  webmlive::HttpUploader uploader;
   status = start_uploader(ptr_config, &uploader);
   if (status) {
     LOG(ERROR) << "start_uploader failed, status=" << status;
-    encoder.Stop();
     return EXIT_FAILURE;
   }
-  const int32 kReadBufferSize = 100*1024;
-  int32 read_buffer_size = kReadBufferSize;
-  using boost::scoped_array;
-  scoped_array<uint8> read_buf(
-      new (std::nothrow) uint8[kReadBufferSize]);  // NOLINT
-  if (!read_buf) {
-    uploader.Stop();
-    encoder.Stop();
-    LOG(ERROR) << "out of memory, can't alloc read_buf.";
-    return EXIT_FAILURE;
-  }
-  webmlive::WebmChunkBuffer chunk_buffer;
-  status = chunk_buffer.Init();
+
+  // Start the WebM encoder.
+  status = encoder.Run();
   if (status) {
+    LOG(ERROR) << "start_encoder failed, status=" << status;
     uploader.Stop();
-    encoder.Stop();
-    LOG(ERROR) << "can't create chunk buffer.";
     return EXIT_FAILURE;
   }
-  // Loop until the user hits a key.
-  int num_posts = 0;
-  int exit_code = EXIT_SUCCESS;
+
   webmlive::HttpUploaderStats stats;
   printf("\nPress the any key to quit...\n");
+
   while (!_kbhit()) {
     // Output current duration and upload progress
     if (uploader.GetStats(&stats) == webmlive::HttpUploader::kSuccess) {
@@ -330,64 +305,15 @@ int client_main(WebmEncoderClientConfig* ptr_config) {
              stats.bytes_sent_current + stats.total_bytes_uploaded,
              static_cast<int>(stats.bytes_per_second / 1000));
     }
-    size_t bytes_read = 0;
-    status = reader.Read(read_buffer_size, &read_buf[0], &bytes_read);
-    if (bytes_read > 0) {
-      status = chunk_buffer.BufferData(&read_buf[0],
-                                       static_cast<int32>(bytes_read));
-      if (status) {
-        LOG(ERROR) << "BufferData failed, status=" << status;
-        exit_code = EXIT_FAILURE;
-        break;
-      }
-    }
-    if (uploader.UploadComplete()) {
-      int32 chunk_length = 0;
-      if (chunk_buffer.ChunkReady(&chunk_length)) {
-        if (chunk_length > read_buffer_size) {
-          // Reallocate the read buffer-- the chunk is too large.
-          read_buf.reset(new (std::nothrow) uint8[chunk_length]);  // NOLINT
-          if (!read_buf) {
-            LOG(ERROR) << "read buffer reallocation failed";
-            exit_code = EXIT_FAILURE;
-            break;
-          }
-          read_buffer_size = chunk_length;
-        }
-        status = chunk_buffer.ReadChunk(&read_buf[0], chunk_length);
-        if (status) {
-          LOG(ERROR) << "ReadChunk failed, status=" << status;
-          exit_code = EXIT_FAILURE;
-          break;
-        }
-        if (num_posts == 1) {
-          // Remove the metadata query fragment from the URL after the first
-          // post.  It is only present for the first post, which includes
-          // the EBML header, MKV segment Info, and MKV segment tracks
-          // elements.
-          std::string& url = ptr_config->target_url;
-          url.erase(url.find(kMetadataQueryFragment),
-                    kMetadataQueryFragment.length());
-        }
-        // Start upload of the read buffer contents
-        LOG(INFO) << "starting buffer upload, chunk_length=" << chunk_length;
-        status = uploader.UploadBuffer(&read_buf[0], chunk_length,
-                                       ptr_config->target_url);
-        if (status) {
-          LOG(ERROR) << "UploadBuffer failed, status=" << status;
-          exit_code = EXIT_FAILURE;
-          break;
-        }
-        ++num_posts;
-      }
-    }
     Sleep(100);
   }
+
   LOG(INFO) << "stopping encoder...";
   encoder.Stop();
   LOG(INFO) << "stopping uploader...";
   uploader.Stop();
-  return exit_code;
+
+  return EXIT_SUCCESS;
 }
 
 int main(int argc, const char** argv) {
