@@ -149,9 +149,6 @@ class SimpleBlock : public BlockEntry
 public:
     SimpleBlock(Cluster*, long index, long long start, long long size);
 
-    //bool EOS() const;
-    //const Cluster* GetCluster() const;
-    //long GetIndex() const;
     Kind GetKind() const;
     const Block* GetBlock() const;
 
@@ -172,28 +169,113 @@ public:
         long index,
         long long block_start, //absolute pos of block's payload
         long long block_size,  //size of block's payload
-        short prev,
-        short next);
+        long long prev,
+        long long next,
+        long long duration);
 
-    //bool EOS() const;
-    //const Cluster* GetCluster() const;
-    //long GetIndex() const;
     Kind GetKind() const;
     const Block* GetBlock() const;
 
-    short GetPrevTimeCode() const;  //relative to block's time
-    short GetNextTimeCode() const;  //as above
+    long long GetPrevTimeCode() const;  //relative to block's time
+    long long GetNextTimeCode() const;  //as above
+    long long GetDuration() const;
 
 private:
-    //BlockGroup(Cluster*, size_t, unsigned long);
-    //void ParseBlock(long long start, long long size);
-
     Block m_block;
-    const short m_prev;
-    const short m_next;
+    const long long m_prev;
+    const long long m_next;
+    const long long m_duration;
 
 };
 
+///////////////////////////////////////////////////////////////
+// ContentEncoding element
+// Elements used to describe if the track data has been encrypted or
+// compressed with zlib or header stripping.
+class ContentEncoding {
+public:
+    ContentEncoding();
+    ~ContentEncoding();
+
+    // ContentCompression element names
+    struct ContentCompression {
+        ContentCompression();
+        ~ContentCompression();
+
+        unsigned long long algo;
+        unsigned char* settings;
+    };
+
+    // ContentEncryption element names
+    struct ContentEncryption {
+        ContentEncryption();
+        ~ContentEncryption();
+
+        unsigned long long algo;
+        unsigned char* key_id;
+        long long key_id_len;
+        unsigned char* signature;
+        long long signature_len;
+        unsigned char* sig_key_id;
+        long long sig_key_id_len;
+        unsigned long long sig_algo;
+        unsigned long long sig_hash_algo;
+    };
+
+    // Returns ContentCompression represented by |idx|. Returns NULL if |idx|
+    // is out of bounds.
+    const ContentCompression* GetCompressionByIndex(unsigned long idx) const;
+
+    // Returns number of ContentCompression elements in this ContentEncoding
+    // element.
+    unsigned long GetCompressionCount() const;
+
+    // Returns ContentEncryption represented by |idx|. Returns NULL if |idx|
+    // is out of bounds.
+    const ContentEncryption* GetEncryptionByIndex(unsigned long idx) const;
+
+    // Returns number of ContentEncryption elements in this ContentEncoding
+    // element.
+    unsigned long GetEncryptionCount() const;
+
+    // Parses the ContentEncoding element from |pReader|. |start| is the
+    // starting offset of the ContentEncoding payload. |size| is the size in
+    // bytes of the ContentEncoding payload. Returns true on success.
+    bool ParseContentEncodingEntry(long long start,
+                                   long long size,
+                                   IMkvReader* const pReader);
+
+    // Parses the ContentEncryption element from |pReader|. |start| is the
+    // starting offset of the ContentEncryption payload. |size| is the size in
+    // bytes of the ContentEncryption payload. |encryption| is where the parsed
+    // values will be stored.
+    void ParseEncryptionEntry(long long start,
+                              long long size,
+                              IMkvReader* const pReader,
+                              ContentEncryption* const encryption);
+
+    unsigned long long encoding_order() const { return encoding_order_; }
+    unsigned long long encoding_scope() const { return encoding_scope_; }
+    unsigned long long encoding_type() const { return encoding_type_; }
+
+private:
+    // Member variables for list of ContentCompression elements.
+    ContentCompression** compression_entries_;
+    ContentCompression** compression_entries_end_;
+
+    // Member variables for list of ContentEncryption elements.
+    ContentEncryption** encryption_entries_;
+    ContentEncryption** encryption_entries_end_;
+
+    // ContentEncoding element names
+    unsigned long long encoding_order_;
+    unsigned long long encoding_scope_;
+    unsigned long long encoding_type_;
+
+    // LIBWEBM_DISALLOW_COPY_AND_ASSIGN(ContentEncoding);
+    ContentEncoding(const ContentEncoding&);
+    ContentEncoding& operator=(const ContentEncoding&);
+};
 
 class Track
 {
@@ -245,6 +327,11 @@ public:
     virtual bool VetEntry(const BlockEntry*) const = 0;
     virtual long Seek(long long time_ns, const BlockEntry*&) const = 0;
 
+    const ContentEncoding* GetContentEncodingByIndex(unsigned long idx) const;
+    unsigned long GetContentEncodingCount() const;
+
+    void ParseContentEncodingsEntry(long long start, long long size);
+
 protected:
     Track(
         Segment*,
@@ -267,6 +354,9 @@ protected:
 
     EOSBlock m_eos;
 
+private:
+    ContentEncoding** content_encoding_entries_;
+    ContentEncoding** content_encoding_entries_end_;
 };
 
 
@@ -418,22 +508,44 @@ public:
 
     struct Entry
     {
+        //the SeekHead entry payload
         long long id;
         long long pos;
+
+        //absolute pos of SeekEntry ID
+        long long element_start;
+
+        //SeekEntry ID size + size size + payload
+        long long element_size;
     };
 
     int GetCount() const;
     const Entry* GetEntry(int idx) const;
 
+    struct VoidElement
+    {
+        //absolute pos of Void ID
+        long long element_start;
+
+        //ID size + size size + payload size
+        long long element_size;
+    };
+
+    int GetVoidElementCount() const;
+    const VoidElement* GetVoidElement(int idx) const;
+
 private:
     Entry* m_entries;
-    int m_count;
+    int m_entry_count;
 
-    static void ParseEntry(
+    VoidElement* m_void_elements;
+    int m_void_element_count;
+
+    static bool ParseEntry(
         IMkvReader*,
-        long long pos,
+        long long pos,  //payload
         long long size,
-        Entry*&);
+        Entry*);
 
 };
 
@@ -639,10 +751,17 @@ class Segment
     Segment& operator=(const Segment&);
 
 private:
-    Segment(IMkvReader*, long long pos, long long size);
+    Segment(
+        IMkvReader*,
+        long long elem_start,
+        //long long elem_size,
+        long long pos,
+        long long size);
 
 public:
     IMkvReader* const m_pReader;
+    const long long m_element_start;
+    //const long long m_element_size;
     const long long m_start;  //posn of segment payload
     const long long m_size;   //size of segment payload
     Cluster m_eos;  //TODO: make private?
