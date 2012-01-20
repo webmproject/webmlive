@@ -16,6 +16,8 @@
 
 namespace mkvmuxer {
 
+class MkvWriter;
+
 ///////////////////////////////////////////////////////////////
 // Interface used by the mkvmuxer to write out the Mkv data.
 class IMkvWriter {
@@ -32,6 +34,13 @@ class IMkvWriter {
 
   // Returns true if the writer is seekable.
   virtual bool Seekable() const = 0;
+
+  // Element start notification. Called whenever an element identifier is about
+  // to be written to the stream. |element_id| is the element identifier, and
+  // |position| is the location in the WebM stream where the first octet of the
+  // element identifier will be written.
+  // Note: the |MkvId| enumeration in webmids.hpp defines element values.
+  virtual void ElementStartNotify(uint64 element_id, int64 position) = 0;
 
  protected:
   IMkvWriter();
@@ -434,11 +443,18 @@ class Tracks {
 
 ///////////////////////////////////////////////////////////////
 // Cluster element
+//
+// Notes:
+//  |Init| must be called before any other method in this class.
 class Cluster {
  public:
-  // |timecode| is the absolute timecode of the cluster.
-  Cluster(uint64 timecode, IMkvWriter* writer);
+  Cluster(uint64 timecode, int64 cues_pos);
   ~Cluster();
+
+  // |timecode| is the absolute timecode of the cluster. |cues_pos| is the
+  // position for the cluster within the segment that should be written in
+  // the cues element.
+  bool Init(IMkvWriter* ptr_writer);
 
   // Adds a frame to be output in the file. The frame is written out through
   // |writer_| if successful. Returns true on success.
@@ -462,6 +478,9 @@ class Cluster {
   // cluster's size if |writer_| is seekable. Returns true on success.
   bool Finalize();
 
+  // Returns the size in bytes for the entire Cluster element.
+  uint64 Size() const;
+
   int32 blocks_added() const { return blocks_added_; }
   uint64 payload_size() const { return payload_size_; }
   int64 position_for_cues() const { return position_for_cues_; }
@@ -484,7 +503,7 @@ class Cluster {
   uint64 payload_size_;
 
   // The file position used for cue points.
-  int64 position_for_cues_;
+  const int64 position_for_cues_;
 
   // The file position of the cluster's size element.
   int64 size_position_;
@@ -584,6 +603,9 @@ class SegmentInfo {
 ///////////////////////////////////////////////////////////////
 // This class represents the main segment in a WebM file. Currently only
 // supports one Segment element.
+//
+// Notes:
+//  |Init| must be called before any other method in this class.
 class Segment {
  public:
   enum Mode {
@@ -593,8 +615,12 @@ class Segment {
 
   const static uint64 kDefaultMaxClusterDuration = 30000000000ULL;
 
-  explicit Segment(IMkvWriter* writer);
-  virtual ~Segment();
+  Segment();
+  ~Segment();
+
+  // Initializes |SegmentInfo| and returns result. Always returns false when
+  // |ptr_writer| is NULL.
+  bool Init(IMkvWriter* ptr_writer);
 
   // Adds an audio track to the segment. Returns the number of the track on
   // success, 0 on error.
@@ -653,6 +679,18 @@ class Segment {
   // Toggles whether to output a cues element.
   void OutputCues(bool output_cues);
 
+  // Sets if the muxer will output files in chunks or not. |chunking| is a
+  // flag telling whether or not to turn on chunking. |filename| is the base
+  // filename for the chunk files. The header chunk file will be named
+  // |filename|.hdr and the data chunks will be named
+  // |filename|_XXXXXX.chk. Chunking implies that the muxer will be writing
+  // to files so the muxer will use the default MkvWriter class to control
+  // what data is written to what files. Returns true on success.
+  // TODO: Should we change the IMkvWriter Interface to add Open and Close?
+  // That will force the interface to be dependent on files.
+  bool SetChunking(bool chunking, const char* filename);
+
+  bool chunking() const { return chunking_; }
   uint64 cues_track() const { return cues_track_; }
   void set_max_cluster_duration(uint64 max_cluster_duration) {
     max_cluster_duration_ = max_cluster_duration;
@@ -677,6 +715,16 @@ class Segment {
   // Cues elements.
   bool CheckHeaderInfo();
 
+  // Sets |name| according to how many chunks have been written. |ext| is the
+  // file extension. |name| must be deleted by the calling app. Returns true
+  // on success.
+  bool UpdateChunkName(const char* ext, char** name) const;
+
+  // Returns the maximum offset within the segment's payload. When chunking
+  // this function is needed to determine offsets of elements within the
+  // chunked files. Returns -1 on error.
+  int64 MaxOffset();
+
   // Adds the frame to our frame array.
   bool QueueFrame(Frame* frame);
 
@@ -698,6 +746,31 @@ class Segment {
   SeekHead seek_head_;
   SegmentInfo segment_info_;
   Tracks tracks_;
+
+  // Number of chunks written.
+  int chunk_count_;
+
+  // Current chunk filename.
+  char* chunk_name_;
+
+  // Default MkvWriter object created by this class used for writing clusters
+  // out in separate files.
+  MkvWriter* chunk_writer_cluster_;
+
+  // Default MkvWriter object created by this class used for writing Cues
+  // element out to a file.
+  MkvWriter* chunk_writer_cues_;
+
+  // Default MkvWriter object created by this class used for writing the
+  // Matroska header out to a file.
+  MkvWriter* chunk_writer_header_;
+
+  // Flag telling whether or not the muxer is chunking output to multiple
+  // files.
+  bool chunking_;
+
+  // Base filename for the chunked files.
+  char* chunking_base_name_;
 
   // List of clusters.
   Cluster** cluster_list_;
@@ -763,8 +836,10 @@ class Segment {
   // The file position of the element's size.
   int64 size_position_;
 
-  // Pointer to the writer object. Not owned by this class.
-  IMkvWriter* writer_;
+  // Pointer to the writer objects. Not owned by this class.
+  IMkvWriter* writer_cluster_;
+  IMkvWriter* writer_cues_;
+  IMkvWriter* writer_header_;
 
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Segment);
 };
