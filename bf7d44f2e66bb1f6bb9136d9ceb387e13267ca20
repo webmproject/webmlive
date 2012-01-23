@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//8TA\u003d",
+        "filename": "http_client/data_sink.cc",
+        "patchSetId": 9
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-23T19:10:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//8T4\u003d",
+      "revId": "bf7d44f2e66bb1f6bb9136d9ceb387e13267ca20",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//8T8\u003d",
         "filename": "http_client/data_sink.h",
         "patchSetId": 9
@@ -30,6 +48,24 @@
       "writtenOn": "2012-01-23T14:34:35Z",
       "side": 1,
       "message": "2012",
+      "revId": "bf7d44f2e66bb1f6bb9136d9ceb387e13267ca20",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//8S8\u003d",
+        "filename": "http_client/data_sink.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-23T19:10:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//8T8\u003d",
       "revId": "bf7d44f2e66bb1f6bb9136d9ceb387e13267ca20",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//8S4\u003d",
+        "filename": "http_client/http_uploader.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-23T19:10:18Z",
+      "side": 1,
+      "message": "Done/EnqueueTargetUrl",
+      "parentUuid": "AAAAHn//8Tk\u003d",
+      "revId": "bf7d44f2e66bb1f6bb9136d9ceb387e13267ca20",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//8Tw\u003d",
         "filename": "http_client/webm_mux.cc",
         "patchSetId": 9
@@ -64,6 +118,24 @@
       "writtenOn": "2012-01-23T14:34:35Z",
       "side": 1,
       "message": "This looks to be part of IMKVWriter.",
+      "revId": "bf7d44f2e66bb1f6bb9136d9ceb387e13267ca20",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//8S0\u003d",
+        "filename": "http_client/webm_mux.cc",
+        "patchSetId": 9
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-23T19:10:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//8Tw\u003d",
       "revId": "bf7d44f2e66bb1f6bb9136d9ceb387e13267ca20",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//8Sw\u003d",
+        "filename": "http_client/webm_mux.cc",
+        "patchSetId": 9
+      },
+      "lineNbr": 214,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-23T19:10:18Z",
+      "side": 1,
+      "message": "Yes/Done.",
+      "parentUuid": "AAAAHn//8To\u003d",
+      "revId": "bf7d44f2e66bb1f6bb9136d9ceb387e13267ca20",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//8T0\u003d",
         "filename": "http_client/webm_mux.h",
         "patchSetId": 9
@@ -98,6 +188,24 @@
       "writtenOn": "2012-01-23T14:34:35Z",
       "side": 1,
       "message": "2012",
+      "revId": "bf7d44f2e66bb1f6bb9136d9ceb387e13267ca20",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//8Ss\u003d",
+        "filename": "http_client/webm_mux.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-23T19:10:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//8T0\u003d",
       "revId": "bf7d44f2e66bb1f6bb9136d9ceb387e13267ca20",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
