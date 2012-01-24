@@ -86,7 +86,7 @@ int WebmEncoder::OnVideoFrameReceived(VideoFrame* ptr_frame) {
     if (status != VideoFrameQueue::kFull) {
       LOG(ERROR) << "VideoFrameQueue Push failed! " << status;
     }
-    return kVideoFrameDropped;
+    return VideoFrameCallbackInterface::kDropped;
   }
   LOG(INFO) << "OnVideoFrameReceived pushed frame.";
   return kSuccess;
