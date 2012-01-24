@@ -9,10 +9,12 @@
 #define HTTP_CLIENT_HTTP_UPLOADER_H_
 
 #include <map>
+#include <queue>
 #include <string>
 
 #include "boost/scoped_ptr.hpp"
 #include "http_client/basictypes.h"
+#include "http_client/data_sink.h"
 #include "http_client/http_client_base.h"
 
 namespace webmlive {
@@ -59,13 +61,17 @@ struct HttpUploaderStats {
   int64 total_bytes_uploaded;
 };
 
-// TODO(tomfinegan): The comments in here are far from adequate!
-
 class HttpUploaderImpl;
 
-// Pimpl idiom based HTTP uploader. The reason the implementation is hidden is
-// mainly to avoid shoving libcurl in the face of all code using the uploader.
-class HttpUploader {
+// Pimpl idiom based HTTP uploader that hides the gory details of libcurl from
+// users of the uploader.
+//
+// Notes:
+// - |Init| must be called before any other method.
+// - |EnqueueTargetUrl| must be used to control target for HTTP requests. URLs
+//   enqueued are used in sequence, and only removed from the queue after
+//   successful uploads.
+class HttpUploader : public DataSinkInterface {
  public:
   enum {
     // Bad URL.
@@ -93,11 +99,11 @@ class HttpUploader {
     kUploadInProgress = 1,
   };
   HttpUploader();
-  ~HttpUploader();
+  virtual ~HttpUploader();
 
   // Tests for upload completion. Returns true when the uploader is ready to
   // start an upload. Always returns true when no uploads have been attempted.
-  bool UploadComplete();
+  bool UploadComplete() const;
 
   // Constructs |HttpUploaderImpl|, which copies |settings|. Returns |kSuccess|
   // upon success.
@@ -113,10 +119,19 @@ class HttpUploader {
   // Stops the uploader thread.
   int Stop();
 
-  // Sends a buffer to the uploader thread, and updates the POST target if
-  // |target_url| is non-empty.
-  int UploadBuffer(const uint8* const ptr_buffer, int32 length,
-                   const std::string& target_url);
+  // Sends a buffer to the uploader thread using an URL from |url_queue_|. Use
+  // |EnqueueTargetUrl| to set target URLs.
+  int UploadBuffer(const uint8* ptr_buffer, int32 length);
+
+  // Calls |HttpUploaderImpl::EnqueueTargetUrl| to enqueue |target_url|.
+  void EnqueueTargetUrl(const std::string& target_url);
+
+  // DataSinkInterface methods.
+  virtual bool Ready() const { return UploadComplete(); }
+  virtual bool WriteData(const uint8* ptr_buffer, int32 length) {
+    return (UploadBuffer(ptr_buffer, length) == kSuccess);
+  }
+
  private:
   // Pointer to uploader implementation.
   boost::scoped_ptr<HttpUploaderImpl> ptr_uploader_;
