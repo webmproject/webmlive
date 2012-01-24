@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -42,103 +42,139 @@ class HttpUploaderImpl {
     // Libcurl reported an unexpected error.
     kLibCurlError = -401,
     kSuccess = 0,
+
     // Constant value used to stop libcurl when |StopRequested| returns true
     // in |WriteCallback|.
     kWriteCallbackStopRequest = 0,
+
     // Constant value used to stop libcurl when |StopRequested| returns true
     // in |ProgressCallback|.
     kProgressCallbackStopRequest = 1,
+
     // Returned by |Upload| when |WaitForUserData| was notified with an
     // unlocked |upload_buffer_|, which means |Stop| is waiting for
     // |UploadThread| to exit.
     kStopping = 2,
   };
+
   HttpUploaderImpl();
   ~HttpUploaderImpl();
+
   // Returns true when the uploader is ready to start an upload. Always returns
   // true when no uploads have been attempted.
   bool UploadComplete();
+
   // Copies user settings and configures libcurl.
   int Init(const HttpUploaderSettings& settings);
+
   // Locks |mutex_| and copies current stats to |ptr_stats|.
   int GetStats(HttpUploaderStats* ptr_stats);
+
   // Runs |UploadThread|, and starts waiting for user data.
   int Run();
+
   // Uploads user data.
   int UploadBuffer(const uint8* const ptr_buffer, int32 length,
                    const std::string& target_url);
+
   // Stops the uploader.
   int Stop();
+
  private:
   // Used by |UploadThread|. Returns true if user has called |Stop|.
   bool StopRequested();
+
   // Pass our callbacks, |ProgressCallback| and |WriteCallback|, to libcurl.
   CURLcode SetCurlCallbacks();
+
   // Pass user HTTP headers to libcurl, and disable HTTP 100 responses.
   CURLcode SetHeaders();
+
   // Configures libcurl to POST data buffers as file data in a form/multipart
   // HTTP POST.
   int SetupFormPost(const uint8* const ptr_buffer, int32 length);
+
   // Configures libcurl to POST data buffers as HTTP POST content-data.
   int SetupPost(const uint8* const ptr_buffer, int32 length);
+
   // Upload user data with libcurl.
   int Upload();
+
   // Wakes up |UploadThread| when users pass data through |UploadBuffer|.
   int WaitForUserData();
+
   // Libcurl progress callback function.  Acquires |mutex_| and updates
   // |stats_|.
   static int ProgressCallback(void* ptr_this,
                               double, double,  // we ignore download progress
                               double upload_total, double upload_current);
+
   // Logs HTTP response data received by libcurl.
   static size_t WriteCallback(char* buffer, size_t size, size_t nitems,
                               void* ptr_this);
+
   // Acquires |mutex_|, resets |stats_| and sets |start_ticks_|.
   void ResetStats();
+
   // Thread function. Wakes when |WaitForUserData| is notified by
   // |UploadBuffer|, and calls |Upload| to POST user data to the HTTP server
   // using libcurl.
   void UploadThread();
+
   // Stop flag. Internal callers use |StopRequested| to allow for
   // synchronization via |mutex_|.  Set by |Stop|, and responded to in
   // |UploadThread|.
   bool stop_;
+
   // Upload complete/ready to upload flag.  Initializes to true to allow
   // users of the uploader to base all Upload calls on |UploadComplete|.
   bool upload_complete_;
+
   // Condition variable used to wake |UploadThread| when a user code passes a
   // buffer to |UploadBuffer|.
   boost::condition_variable buffer_ready_;
+
   // Mutex for synchronization of public method calls with |UploadThread|
   // activity.
   boost::mutex mutex_;
+
   // Thread object.
   boost::shared_ptr<boost::thread> upload_thread_;
+
   // Uploader start time.  Reset when via |ResetStatts| when |Init| is called.
   clock_t start_ticks_;
+
   // Libcurl pointer.
   CURL* ptr_curl_;
+
   // Libcurl form variable/data chain.
   curl_httppost* ptr_form_;
+
   // Pointer to end of libcurl form chain.
   curl_httppost* ptr_form_end_;
+
   // Pointer to list of user HTTP headers.
   curl_slist* ptr_headers_;
+
   // Uploader settings.
   HttpUploaderSettings settings_;
+
   // Basic stats stored by |ProgressCallback|.
   HttpUploaderStats stats_;
+
   // Simple buffer object that remains locked while libcurl uploads data in
   // |Upload|.  This second locking mechanism is in place to allow |mutex_| to
   // be unlocked while uploads are in progress (which prevents public methods
   // from blocking).
   LockableBuffer upload_buffer_;
+
   // The name of the file on the local system.  Note that it is not being read,
   // it's information included within the form data contained within the HTTP
   // post.
   std::string local_file_name_;
   // Target URL for HTTP POSTs
   std::string target_url_;
+
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
 
@@ -239,29 +275,35 @@ bool HttpUploaderImpl::UploadComplete() {
 int HttpUploaderImpl::Init(const HttpUploaderSettings& settings) {
   // copy user settings
   settings_ = settings;
-  // init libcurl
+
+  // Init libcurl.
   ptr_curl_ = curl_easy_init();
   if (!ptr_curl_) {
     LOG(ERROR) << "curl_easy_init failed!";
     return kLibCurlError;
   }
-  // enable progress reports
+
+  // Enable progress reports from libcurl.
   CURLcode curl_ret = curl_easy_setopt(ptr_curl_, CURLOPT_NOPROGRESS, FALSE);
   if (curl_ret != CURLE_OK) {
     LOG_CURL_ERR(curl_ret, "curl progress enable failed.");
     return kLibCurlError;
   }
-  // set callbacks
+
+  // Set callbacks.
   curl_ret = SetCurlCallbacks();
   if (curl_ret != CURLE_OK) {
     LOG_CURL_ERR(curl_ret, "curl callback setup failed.");
     return kLibCurlError;
   }
+
+  // Disable HTTP 100 responses, and set user HTTP headers.
   curl_ret = SetHeaders();
   if (curl_ret) {
     LOG_CURL_ERR(curl_ret, "unable to set headers.");
     return HttpUploader::kHeaderError;
   }
+
   local_file_name_ = settings_.local_file;
   ResetStats();
   return kSuccess;
@@ -311,12 +353,14 @@ int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length,
       LOG(ERROR) << "No target URL!";
       return HttpUploader::kUrlConfigError;
     }
+
     // Lock obtained; (re)initialize |upload_buffer_| with the user data...
     status = upload_buffer_.Init(ptr_buf, length);
     if (status) {
       LOG(ERROR) << "upload_buffer_ Init failed, status=" << status;
       return status;
     }
+
     // Lock |upload_buffer_|; it's unlocked by |UploadThread| once libcurl
     // finishes its run.
     status = upload_buffer_.Lock();
@@ -325,6 +369,7 @@ int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length,
       return status;
     }
     upload_complete_ = false;
+
     // Wake |UploadThread|.
     LOG(INFO) << "waking uploader with " << length << " bytes";
     buffer_ready_.notify_one();
@@ -497,6 +542,7 @@ int HttpUploaderImpl::Upload() {
     LOG(INFO) << "woke with unlocked buffer, stopping.";
     return kStopping;
   }
+
   uint8* ptr_data = NULL;
   int32 length = 0;
   int status = upload_buffer_.GetBuffer(&ptr_data, &length);
@@ -504,6 +550,7 @@ int HttpUploaderImpl::Upload() {
     LOG(ERROR) << "error, could not get buffer pointer, status=" << status;
     return HttpUploader::kRunFailed;
   }
+
   LOG(INFO) << "upload buffer size=" << length;
   CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_URL,
                                   target_url_.c_str());
@@ -511,6 +558,7 @@ int HttpUploaderImpl::Upload() {
     LOG_CURL_ERR(err, "could not pass URL to curl.");
     return HttpUploader::kUrlConfigError;
   }
+
   if (settings_.post_mode == webmlive::HTTP_FORM_POST) {
     if (SetupFormPost(ptr_data, length)) {
       LOG(ERROR) << "SetupFormPost failed!";
@@ -522,6 +570,7 @@ int HttpUploaderImpl::Upload() {
       return HttpUploader::kRunFailed;
     }
   }
+
   err = curl_easy_perform(ptr_curl_);
   if (err != CURLE_OK) {
     LOG_CURL_ERR(err, "curl_easy_perform failed.");
@@ -530,6 +579,7 @@ int HttpUploaderImpl::Upload() {
     curl_easy_getinfo(ptr_curl_, CURLINFO_RESPONSE_CODE, &resp_code);
     LOG(INFO) << "server response code: " << resp_code;
   }
+
   // Update total bytes uploaded.
   double bytes_uploaded = 0;
   err = curl_easy_getinfo(ptr_curl_, CURLINFO_SIZE_UPLOAD, &bytes_uploaded);
@@ -540,6 +590,7 @@ int HttpUploaderImpl::Upload() {
     stats_.bytes_sent_current = 0;
     stats_.total_bytes_uploaded += static_cast<int64>(bytes_uploaded);
   }
+
   return kSuccess;
 }
 
