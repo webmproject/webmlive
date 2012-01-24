@@ -164,7 +164,11 @@ HRESULT VideoSinkPin::Receive(IMediaSample* ptr_sample) {
   CAutoLock lock(&ptr_filter->filter_lock_);
   HRESULT hr = CBaseInputPin::Receive(ptr_sample);
   if (FAILED(hr)) {
-    LOG(ERROR) << "CBaseInputPin::Receive failed. " << HRLOG(hr);
+    if (hr != VFW_E_WRONG_STATE) {
+      // Log the error only when it is not |VFW_E_WRONG_STATE|. The filter
+      // graph appears to always call |Receive()| once after |Stop()|.
+      LOG(ERROR) << "CBaseInputPin::Receive failed. " << HRLOG(hr);
+    }
     return hr;
   }
   hr = ptr_filter->OnFrameReceived(ptr_sample);
