@@ -7,8 +7,9 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "http_client/http_uploader.h"
 
-#include <time.h>
-
+#include <ctime>
+#include <queue>
+#include <string>
 #include <vector>
 
 #include "boost/shared_ptr.hpp"
@@ -38,6 +39,7 @@ static const int kBytesRequiredForResume = 32*1024;
 
 class HttpUploaderImpl {
  public:
+  typedef std::queue<std::string> UrlQueue;
   enum {
     // Libcurl reported an unexpected error.
     kLibCurlError = -401,
@@ -62,7 +64,7 @@ class HttpUploaderImpl {
 
   // Returns true when the uploader is ready to start an upload. Always returns
   // true when no uploads have been attempted.
-  bool UploadComplete();
+  bool UploadComplete() const;
 
   // Copies user settings and configures libcurl.
   int Init(const HttpUploaderSettings& settings);
@@ -74,11 +76,14 @@ class HttpUploaderImpl {
   int Run();
 
   // Uploads user data.
-  int UploadBuffer(const uint8* const ptr_buffer, int32 length,
-                   const std::string& target_url);
+  int UploadBuffer(const uint8* ptr_buffer, int32 length);
 
   // Stops the uploader.
   int Stop();
+
+  // Adds |target_url| to |url_queue_|. Each time |UploadBuffer| is called, an
+  // URL is popped off the queue and assigned to |target_url_|
+  void EnqueueTargetUrl(const std::string& target_url);
 
  private:
   // Used by |UploadThread|. Returns true if user has called |Stop|.
@@ -135,8 +140,8 @@ class HttpUploaderImpl {
   boost::condition_variable buffer_ready_;
 
   // Mutex for synchronization of public method calls with |UploadThread|
-  // activity.
-  boost::mutex mutex_;
+  // activity. Mutable so |UploadComplete()| can be a const method.
+  mutable boost::mutex mutex_;
 
   // Thread object.
   boost::shared_ptr<boost::thread> upload_thread_;
@@ -172,8 +177,13 @@ class HttpUploaderImpl {
   // it's information included within the form data contained within the HTTP
   // post.
   std::string local_file_name_;
-  // Target URL for HTTP POSTs
+
+  // Last URL read from |url_queue_|. Used repeatedly once |url_queue_| is
+  // empty.
   std::string target_url_;
+
+  // Queue of target URLs.
+  UrlQueue url_queue_;
 
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(HttpUploaderImpl);
 };
@@ -189,7 +199,7 @@ HttpUploader::~HttpUploader() {
 }
 
 // Return result of |UploadeComplete| on |ptr_uploader_|.
-bool HttpUploader::UploadComplete() {
+bool HttpUploader::UploadComplete() const {
   return ptr_uploader_->UploadComplete();
 }
 
@@ -224,9 +234,12 @@ int HttpUploader::Stop() {
 }
 
 // Return result of |UploadBuffer| on |ptr_uploader_|.
-int HttpUploader::UploadBuffer(const uint8* const ptr_buffer, int32 length,
-                               const std::string& target_url) {
-  return ptr_uploader_->UploadBuffer(ptr_buffer, length, target_url);
+int HttpUploader::UploadBuffer(const uint8* ptr_buffer, int32 length) {
+  return ptr_uploader_->UploadBuffer(ptr_buffer, length);
+}
+
+void HttpUploader::EnqueueTargetUrl(const std::string& target_url) {
+  ptr_uploader_->EnqueueTargetUrl(target_url);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -259,7 +272,7 @@ HttpUploaderImpl::~HttpUploaderImpl() {
 }
 
 // Obtain lock on |mutex_| and return value of |upload_complete_|.
-bool HttpUploaderImpl::UploadComplete() {
+bool HttpUploaderImpl::UploadComplete() const {
   bool complete = false;
   boost::mutex::scoped_try_lock lock(mutex_);
   if (lock.owns_lock()) {
@@ -341,13 +354,12 @@ int HttpUploaderImpl::Run() {
 // buffer is unlocked, |UploadBuffer| locks the buffer and notifies the upload
 // thread through call to |notify_one| on the |buffer_ready_| condition
 // variable.
-int HttpUploaderImpl::UploadBuffer(const uint8* const ptr_buf, int32 length,
-                                   const std::string& target_url) {
+int HttpUploaderImpl::UploadBuffer(const uint8* ptr_buf, int32 length) {
   int status = HttpUploader::kUploadInProgress;
   boost::mutex::scoped_try_lock lock(mutex_);
   if (lock.owns_lock() && !upload_buffer_.IsLocked()) {
-    if (!target_url.empty()) {
-      target_url_ = target_url;
+    if (!url_queue_.empty()) {
+      target_url_ = url_queue_.front();
     }
     if (target_url_.empty()) {
       LOG(ERROR) << "No target URL!";
@@ -396,6 +408,11 @@ int HttpUploaderImpl::Stop() {
   lock.unlock();
   upload_thread_->join();
   return kSuccess;
+}
+
+void HttpUploaderImpl::EnqueueTargetUrl(const std::string& target_url) {
+  boost::mutex::scoped_lock(mutex_);
+  url_queue_.push(target_url);
 }
 
 // Try to obtain lock on |mutex_|, and return the value of |stop_| if lock is
@@ -578,6 +595,11 @@ int HttpUploaderImpl::Upload() {
     int resp_code = 0;
     curl_easy_getinfo(ptr_curl_, CURLINFO_RESPONSE_CODE, &resp_code);
     LOG(INFO) << "server response code: " << resp_code;
+
+    // Upload was successful, pop the target url off of the queue.
+    if (!url_queue_.empty()) {
+      url_queue_.pop();
+    }
   }
 
   // Update total bytes uploaded.
