@@ -201,6 +201,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\data_sink.h"
+				>
+			</File>
+			<File
 				RelativePath=".\file_reader.cc"
 				>
 			</File>
