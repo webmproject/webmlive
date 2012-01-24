@@ -209,14 +209,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\file_reader.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\file_reader.h"
-				>
-			</File>
-			<File
 				RelativePath=".\http_client_base.h"
 				>
 			</File>
@@ -269,14 +261,6 @@
 				>
 				<File
 					RelativePath=".\win\build_config_win.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\win\file_reader_win.cc"
-					>
-				</File>
-				<File
-					RelativePath=".\win\file_reader_win.h"
 					>
 				</File>
 				<File
