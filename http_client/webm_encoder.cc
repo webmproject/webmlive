@@ -41,6 +41,8 @@ int WebmEncoder::Init(const WebmEncoderConfig& config) {
     return kInitFailed;
   }
   config_.actual_video_config = ptr_media_source_->actual_video_config();
+
+  // Initialize the video encoder.
   status = video_encoder_.Init(config_);
   if (status) {
     LOG(ERROR) << "video encoder Init failed " << status;
