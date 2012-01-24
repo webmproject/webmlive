@@ -109,8 +109,6 @@ class MediaSourceImpl;
 class WebmEncoder : public VideoFrameCallbackInterface {
  public:
   enum {
-    // VideoFrame dropped.
-    kVideoFrameDropped = -116,
     // AV capture source stopped on its own.
     kAVCaptureStopped = -115,
     // AV capture implementation unable to setup video frame sink.
