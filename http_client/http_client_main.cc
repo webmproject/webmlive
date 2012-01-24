@@ -17,7 +17,6 @@
 #include "boost/scoped_array.hpp"
 #include "glog/logging.h"
 #include "http_client/buffer_util.h"
-#include "http_client/file_reader.h"
 #include "http_client/http_uploader.h"
 #include "http_client/webm_encoder.h"
 
