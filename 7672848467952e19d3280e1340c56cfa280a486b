@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//7jU\u003d",
+        "filename": "http_client/data_sink.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-24T15:22:53Z",
+      "side": 1,
+      "message": "Removed file.",
+      "parentUuid": "AAAAHn//7uo\u003d",
+      "revId": "7672848467952e19d3280e1340c56cfa280a486b",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//7uc\u003d",
         "filename": "http_client/data_sink.h",
         "patchSetId": 1
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//7jY\u003d",
+        "filename": "http_client/data_sink.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-24T15:22:53Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//7uc\u003d",
+      "revId": "7672848467952e19d3280e1340c56cfa280a486b",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//7uk\u003d",
         "filename": "http_client/data_sink.h",
         "patchSetId": 1
@@ -47,6 +83,24 @@
       "writtenOn": "2012-01-24T02:28:45Z",
       "side": 1,
       "message": "this should be const\u0026",
+      "revId": "7672848467952e19d3280e1340c56cfa280a486b",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//7jQ\u003d",
+        "filename": "http_client/data_sink.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-24T15:22:53Z",
+      "side": 1,
+      "message": "Not following-- make the uint8* const\u0026?",
+      "parentUuid": "AAAAHn//7uk\u003d",
       "revId": "7672848467952e19d3280e1340c56cfa280a486b",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
