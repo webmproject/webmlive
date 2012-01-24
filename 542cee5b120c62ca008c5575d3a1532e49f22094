@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//7G4\u003d",
+        "filename": "http_client/webm_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-24T23:51:00Z",
+      "side": 1,
+      "message": "should you condense these to just check an is_initialized bool?",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//7Gg\u003d",
+        "filename": "http_client/webm_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-24T23:51:00Z",
+      "side": 1,
+      "message": "are the status values not worth logging?",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//7GU\u003d",
+        "filename": "http_client/webm_mux.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-24T23:51:00Z",
+      "side": 1,
+      "message": "should be a pointer if non-const. Though then you\u0027d want an Init() I suppose.",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//7F8\u003d",
+        "filename": "http_client/webm_mux.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-24T23:51:00Z",
+      "side": 1,
+      "message": "these can be const\u0026 no?",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//7Fk\u003d",
+        "filename": "http_client/webm_mux.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-24T23:51:00Z",
+      "side": 1,
+      "message": "2012",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//7Eo\u003d",
+        "filename": "http_client/webm_mux.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-24T23:51:00Z",
+      "side": 1,
+      "message": "OK I see the reason for the pointer now. I wonder if some other formulation would satisfy things, Add/Add/Init()?",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
