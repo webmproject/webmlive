@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//7uE\u003d",
+        "filename": "http_client/win/video_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-24T02:30:06Z",
+      "side": 1,
+      "message": "do you store your own state that you can verify that against? If so maybe add that condition to the log.",
+      "revId": "64c6d4b6abee6b8e2e7219bd4ee3c682348b399d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
