@@ -127,7 +127,6 @@ int32 VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
                                                   raw_frame.height(),
                                                   1,  // Alignment.
                                                   raw_frame.buffer());
-  DCHECK_EQ(&vpx_image, ptr_vpx_image);
 
   const vpx_enc_frame_flags_t flags = force_keyframe ? VPX_EFLAG_FORCE_KF : 0;
   const uint32 duration = static_cast<uint32>(raw_frame.duration());
