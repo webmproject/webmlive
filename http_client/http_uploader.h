@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -26,18 +26,24 @@ struct HttpUploaderSettings {
   // Form variables and HTTP headers are stored within
   // map<std::string,std::string>.
   typedef std::map<std::string, std::string> StringMap;
+
   // |local_file| is what the HTTP server sees as the local file name.
   // Assigning a path to a local file and passing the settings struct to
   // |HttpUploader::Init| will not upload an existing file.
   std::string local_file;
+
   // User form variables.
   StringMap form_variables;
+
   // User HTTP headers.
   StringMap headers;
+
   // HTTP post data stream name.
   std::string stream_name;
+
   // Data stream ID.
   std::string stream_id;
+
   // Post mode
   UploadMode post_mode;
 };
@@ -45,8 +51,10 @@ struct HttpUploaderSettings {
 struct HttpUploaderStats {
   // Upload average bytes per second.
   double bytes_per_second;
+
   // Bytes sent for current upload.
   int64 bytes_sent_current;
+
   // Total number of bytes uploaded.
   int64 total_bytes_uploaded;
 };
@@ -62,36 +70,49 @@ class HttpUploader {
   enum {
     // Bad URL.
     kUrlConfigError = -307,
+
     // Bad user HTTP header, or error passing header to libcurl.
     kHeaderError = -305,
+
     // Bad user Form variable, or error passsing it to libcurl.
     kFormError = -304,
+
     // Invalid argument supplied to method call.
     kInvalidArg = -303,
+
     // Uploader |Init| failed.
     kInitFailed = -302,
+
     // Uploader |Run| failed.
     kRunFailed = -301,
+
     // Success.
     kSuccess = 0,
+
     // Upload already running.
     kUploadInProgress = 1,
   };
   HttpUploader();
   ~HttpUploader();
+
   // Tests for upload completion. Returns true when the uploader is ready to
   // start an upload. Always returns true when no uploads have been attempted.
   bool UploadComplete();
+
   // Constructs |HttpUploaderImpl|, which copies |settings|. Returns |kSuccess|
   // upon success.
   int Init(const HttpUploaderSettings& settings);
+
   // Returns the current upload stats. Note, obtains lock before copying stats
   // to |ptr_stats|.
   int GetStats(HttpUploaderStats* ptr_stats);
+
   // Runs the uploader thread.
   int Run();
+
   // Stops the uploader thread.
   int Stop();
+
   // Sends a buffer to the uploader thread, and updates the POST target if
   // |target_url| is non-empty.
   int UploadBuffer(const uint8* const ptr_buffer, int32 length,
