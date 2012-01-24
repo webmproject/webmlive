@@ -157,8 +157,8 @@ VideoFrameQueue::~VideoFrameQueue() {
 // Obtains lock and populates |frame_pool_| with |VideoFrame| pointers.
 int32 VideoFrameQueue::Init() {
   boost::mutex::scoped_lock lock(mutex_);
-  DCHECK(frame_pool_.empty());
-  DCHECK(active_frames_.empty());
+  CHECK(frame_pool_.empty());
+  CHECK(active_frames_.empty());
   for (int i = 0; i < kQueueLength; ++i) {
     VideoFrame* const ptr_frame = new (std::nothrow) VideoFrame;  // NOLINT
     if (!ptr_frame) {
