@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -111,51 +111,72 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   enum {
     // AV capture source stopped on its own.
     kAVCaptureStopped = -115,
+
     // AV capture implementation unable to setup video frame sink.
     kVideoSinkError = -114,
+
     // Encoder implementation unable to configure audio source.
     kAudioConfigureError = -113,
+
     // Encoder implementation unable to configure video source.
     kVideoConfigureError = -112,
+
     // Encoder implementation unable to monitor encoder state.
     kEncodeMonitorError = -111,
+
     // Encoder implementation unable to control encoder.
     kEncodeControlError = -110,
+
     // Encoder implementation file writing related error.
     kFileWriteError = -109,
+
     // Encoder implementation WebM muxing related error.
     kWebmMuxerError = -108,
+
     // Encoder implementation audio encoding related error.
     kAudioEncoderError = -107,
+
     // Encoder implementation video encoding related error.
     kVideoEncoderError = -106,
+
     // Invalid argument passed to method.
     kInvalidArg = -105,
+
     // Operation not implemented.
     kNotImplemented = -104,
+
     // Unable to find an audio source.
     kNoAudioSource = -103,
+
     // Unable to find a video source.
     kNoVideoSource = -102,
+
     // Encoder implementation initialization failed.
     kInitFailed = -101,
+
     // Cannot run the encoder.
     kRunFailed = -100,
     kInvaligArg = -1,
     kSuccess = 0,
   };
+
   WebmEncoder();
   ~WebmEncoder();
+
   // Initializes the encoder. Returns |kSuccess| upon success, or one of the
   // above status codes upon failure.
   int Init(const WebmEncoderConfig& config);
+
   // Runs the encoder. Returns |kSuccess| when successful, or one of the above
   // status codes upon failure.
   int Run();
+
   // Stops the encoder.
   void Stop();
+
   // Returns encoded duration in seconds.
   double encoded_duration();
+
   // Returns |WebmEncoderConfig| with fields set to default values.
   static WebmEncoderConfig DefaultConfig();
   WebmEncoderConfig config() const { return config_; }
@@ -169,22 +190,29 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   bool StopRequested();
   // Encoding thread function.
   void EncoderThread();
+
   // Flag protected by |mutex_| and used by |EncoderThread| via |StopRequested|
   // to determine when to terminate.
   bool stop_;
+
   // Pointer to platform specific audio/video source object implementation.
   boost::scoped_ptr<MediaSourceImpl> ptr_media_source_;
+
   // Mutex providing synchronization between user interface and encoder thread.
   boost::mutex mutex_;
+
   // Encoder thread object.
   boost::shared_ptr<boost::thread> encode_thread_;
+
   // Queue used to push video frames from |MediaSourceImpl| into
   // |EncoderThread|.
   VideoFrameQueue video_queue_;
+
   // Most recent frame from |video_queue_|.
   VideoFrame video_frame_;
   // Video encoder.
   VideoEncoder video_encoder_;
+
   // Encoder configuration.
   WebmEncoderConfig config_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoder);
