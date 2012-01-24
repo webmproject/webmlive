@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)..&quot;;&quot;$(ProjectDir)..\third_party&quot;;&quot;$(ProjectDir)..\third_party\boost\include&quot;;&quot;$(DIRECTSHOW_BASECLASSES)&quot;;&quot;$(DIRECTSHOW_BASECLASSES)\..&quot;;&quot;$(ProjectDir)..\third_party\libogg&quot;;&quot;$(ProjectDir)..\third_party\libvorbis&quot;;&quot;$(ProjectDir)..\third_party\libvpx\vpx&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)..&quot;;&quot;$(ProjectDir)..\third_party&quot;;&quot;$(ProjectDir)..\third_party\boost\include&quot;;&quot;$(DIRECTSHOW_BASECLASSES)&quot;;&quot;$(DIRECTSHOW_BASECLASSES)\..&quot;;&quot;$(ProjectDir)..\third_party\libogg&quot;;&quot;$(ProjectDir)..\third_party\libvorbis&quot;;&quot;$(ProjectDir)..\third_party\libvpx\vpx&quot;;&quot;$(ProjectDir)..\third_party\libyuv\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;BOOST_NO_EXCEPTIONS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -123,7 +123,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)..&quot;;&quot;$(ProjectDir)..\third_party&quot;;&quot;$(ProjectDir)..\third_party\boost\include&quot;;&quot;$(DIRECTSHOW_BASECLASSES)&quot;;&quot;$(DIRECTSHOW_BASECLASSES)\..&quot;;&quot;$(ProjectDir)..\third_party\libogg&quot;;&quot;$(ProjectDir)..\third_party\libvorbis&quot;;&quot;$(ProjectDir)..\third_party\libvpx\vpx&quot;"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)..&quot;;&quot;$(ProjectDir)..\third_party&quot;;&quot;$(ProjectDir)..\third_party\boost\include&quot;;&quot;$(DIRECTSHOW_BASECLASSES)&quot;;&quot;$(DIRECTSHOW_BASECLASSES)\..&quot;;&quot;$(ProjectDir)..\third_party\libogg&quot;;&quot;$(ProjectDir)..\third_party\libvorbis&quot;;&quot;$(ProjectDir)..\third_party\libvpx\vpx&quot;;&quot;$(ProjectDir)..\third_party\libyuv\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;BOOST_NO_EXCEPTIONS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
@@ -1245,6 +1245,46 @@
 				</File>
 				<File
 					RelativePath="..\third_party\libvorbis\vorbis\vorbisenc.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="libyuv"
+				>
+				<File
+					RelativePath="..\third_party\libyuv\include\libyuv\basic_types.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libyuv\include\libyuv\compare.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libyuv\include\libyuv\convert.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libyuv\include\libyuv\cpu_id.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libyuv\include\libyuv\format_conversion.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libyuv\include\libyuv\planar_functions.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libyuv\include\libyuv\rotate.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libyuv\include\libyuv\scale.h"
+					>
+				</File>
+				<File
+					RelativePath="..\third_party\libyuv\include\libyuv\video_common.h"
 					>
 				</File>
 			</Filter>
