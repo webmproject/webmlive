@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//6UI\u003d",
+        "filename": "http_client/win/video_sink_filter.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-25T20:34:01Z",
+      "side": 1,
+      "message": "should this be set in the constructor?",
+      "revId": "70a49cf515f88e3f6e3c74391691e5f49d0e69c0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
