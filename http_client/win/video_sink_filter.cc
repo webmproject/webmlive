@@ -148,10 +148,15 @@ HRESULT VideoSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
     // always calls |CheckMediaType|.
     actual_config_.width = ptr_video_info->bmiHeader.biWidth;
     actual_config_.height = abs(ptr_video_info->bmiHeader.biHeight);
+
+    // Store the stride for use with |VideoFrame::Init()|-- it's needed for
+    // format conversion.
+    stride_ = DIBWIDTHBYTES(ptr_video_info->bmiHeader);
   }
   LOG(INFO) << "\n CheckMediaType actual settings\n"
             << "   width=" << requested_config_.width << "\n"
-            << "   height=" << requested_config_.height;
+            << "   height=" << requested_config_.height << "\n"
+            << "   stride=" << stride_;
   return S_OK;
 }
 

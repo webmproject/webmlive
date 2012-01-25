@@ -93,6 +93,10 @@ class VideoSinkPin : public CBaseInputPin {
 
   // Actual video config (from upstream filter).
   VideoConfig actual_config_;
+
+  // Video frame stride.
+  int32 stride_;
+
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoSinkPin);
   friend class VideoSinkFilter;
 };
