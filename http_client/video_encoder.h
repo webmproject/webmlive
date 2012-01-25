@@ -22,13 +22,19 @@ namespace webmlive {
 enum VideoFormat {
   kVideoFormatI420 = 0,
   kVideoFormatVP8 = 1,
-  kVideoFormatCount = 2,
+  kVideoFormatYV12 = 3,
+  kVideoFormatYUY2 = 4,
+  kVideoFormatUYVY = 5,
+  kVideoFormatBGR = 6,
+  kVideoFormatBGRA = 7,
+  kVideoFormatCount = 8,
 };
 
 // Storage class for video frames. Supports I420 and VP8 frames.
 class VideoFrame {
  public:
   enum {
+    kConversionFailed = -3,
     kNoMemory = -2,
     kInvalidArg = -1,
     kSuccess = 0,
@@ -38,11 +44,19 @@ class VideoFrame {
 
   // Allocates storage for |ptr_data|, sets internal fields to values of
   // caller's args, and returns |kSuccess|. Returns |kInvalidArg| when
-  // |ptr_data| is NULL, and |format| is not |kVideoFormatI420| or
-  // |kVideoFormatVP8|. Returns |kNoMemory| when unable to allocate storage
-  // for |ptr_data|.
-  int32 Init(VideoFormat format, bool keyframe, int32 width, int32 height,
-             int64 timestamp, int64 duration, const uint8* ptr_data,
+  // |ptr_data| is NULL. Returns |kConversionFailed| when and |format| is not
+  // a |VideoFormat| enumeration value. Returns |kNoMemory| when unable to
+  // allocate storagefor |ptr_data|.
+  // Note: When format is neither |kVideoFormatI420| nor |kVideoFormatVP8|,
+  //       converts data to I420 before storing it in |buffer_|.
+  int32 Init(VideoFormat format,
+             bool keyframe,
+             int32 width,
+             int32 height,
+             int32 stride,
+             int64 timestamp,
+             int64 duration,
+             const uint8* ptr_data,
              int32 data_length);
 
   // Copies |VideoFrame| data to |ptr_frame|. Performs allocation if necessary.
@@ -56,6 +70,7 @@ class VideoFrame {
   bool keyframe() const { return keyframe_; }
   int32 width() const { return width_; }
   int32 height() const { return height_; }
+  int32 stride() const { return stride_; }
   int64 timestamp() const { return timestamp_; }
   int64 duration() const { return duration_; }
   uint8* buffer() const { return buffer_.get(); }
@@ -64,9 +79,19 @@ class VideoFrame {
   VideoFormat format() const { return format_; }
 
  private:
+  // Converts video frame from |format| to I420, and stores the I420 frame in
+  // |buffer_|. Returns |kSuccess| when successful. Returns |kNoMemory| if
+  // unable to allocate storage for the converted video frame.
+  int32 ConvertToI420(VideoFormat format,
+                      int32 width,
+                      int32 height,
+                      int32 stride,
+                      const uint8* ptr_data);
+
   bool keyframe_;
   int32 width_;
   int32 height_;
+  int32 stride_;
   int64 timestamp_;
   int64 duration_;
   boost::scoped_array<uint8> buffer_;

@@ -54,7 +54,6 @@ VideoSinkPin::~VideoSinkPin() {
 // Returns preferred media type.
 HRESULT VideoSinkPin::GetMediaType(int32 type_index,
                                    CMediaType* ptr_media_type) {
-  // TODO: add libyuv and support types other than I420
   if (type_index != 0) {
     return VFW_S_NO_MORE_ITEMS;
   }
@@ -289,19 +288,28 @@ HRESULT VideoSinkFilter::OnFrameReceived(IMediaSample* ptr_sample) {
   }
   const int32 width = sink_pin_->actual_config_.width;
   const int32 height = sink_pin_->actual_config_.height;
+
   // TODO(tomfinegan): Write an allocator that retrieves frames from
   //                   |WebmEncoder::EncoderThread| and avoid this extra copy.
-  const int32 status = frame_.Init(kVideoFormatI420,
-                                   true,  // all I420 frames are "keyframes"
-                                   width, height, timestamp, duration,
-                                   ptr_sample_buffer,
-                                   ptr_sample->GetActualDataLength());
+
+  const int32 status =
+      frame_.Init(kVideoFormatI420,
+                  true,  // uncompressed frames are always "keyframes"
+                  width,
+                  height,
+                  sink_pin_->stride_,
+                  timestamp,
+                  duration,
+                  ptr_sample_buffer,
+                  ptr_sample->GetActualDataLength());
   if (status) {
     LOG(ERROR) << "OnFrameReceived frame init failed: " << status;
     return E_FAIL;
   }
   LOG(INFO) << "OnFrameReceived received a frame:"
-            << " width=" << width << " height=" << height
+            << " width=" << width
+            << " height=" << height
+            << " stride=" << sink_pin_->stride_
             << " timestamp(sec)=" << (timestamp / 1000.0)
             << " timestamp=" << timestamp
             << " duration(sec)= " << (duration / 1000.0)
