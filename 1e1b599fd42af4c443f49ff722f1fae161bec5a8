@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//6UY\u003d",
+        "filename": "http_client/http_client_main.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 258,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-25T20:31:40Z",
+      "side": 1,
+      "message": "const",
+      "revId": "1e1b599fd42af4c443f49ff722f1fae161bec5a8",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//6UQ\u003d",
+        "filename": "http_client/http_client_main.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 298,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-25T20:31:40Z",
+      "side": 1,
+      "message": "just a nit, no more start_encoder()",
+      "revId": "1e1b599fd42af4c443f49ff722f1fae161bec5a8",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
