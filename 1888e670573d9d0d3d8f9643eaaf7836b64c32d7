@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//62g\u003d",
+        "filename": "http_client/http_uploader.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-25T02:16:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//7IY\u003d",
+      "revId": "1888e670573d9d0d3d8f9643eaaf7836b64c32d7",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//7IU\u003d",
         "filename": "http_client/http_uploader.cc",
         "patchSetId": 3
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//62k\u003d",
+        "filename": "http_client/http_uploader.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-25T02:16:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//7IU\u003d",
+      "revId": "1888e670573d9d0d3d8f9643eaaf7836b64c32d7",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//7Hw\u003d",
         "filename": "http_client/http_uploader.cc",
         "patchSetId": 3
@@ -47,6 +83,24 @@
       "writtenOn": "2012-01-24T23:21:33Z",
       "side": 1,
       "message": "should you add the note from the commit message here?",
+      "revId": "1888e670573d9d0d3d8f9643eaaf7836b64c32d7",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//62c\u003d",
+        "filename": "http_client/http_uploader.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-25T02:16:01Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//7Hw\u003d",
       "revId": "1888e670573d9d0d3d8f9643eaaf7836b64c32d7",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
