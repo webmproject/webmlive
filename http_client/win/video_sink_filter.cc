@@ -44,7 +44,8 @@ VideoSinkPin::VideoSinkPin(TCHAR* ptr_object_name,
                            HRESULT* ptr_result,
                            LPCWSTR ptr_pin_name)
     : CBaseInputPin(ptr_object_name, ptr_filter, ptr_filter_lock, ptr_result,
-                    ptr_pin_name) {
+                    ptr_pin_name),
+      stride_(0) {
 }
 
 VideoSinkPin::~VideoSinkPin() {
@@ -148,10 +149,15 @@ HRESULT VideoSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
     // always calls |CheckMediaType|.
     actual_config_.width = ptr_video_info->bmiHeader.biWidth;
     actual_config_.height = abs(ptr_video_info->bmiHeader.biHeight);
+
+    // Store the stride for use with |VideoFrame::Init()|-- it's needed for
+    // format conversion.
+    stride_ = DIBWIDTHBYTES(ptr_video_info->bmiHeader);
   }
   LOG(INFO) << "\n CheckMediaType actual settings\n"
             << "   width=" << requested_config_.width << "\n"
-            << "   height=" << requested_config_.height;
+            << "   height=" << requested_config_.height << "\n"
+            << "   stride=" << stride_;
   return S_OK;
 }
 
