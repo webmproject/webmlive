@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//6mU\u003d",
+        "filename": "http_client/webm_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-25T19:25:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//7G4\u003d",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//7Gg\u003d",
         "filename": "http_client/webm_encoder.cc",
         "patchSetId": 3
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//6mM\u003d",
+        "filename": "http_client/webm_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-25T19:25:08Z",
+      "side": 1,
+      "message": "They aren\u0027t now, but maybe they will be at some point. Logging them.",
+      "parentUuid": "AAAAHn//7Gg\u003d",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//7GU\u003d",
         "filename": "http_client/webm_mux.cc",
         "patchSetId": 3
@@ -47,6 +83,24 @@
       "writtenOn": "2012-01-24T23:51:00Z",
       "side": 1,
       "message": "should be a pointer if non-const. Though then you\u0027d want an Init() I suppose.",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//6lA\u003d",
+        "filename": "http_client/webm_mux.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-25T19:25:08Z",
+      "side": 1,
+      "message": "Done/Added Init.",
+      "parentUuid": "AAAAHn//7GU\u003d",
       "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +141,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//6k8\u003d",
+        "filename": "http_client/webm_mux.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-25T19:25:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//7Fk\u003d",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//7Eo\u003d",
         "filename": "http_client/webm_mux.h",
         "patchSetId": 3
@@ -98,6 +170,24 @@
       "writtenOn": "2012-01-24T23:51:00Z",
       "side": 1,
       "message": "OK I see the reason for the pointer now. I wonder if some other formulation would satisfy things, Add/Add/Init()?",
+      "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//6eU\u003d",
+        "filename": "http_client/webm_mux.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-25T19:25:08Z",
+      "side": 1,
+      "message": "Got rid of the reference args, and added AddTrack.",
+      "parentUuid": "AAAAHn//7Eo\u003d",
       "revId": "542cee5b120c62ca008c5575d3a1532e49f22094",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
