@@ -16,6 +16,24 @@
       "revId": "70a49cf515f88e3f6e3c74391691e5f49d0e69c0",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//6IM\u003d",
+        "filename": "http_client/win/video_sink_filter.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-25T22:22:27Z",
+      "side": 1,
+      "message": "Yes/Done.",
+      "parentUuid": "AAAAHn//6UI\u003d",
+      "revId": "70a49cf515f88e3f6e3c74391691e5f49d0e69c0",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
