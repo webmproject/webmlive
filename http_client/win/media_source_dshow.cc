@@ -96,11 +96,8 @@ MediaSourceImpl::MediaSourceImpl()
 MediaSourceImpl::~MediaSourceImpl() {
   // Manually release directshow interfaces to avoid problems related to
   // destruction order of com_ptr_t members.
-  file_writer_ = 0;
-  webm_muxer_ = 0;
   vorbis_encoder_ = 0;
   audio_source_ = 0;
-  vpx_encoder_ = 0;
   video_source_ = 0;
   video_sink_ = 0;
   media_event_handle_ = INVALID_HANDLE_VALUE;
@@ -156,24 +153,6 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
     return WebmEncoder::kEncodeMonitorError;
   }
 #if 0
-  status = CreateVpxEncoder();
-  if (status) {
-    LOG(ERROR) << "CreateVpxEncoder failed: " << status;
-    return WebmEncoder::kVideoEncoderError;
-  }
-  status = ConnectVideoSourceToVpxEncoder();
-  if (status) {
-    LOG(ERROR) << "ConnectVideoSourceToVpxEncoder failed: " << status;
-    return WebmEncoder::kVideoEncoderError;
-  }
-  status = ConfigureVpxEncoder();
-  if (status) {
-    LOG(ERROR) << "ConfigureVpxEncoder failed: " << status;
-    return WebmEncoder::kVideoEncoderError;
-  }
-  if (!config.audio_device_name.empty()) {
-    audio_device_name_ = string_to_wstring(config_.audio_device_name);
-  }
   status = CreateAudioSource();
   if (status) {
     LOG(ERROR) << "CreateAudioSource failed: " << status;
@@ -193,27 +172,6 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
   if (status) {
     LOG(ERROR) << "ConfigureVorbisEncoder failed: " << status;
     return WebmEncoder::kAudioEncoderError;
-  }
-  status = CreateWebmMuxer();
-  if (status) {
-    LOG(ERROR) << "CreateWebmMuxer failed: " << status;
-    return WebmEncoder::kWebmMuxerError;
-  }
-  status = ConnectEncodersToWebmMuxer();
-  if (status) {
-    LOG(ERROR) << "ConnectEncodersToWebmMuxer failed: " << status;
-    return WebmEncoder::kWebmMuxerError;
-  }
-  out_file_name_ = config.output_file_name;
-  status = CreateFileWriter();
-  if (status) {
-    LOG(ERROR) << "CreateFileWriter failed: " << status;
-    return WebmEncoder::kFileWriteError;
-  }
-  status = ConnectWebmMuxerToFileWriter();
-  if (status) {
-    LOG(ERROR) << "ConnectWebmMuxerToFileWriter failed: " << status;
-    return WebmEncoder::kFileWriteError;
   }
 #endif
   return kSuccess;
@@ -709,151 +667,6 @@ int MediaSourceImpl::ConfigureVorbisEncoder() {
   return kSuccess;
 }
 #endif
-
-// Creates the WebM muxer filter and adds it to the filter graph.
-int MediaSourceImpl::CreateWebmMuxer() {
-  HRESULT hr = webm_muxer_.CreateInstance(CLSID_WebmMux);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "webm muxer creation failed." << HRLOG(hr);
-    return kCannotCreateWebmMuxer;
-  }
-  hr = graph_builder_->AddFilter(webm_muxer_, kWebmMuxerName);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot add webm muxer to graph." << HRLOG(hr);
-    return kCannotAddFilter;
-  }
-  _COM_SMARTPTR_TYPEDEF(IWebmMux, __uuidof(IWebmMux));
-  IWebmMuxPtr mux_config(webm_muxer_);
-  if (!mux_config) {
-    LOG(ERROR) << "cannot create webm muxer interface.";
-    return kCannotConfigureWebmMuxer;
-  }
-  hr = mux_config->SetMuxMode(kWebmMuxModeLive);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot enable webm live mux mode." << HRLOG(hr);
-    return kWebmMuxerConfigureError;
-  }
-  // TODO(tomfinegan): set writing app
-  return kSuccess;
-}
-
-// Finds the output pins on the encoder filters, and connects them directly to
-// the input pins on the WebM muxer filter.
-int MediaSourceImpl::ConnectEncodersToWebmMuxer() {
-  PinFinder pin_finder;
-  int status = pin_finder.Init(vpx_encoder_);
-  if (status) {
-    LOG(ERROR) << "cannot look for pins on vpx encoder!";
-    return kWebmMuxerVideoConnectError;
-  }
-  IPinPtr encoder_pin = pin_finder.FindVideoOutputPin(0);
-  if (!encoder_pin) {
-    LOG(ERROR) << "cannot find video output pin on vpx encoder!";
-    return kWebmMuxerVideoConnectError;
-  }
-  status = pin_finder.Init(webm_muxer_);
-  if (status) {
-    LOG(ERROR) << "cannot look for pins on webm muxer!";
-    return kWebmMuxerVideoConnectError;
-  }
-  IPinPtr muxer_pin = pin_finder.FindVideoInputPin(0);
-  if (!muxer_pin) {
-    LOG(ERROR) << "cannot find video input pin on webm muxer!";
-    return kWebmMuxerVideoConnectError;
-  }
-  HRESULT hr = graph_builder_->ConnectDirect(encoder_pin, muxer_pin, NULL);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot connect vpx encoder to webm muxer!" << HRLOG(hr);
-    return kWebmMuxerVideoConnectError;
-  }
-  status = pin_finder.Init(vorbis_encoder_);
-  if (status) {
-    LOG(ERROR) << "cannot look for pins on vorbis encoder!";
-    return kWebmMuxerAudioConnectError;
-  }
-  encoder_pin = pin_finder.FindAudioOutputPin(0);
-  if (!encoder_pin) {
-    LOG(ERROR) << "cannot find audio output pin on vorbis encoder!";
-    return kWebmMuxerAudioConnectError;
-  }
-  status = pin_finder.Init(webm_muxer_);
-  if (status) {
-    LOG(ERROR) << "cannot look for pins on webm muxer!";
-    return kWebmMuxerAudioConnectError;
-  }
-  muxer_pin = pin_finder.FindAudioInputPin(0);
-  if (!muxer_pin) {
-    LOG(ERROR) << "cannot find audio input pin on webm muxer!";
-    return kWebmMuxerAudioConnectError;
-  }
-  hr = graph_builder_->ConnectDirect(encoder_pin, muxer_pin, NULL);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot connect vorbis encoder to webm muxer!" << HRLOG(hr);
-    return kWebmMuxerAudioConnectError;
-  }
-  return kSuccess;
-}
-
-// Creates the file writer filter, adds it to the graph, and sets the output
-// file name.
-int MediaSourceImpl::CreateFileWriter() {
-  HRESULT hr = file_writer_.CreateInstance(CLSID_FileWriter);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "file writer creation failed." << HRLOG(hr);
-    return kCannotCreateFileWriter;
-  }
-  hr = graph_builder_->AddFilter(file_writer_, kFileWriterName);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot add file writer to graph." << HRLOG(hr);
-    return kCannotAddFilter;
-  }
-  IFileSinkFilter2Ptr writer_config(file_writer_);
-  if (!writer_config) {
-    LOG(ERROR) << "cannot create file writer sink interface.";
-    return kCannotCreateFileWriter;
-  }
-  std::wostringstream out_file_name_stream;
-  out_file_name_stream << out_file_name_.c_str();
-  hr = writer_config->SetFileName(out_file_name_stream.str().c_str(), NULL);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot set output file name." << HRLOG(hr);
-    return kCannotCreateFileWriter;
-  }
-  return kSuccess;
-}
-
-// Locates the output pin on |webm_muxer_|, and connects it directly to the
-// input pin on |file_writer_|.
-int MediaSourceImpl::ConnectWebmMuxerToFileWriter() {
-  PinFinder pin_finder;
-  int status = pin_finder.Init(webm_muxer_);
-  if (status) {
-    LOG(ERROR) << "cannot look for pins on vpx encoder!";
-    return kFileWriterConnectError;
-  }
-  IPinPtr muxer_pin = pin_finder.FindStreamOutputPin(0);
-  if (!muxer_pin) {
-    LOG(ERROR) << "cannot find stream output pin on webm muxer!";
-    return kFileWriterConnectError;
-  }
-  status = pin_finder.Init(file_writer_);
-  if (status) {
-    LOG(ERROR) << "cannot look for pins on webm muxer!";
-    return kFileWriterConnectError;
-  }
-  IPinPtr writer_pin = pin_finder.FindInputPin(0);
-  if (!writer_pin) {
-    LOG(ERROR) << "cannot find stream input pin on file writer!";
-    return kFileWriterConnectError;
-  }
-  const HRESULT hr = graph_builder_->ConnectDirect(muxer_pin, writer_pin,
-                                                   NULL);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot connect webm muxer to file writer!" << HRLOG(hr);
-    return kFileWriterConnectError;
-  }
-  return kSuccess;
-}
 
 // Checks |media_event_handle_| and reads the event from |media_event_| when
 // signaled.  Responds only to completion and error events.
