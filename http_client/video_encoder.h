@@ -22,13 +22,52 @@ namespace webmlive {
 enum VideoFormat {
   kVideoFormatI420 = 0,
   kVideoFormatVP8 = 1,
-  kVideoFormatCount = 2,
+  kVideoFormatYV12 = 3,
+  kVideoFormatYUY2 = 4,
+  kVideoFormatUYVY = 5,
+  kVideoFormatRGB = 6,
+  kVideoFormatRGBA = 7,
+  kVideoFormatCount = 8,
 };
 
-// Storage class for video frames. Supports I420 and VP8 frames.
+// YUV bit count constants.
+const uint16 kI420BitCount = 12;
+const uint16 kNV12BitCount = 12;
+const uint16 kNV21BitCount = 12;
+const uint16 kUYVYBitCount = 16;
+const uint16 kV210BitCount = 24;
+const uint16 kYUY2BitCount = 16;
+const uint16 kYUYVBitCount = 16;
+const uint16 kYV12BitCount = 12;
+const uint16 kYV16BitCount = 16;
+
+// RGB bit count constants.
+const uint16 kRGB555BitCount = 16;
+const uint16 kRGB565BitCount = 16;
+const uint16 kRGBBitCount = 24;
+const uint16 kRGBABitCount = 32;
+
+
+// Utility function for conversion of four character codes to members of the
+// |VideoFormat| enumeration. Returns true and writes the |VideoFormat| value
+// to |ptr_format| when |fourcc| is recognized. Returns false when |fourcc| is
+// not recognized. Always returns false when |ptr_format| is NULL.
+bool FourCCToVideoFormat(uint32 fourcc,
+                         uint16 bits_per_pixel,
+                         VideoFormat* ptr_format);
+
+// Storage class for I420, YV12, and VP8 video frames. The main idea here is to
+// store frames in such a way that they can easily be obtained from the capture
+// source and passed to the libvpx VP8 encoder.
+//
+// Notes
+// - Libvpx's VP8 encoder supports only I420 and YV12 input.
+//   |VideoFrame::Init()| converts all uncompressed formats other than
+//   |kVideoFormatI420| and |kVideoFormatYV12| to |kVideoFormatI420|.
 class VideoFrame {
  public:
   enum {
+    kConversionFailed = -3,
     kNoMemory = -2,
     kInvalidArg = -1,
     kSuccess = 0,
@@ -38,11 +77,20 @@ class VideoFrame {
 
   // Allocates storage for |ptr_data|, sets internal fields to values of
   // caller's args, and returns |kSuccess|. Returns |kInvalidArg| when
-  // |ptr_data| is NULL, and |format| is not |kVideoFormatI420| or
-  // |kVideoFormatVP8|. Returns |kNoMemory| when unable to allocate storage
-  // for |ptr_data|.
-  int32 Init(VideoFormat format, bool keyframe, int32 width, int32 height,
-             int64 timestamp, int64 duration, const uint8* ptr_data,
+  // |ptr_data| is NULL. Returns |kConversionFailed| when and |format| is not
+  // a |VideoFormat| enumeration value. Returns |kNoMemory| when unable to
+  // allocate storage for |ptr_data|.
+  // Note: When format is not one of |kVideoFormatI420|, |kVideoFormatYV12|,
+  //       |kVideoFormatVP8|, |Init()| converts the frame data to I420.
+  //       converts data to I420 before storing it in |buffer_|.
+  int32 Init(VideoFormat format,
+             bool keyframe,
+             int32 width,
+             int32 height,
+             int32 stride,
+             int64 timestamp,
+             int64 duration,
+             const uint8* ptr_data,
              int32 data_length);
 
   // Copies |VideoFrame| data to |ptr_frame|. Performs allocation if necessary.
@@ -53,9 +101,12 @@ class VideoFrame {
   // Swaps |VideoFrame| member data with |ptr_frame|'s. The |VideoFrame|s
   // must have non-NULL buffers.
   void Swap(VideoFrame* ptr_frame);
+
+  // Accessors.
   bool keyframe() const { return keyframe_; }
   int32 width() const { return width_; }
   int32 height() const { return height_; }
+  int32 stride() const { return stride_; }
   int64 timestamp() const { return timestamp_; }
   int64 duration() const { return duration_; }
   uint8* buffer() const { return buffer_.get(); }
@@ -64,9 +115,19 @@ class VideoFrame {
   VideoFormat format() const { return format_; }
 
  private:
+  // Converts video frame from |format| to I420, and stores the I420 frame in
+  // |buffer_|. Returns |kSuccess| when successful. Returns |kNoMemory| if
+  // unable to allocate storage for the converted video frame.
+  int32 ConvertToI420(VideoFormat format,
+                      int32 width,
+                      int32 height,
+                      int32 stride,
+                      const uint8* ptr_data);
+
   bool keyframe_;
   int32 width_;
   int32 height_;
+  int32 stride_;
   int64 timestamp_;
   int64 duration_;
   boost::scoped_array<uint8> buffer_;

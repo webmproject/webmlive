@@ -102,6 +102,11 @@ int32 VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
     LOG(ERROR) << "NULL raw VideoFrame buffer!";
     return kInvalidArg;
   }
+  if (raw_frame.format() != kVideoFormatI420 &&
+      raw_frame.format() != kVideoFormatYV12) {
+    LOG(ERROR) << "Unsupported VideoFrame format!";
+    return kInvalidArg;
+  }
   ++frames_in_;
 
   // If decimation is enabled, determine if it's time to drop a frame.
@@ -121,8 +126,12 @@ int32 VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
 
   // Use the |vpx_img_wrap| to wrap the buffer within |ptr_raw_frame| in
   // |vpx_image| for passing the buffer to libvpx.
+  const VideoFormat video_format = raw_frame.format();
+  const vpx_img_fmt vpx_image_format =
+      (video_format == kVideoFormatI420) ? VPX_IMG_FMT_I420 : VPX_IMG_FMT_YV12;
   vpx_image_t vpx_image;
-  vpx_image_t* const ptr_vpx_image = vpx_img_wrap(&vpx_image, VPX_IMG_FMT_I420,
+  vpx_image_t* const ptr_vpx_image = vpx_img_wrap(&vpx_image,
+                                                  vpx_image_format,
                                                   raw_frame.width(),
                                                   raw_frame.height(),
                                                   1,  // Alignment.
@@ -157,9 +166,11 @@ int32 VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
       const bool is_keyframe = !!(pkt->data.frame.flags & VPX_FRAME_IS_KEY);
       uint8* const ptr_vp8_frame_buf =
           reinterpret_cast<uint8*>(pkt->data.frame.buf);
-      const int32 status = ptr_vp8_frame->Init(kVideoFormatVP8, is_keyframe,
+      const int32 status = ptr_vp8_frame->Init(kVideoFormatVP8,
+                                               is_keyframe,
                                                raw_frame.width(),
                                                raw_frame.height(),
+                                               raw_frame.stride(),
                                                raw_frame.timestamp(),
                                                raw_frame.duration(),
                                                ptr_vp8_frame_buf,
