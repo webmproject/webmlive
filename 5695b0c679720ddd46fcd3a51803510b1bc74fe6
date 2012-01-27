@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//4Jk\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 275,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-27T21:32:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//4cI\u003d",
+      "revId": "5695b0c679720ddd46fcd3a51803510b1bc74fe6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//4cM\u003d",
         "filename": "http_client/video_encoder.cc",
         "patchSetId": 6
@@ -30,6 +48,24 @@
       "writtenOn": "2012-01-27T15:41:09Z",
       "side": 1,
       "message": "It looks libyuv named it badly. I would suggest naming it kVideoFormatRGBA, which is what most people know it as, unless the format really is BGRA?",
+      "revId": "5695b0c679720ddd46fcd3a51803510b1bc74fe6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//4Jo\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 289,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-27T21:32:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//4cM\u003d",
       "revId": "5695b0c679720ddd46fcd3a51803510b1bc74fe6",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//4Jw\u003d",
+        "filename": "http_client/video_encoder.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-27T21:32:45Z",
+      "side": 1,
+      "message": "Done/fixed.",
+      "parentUuid": "AAAAHn//4cY\u003d",
+      "revId": "5695b0c679720ddd46fcd3a51803510b1bc74fe6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//4cE\u003d",
         "filename": "http_client/video_encoder.h",
         "patchSetId": 6
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//4Js\u003d",
+        "filename": "http_client/video_encoder.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-27T21:32:45Z",
+      "side": 1,
+      "message": "Added some more:\n\nRGB555/565\nYUYV (YUY2 alias)\nYV16\nNV12/21\nV210 (this one will probably get implemented-- it\u0027s the native format for some high end capture cards)\n\nWere there any others you were thinking of? I think I\u0027ve got a decent subset here, but more won\u0027t hurt anything.",
+      "parentUuid": "AAAAHn//4cE\u003d",
+      "revId": "5695b0c679720ddd46fcd3a51803510b1bc74fe6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//4co\u003d",
         "filename": "http_client/win/video_sink_filter.cc",
         "patchSetId": 6
@@ -81,6 +153,24 @@
       "writtenOn": "2012-01-27T15:41:09Z",
       "side": 1,
       "message": "Why not just return instead of having an assignment first?",
+      "revId": "5695b0c679720ddd46fcd3a51803510b1bc74fe6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//4PE\u003d",
+        "filename": "http_client/win/video_sink_filter.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-27T21:32:45Z",
+      "side": 1,
+      "message": "I just thought it looked hideous. :) \n\nDone",
+      "parentUuid": "AAAAHn//4co\u003d",
       "revId": "5695b0c679720ddd46fcd3a51803510b1bc74fe6",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
