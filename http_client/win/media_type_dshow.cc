@@ -16,6 +16,49 @@
 
 namespace webmlive {
 
+bool VideoFormatToSubTypeGuid(VideoFormat format, GUID* ptr_sub_type) {
+  bool converted = false;
+  if (ptr_sub_type) {
+    switch (format) {
+      case kVideoFormatI420:
+        *ptr_sub_type = MEDIASUBTYPE_I420;
+        converted = true;
+        break;
+      case kVideoFormatVP8:
+        *ptr_sub_type = MEDIASUBTYPE_VP80;
+        converted = true;
+        break;
+      case kVideoFormatYV12:
+        *ptr_sub_type = MEDIASUBTYPE_YV12;
+        converted = true;
+        break;
+      case kVideoFormatYUY2:
+        *ptr_sub_type = MEDIASUBTYPE_YUY2;
+        converted = true;
+        break;
+      case kVideoFormatYUYV:
+        *ptr_sub_type = MEDIASUBTYPE_YUYV;
+        converted = true;
+        break;
+      case kVideoFormatUYVY:
+        *ptr_sub_type = MEDIASUBTYPE_UYVY;
+        converted = true;
+        break;
+      case kVideoFormatRGB:
+        *ptr_sub_type = MEDIASUBTYPE_RGB24;
+        converted = true;
+        break;
+      case kVideoFormatRGBA:
+        *ptr_sub_type = MEDIASUBTYPE_RGB32;
+        converted = true;
+        break;
+      default:
+        LOG(WARNING) << "Unknown video format value.";
+    }
+  }
+  return converted;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // MediaType
 //
@@ -150,6 +193,27 @@ int VideoMediaType::Init() {
   return Init(MEDIATYPE_Video, FORMAT_VideoInfo);
 }
 
+int VideoMediaType::ConfigurePartialType(VideoFormat format) {
+  if (!ptr_type_) {
+    LOG(ERROR) << "internal AM_MEDIA_TYPE is NULL.";
+    return kNullType;
+  }
+  if (ptr_type_->pbFormat) {
+    // The |Init()| methods all allocate the format blob and set
+    // |AM_MEDIA_TYPE::formattype|. Free the blob and set |formattype| to
+    // GUID_NULL to make a truly partial media type.
+    ptr_type_->formattype = GUID_NULL;
+    FreeMediaTypeData(ptr_type_);
+  }
+  int status = kInvalidArg;
+  GUID subtype = GUID_NULL;
+  if (VideoFormatToSubTypeGuid(format, &subtype)) {
+    ptr_type_->subtype = subtype;
+    status = kSuccess;
+  }
+  return status;
+}
+
 // Configures AM_MEDIA_TYPE format blob for given |sub_type| and |config|.
 int VideoMediaType::ConfigureSubType(VideoFormat sub_type,
                                      const VideoConfig &config) {
@@ -166,20 +230,29 @@ int VideoMediaType::ConfigureSubType(VideoFormat sub_type,
     LOG(ERROR) << "Invalid frame rate.";
     return kInvalidArg;
   }
-  // Confirm that |sub_type| is supported.
+
+  // Confirm that |sub_type| is supported, and set the temporal compression
+  // and fixed size samples fields in |ptr_type_|.
   switch (sub_type) {
-    case kVideoFormatI420:
     case kVideoFormatVP8:
+      ptr_type_->bTemporalCompression = TRUE;
+      ptr_type_->bFixedSizeSamples = FALSE;
+      break;
+    case kVideoFormatI420:
     case kVideoFormatYV12:
     case kVideoFormatYUY2:
     case kVideoFormatUYVY:
     case kVideoFormatRGB:
     case kVideoFormatRGBA:
+      ptr_type_->bTemporalCompression = FALSE;
+      ptr_type_->bFixedSizeSamples = TRUE;
       break;
     default:
       LOG(ERROR) << sub_type << " is not a known VideoFormat.";
       return kUnsupportedSubType;
   }
+
+  // Configure the format blobs.
   int status = kUnsupportedSubType;
   if (ptr_type_->formattype == FORMAT_VideoInfo) {
     VIDEOINFOHEADER* ptr_header =
@@ -563,11 +636,36 @@ MediaTypePtr::~MediaTypePtr() {
 int MediaTypePtr::Attach(AM_MEDIA_TYPE* ptr_type) {
   if (!ptr_type) {
     LOG(ERROR) << "NULL media type.";
-    return kNullType;
+    return kInvalidArg;
   }
   Free();
   ptr_type_ = ptr_type;
   return kSuccess;
+}
+
+int MediaTypePtr::Copy(const AM_MEDIA_TYPE* ptr_type) {
+  if (!ptr_type) {
+    LOG(ERROR) << "NULL media type.";
+    return kInvalidArg;
+  }
+  AM_MEDIA_TYPE* const ptr_copy =
+      reinterpret_cast<AM_MEDIA_TYPE*>(CoTaskMemAlloc(sizeof AM_MEDIA_TYPE));
+  if (!ptr_copy) {
+    LOG(ERROR) << "Cannot alloc media type.";
+    return kNoMemory;
+  }
+  *ptr_copy = *ptr_type;
+  if (ptr_type->pbFormat) {
+    ptr_copy->pbFormat =
+        reinterpret_cast<BYTE*>(CoTaskMemAlloc(ptr_type->cbFormat));
+    if (!ptr_copy->pbFormat) {
+      CoTaskMemFree(ptr_copy);
+      LOG(ERROR) << "Cannot alloc format blob.";
+      return kNoMemory;
+    }
+    memcpy(ptr_copy->pbFormat, ptr_type->pbFormat, ptr_type->cbFormat);
+  }
+  return Attach(ptr_copy);
 }
 
 void MediaTypePtr::Free() {
