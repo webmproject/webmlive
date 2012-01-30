@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//3ew\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 8
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-30T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//4Bw\u003d",
+      "revId": "11321a3fa2f31d9d949d4457b340c783eae4ea55",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//4Bs\u003d",
         "filename": "http_client/video_encoder.cc",
         "patchSetId": 8
@@ -30,6 +48,24 @@
       "writtenOn": "2012-01-27T22:31:12Z",
       "side": 1,
       "message": "indent +2\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Loops_and_Switch_Statements",
+      "revId": "11321a3fa2f31d9d949d4457b340c783eae4ea55",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//3es\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 8
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-30T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//4Bs\u003d",
       "revId": "11321a3fa2f31d9d949d4457b340c783eae4ea55",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//3eg\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 8
+      },
+      "lineNbr": 242,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-30T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//4BY\u003d",
+      "revId": "11321a3fa2f31d9d949d4457b340c783eae4ea55",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//4Bc\u003d",
         "filename": "http_client/video_encoder.cc",
         "patchSetId": 8
@@ -64,6 +118,24 @@
       "writtenOn": "2012-01-27T22:31:12Z",
       "side": 1,
       "message": "indent",
+      "revId": "11321a3fa2f31d9d949d4457b340c783eae4ea55",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//3ek\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 8
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-30T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//4Bc\u003d",
       "revId": "11321a3fa2f31d9d949d4457b340c783eae4ea55",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//3eo\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 8
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-30T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//4BE\u003d",
+      "revId": "11321a3fa2f31d9d949d4457b340c783eae4ea55",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//4A0\u003d",
         "filename": "http_client/video_encoder.h",
         "patchSetId": 8
@@ -104,6 +194,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//3ec\u003d",
+        "filename": "http_client/video_encoder.h",
+        "patchSetId": 8
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-30T15:47:47Z",
+      "side": 1,
+      "message": "Yes, done.",
+      "parentUuid": "AAAAHn//4A0\u003d",
+      "revId": "11321a3fa2f31d9d949d4457b340c783eae4ea55",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//4AE\u003d",
         "filename": "http_client/win/video_sink_filter.cc",
         "patchSetId": 8
@@ -115,6 +223,24 @@
       "writtenOn": "2012-01-27T22:31:12Z",
       "side": 1,
       "message": "add video_format_",
+      "revId": "11321a3fa2f31d9d949d4457b340c783eae4ea55",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//3eU\u003d",
+        "filename": "http_client/win/video_sink_filter.cc",
+        "patchSetId": 8
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-30T15:47:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//4AE\u003d",
       "revId": "11321a3fa2f31d9d949d4457b340c783eae4ea55",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
