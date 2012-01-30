@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//3UE\u003d",
+        "filename": "http_client/video_encoder.cc",
+        "patchSetId": 9
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-30T20:01:06Z",
+      "side": 1,
+      "message": "Might be overly pedantic, but this should have a a default and I think your other enum based should not...\n\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Loops_and_Switch_Statements",
+      "revId": "98b59e62a0343b283667001ada7df26ac908f278",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//3Tg\u003d",
+        "filename": "http_client/video_encoder.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-30T20:01:06Z",
+      "side": 1,
+      "message": "extra line",
+      "revId": "98b59e62a0343b283667001ada7df26ac908f278",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//3UM\u003d",
+        "filename": "http_client/video_encoder.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-01-30T20:01:06Z",
+      "side": 1,
+      "message": "spelling and weird indent",
+      "revId": "98b59e62a0343b283667001ada7df26ac908f278",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
