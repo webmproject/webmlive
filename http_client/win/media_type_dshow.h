@@ -64,17 +64,6 @@ class MediaType {
 class VideoMediaType : public MediaType {
  public:
   typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
-  enum VideoSubType {
-    kI420 = 0,
-    kYV12 = 1,
-    kYUY2 = 2,
-    kYUYV = 3,
-    kNumVideoSubtypes = 4,
-  };
-  static const int kI420BitCount = 12;
-  static const int kYV12BitCount = kI420BitCount;
-  static const int kYUY2BitCount = 16;
-  static const int kYUYVBitCount = kYUY2BitCount;
   VideoMediaType();
   virtual ~VideoMediaType();
 
@@ -94,7 +83,7 @@ class VideoMediaType : public MediaType {
   // Configures format block using |sub_type| and |config|. Directly applies
   // settings specified by |config| and returns success for supported
   // |sub_type| values. Note that not all |VideoSubType| values are supported.
-  int ConfigureSubType(VideoSubType sub_type, const VideoConfig& config);
+  int ConfigureSubType(VideoFormat sub_type, const VideoConfig& config);
 
   // Mutators that allow direct control of frame rate without touching the
   // BITMAPINFOHEADER.
@@ -113,7 +102,7 @@ class VideoMediaType : public MediaType {
   const BITMAPINFOHEADER* bitmap_header() const;
 
   // Configures |header| for specified |subtype| using values from |config|.
-  int ConfigureFormatInfo(const VideoConfig& config, VideoSubType sub_type,
+  int ConfigureFormatInfo(const VideoConfig& config, VideoFormat sub_type,
                           BITMAPINFOHEADER& header);
 
   // Sets source and target rectangles to respect |config.width| and
@@ -122,12 +111,12 @@ class VideoMediaType : public MediaType {
 
   // Sets VIDEOINFOHEADER members within pbFormat block of AM_MEDIA_TYPE.
   int ConfigureVideoInfoHeader(const VideoConfig& config,
-                               VideoSubType sub_type,
+                               VideoFormat sub_type,
                                VIDEOINFOHEADER* header);
 
   // Sets VIDEOINFOHEADER2 members within pbFormat block of AM_MEDIA_TYPE.
   int ConfigureVideoInfoHeader2(const VideoConfig& config,
-                                VideoSubType sub_type,
+                                VideoFormat sub_type,
                                 VIDEOINFOHEADER2* header);
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoMediaType);
 };

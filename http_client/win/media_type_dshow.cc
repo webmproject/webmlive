@@ -151,7 +151,7 @@ int VideoMediaType::Init() {
 }
 
 // Configures AM_MEDIA_TYPE format blob for given |sub_type| and |config|.
-int VideoMediaType::ConfigureSubType(VideoSubType sub_type,
+int VideoMediaType::ConfigureSubType(VideoFormat sub_type,
                                      const VideoConfig &config) {
   // Make sure configuration is sane.
   if (config.width <= 0) {
@@ -168,13 +168,16 @@ int VideoMediaType::ConfigureSubType(VideoSubType sub_type,
   }
   // Confirm that |sub_type| is supported.
   switch (sub_type) {
-    case kI420:
-    case kYV12:
-    case kYUY2:
-    case kYUYV:
+    case kVideoFormatI420:
+    case kVideoFormatVP8:
+    case kVideoFormatYV12:
+    case kVideoFormatYUY2:
+    case kVideoFormatUYVY:
+    case kVideoFormatRGB:
+    case kVideoFormatRGBA:
       break;
     default:
-      LOG(ERROR) << sub_type << " is not a known VideoSubType.";
+      LOG(ERROR) << sub_type << " is not a known VideoFormat.";
       return kUnsupportedSubType;
   }
   int status = kUnsupportedSubType;
@@ -293,34 +296,52 @@ const BITMAPINFOHEADER* VideoMediaType::bitmap_header() const {
 // Sets AM_MEDIA_TYPE subtype value, and configures BITMAPINFOHEADER using
 // values calculated from |sub_type| and |config| entries.
 int VideoMediaType::ConfigureFormatInfo(const VideoConfig& config,
-                                        VideoSubType sub_type,
+                                        VideoFormat sub_type,
                                         BITMAPINFOHEADER& header) {
+  header.biSize = sizeof header;
   header.biHeight = config.height;
   header.biWidth = config.width;
+  header.biPlanes = 1;
   switch (sub_type) {
-    case kI420:
+    case kVideoFormatI420:
       ptr_type_->subtype = MEDIASUBTYPE_I420;
       header.biCompression = MAKEFOURCC('I', '4', '2', '0');
       header.biBitCount = kI420BitCount;
-      header.biPlanes = 3;
       break;
-    case kYV12:
+    case kVideoFormatVP8:
+      ptr_type_->subtype = MEDIASUBTYPE_VP80;
+      header.biCompression = MAKEFOURCC('V', 'P', '8', '0');
+      header.biBitCount = 0;
+      break;
+    case kVideoFormatYV12:
       ptr_type_->subtype = MEDIASUBTYPE_YV12;
       header.biCompression = MAKEFOURCC('Y', 'V', '1', '2');
       header.biBitCount = kYV12BitCount;
-      header.biPlanes = 3;
       break;
-    case kYUY2:
+    case kVideoFormatYUY2:
       ptr_type_->subtype = MEDIASUBTYPE_YUY2;
       header.biCompression = MAKEFOURCC('Y', 'U', 'Y', '2');
       header.biBitCount = kYUY2BitCount;
-      header.biPlanes = 1;
       break;
-    case kYUYV:
+    case kVideoFormatYUYV:
       ptr_type_->subtype = MEDIASUBTYPE_YUYV;
       header.biCompression = MAKEFOURCC('Y', 'U', 'Y', 'V');
       header.biBitCount = kYUYVBitCount;
-      header.biPlanes = 1;
+      break;
+    case kVideoFormatUYVY:
+      ptr_type_->subtype = MEDIASUBTYPE_UYVY;
+      header.biCompression = MAKEFOURCC('U', 'Y', 'V', 'Y');
+      header.biBitCount = kYUYVBitCount;
+      break;
+    case kVideoFormatRGB:
+      ptr_type_->subtype = MEDIASUBTYPE_RGB24;
+      header.biCompression = BI_RGB;
+      header.biBitCount = kRGBBitCount;
+      break;
+    case kVideoFormatRGBA:
+      ptr_type_->subtype = MEDIASUBTYPE_RGB32;
+      header.biCompression = BI_RGB;
+      header.biBitCount = kRGBABitCount;
       break;
     default:
       return kUnsupportedSubType;
@@ -346,7 +367,7 @@ void VideoMediaType::ConfigureRects(const VideoConfig& config,
 // configuration attempt.
 int VideoMediaType::ConfigureVideoInfoHeader(
     const VideoConfig& config,
-    VideoSubType sub_type,
+    VideoFormat sub_type,
     VIDEOINFOHEADER* ptr_header) {
   // Set source and target rectangles.
   ConfigureRects(config, ptr_header->rcSource, ptr_header->rcTarget);
@@ -363,7 +384,7 @@ int VideoMediaType::ConfigureVideoInfoHeader(
 // configuration attempt.
 int VideoMediaType::ConfigureVideoInfoHeader2(
     const VideoConfig& config,
-    VideoSubType sub_type,
+    VideoFormat sub_type,
     VIDEOINFOHEADER2* ptr_header) {
   // Set source and target rectangles.
   ConfigureRects(config, ptr_header->rcSource, ptr_header->rcTarget);
