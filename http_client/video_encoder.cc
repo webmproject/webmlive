@@ -11,6 +11,9 @@
 #include <new>
 
 #include "glog/logging.h"
+#include "libyuv/convert.h"
+#include "libyuv/planar_functions.h"
+#include "libyuv/video_common.h"
 
 #if defined _MSC_VER
 // Disable warning C4505(unreferenced local function has been removed) in MSVC.
@@ -22,10 +25,59 @@
 
 namespace webmlive {
 
+bool FourCCToVideoFormat(uint32 fourcc,
+                         uint16 bits_per_pixel,
+                         VideoFormat* ptr_format) {
+  bool converted = false;
+  if (ptr_format) {
+    switch (fourcc) {
+      case 0:  // RGB formats.
+        if (bits_per_pixel == 24) {
+          *ptr_format = kVideoFormatRGB;
+          converted = true;
+        } else if (bits_per_pixel == 32) {
+          *ptr_format = kVideoFormatRGBA;
+          converted = true;
+        }
+        break;
+
+      case libyuv::FOURCC_I420:
+        if (bits_per_pixel == kI420BitCount) {
+          *ptr_format = kVideoFormatI420;
+          converted = true;
+        }
+        break;
+
+      case libyuv::FOURCC_YV12:
+        if (bits_per_pixel == kYV12BitCount) {
+          *ptr_format = kVideoFormatYV12;
+          converted = true;
+        }
+        break;
+
+      case libyuv::FOURCC_YUY2:
+        if (bits_per_pixel == kYUY2BitCount) {
+          *ptr_format = kVideoFormatYUY2;
+          converted = true;
+        }
+        break;
+
+      case libyuv::FOURCC_UYVY:
+        if (bits_per_pixel == kUYVYBitCount) {
+          *ptr_format = kVideoFormatUYVY;
+          converted = true;
+        }
+        break;
+    }
+  }
+  return converted;
+}
+
 VideoFrame::VideoFrame()
     : keyframe_(false),
       width_(0),
       height_(0),
+      stride_(0),
       timestamp_(0),
       duration_(0),
       buffer_capacity_(0),
@@ -40,6 +92,7 @@ int32 VideoFrame::Init(VideoFormat format,
                        bool keyframe,
                        int32 width,
                        int32 height,
+                       int32 stride,
                        int64 timestamp,
                        int64 duration,
                        const uint8* ptr_data,
@@ -48,24 +101,38 @@ int32 VideoFrame::Init(VideoFormat format,
     LOG(ERROR) << "VideoFrame can't Init with NULL data pointer.";
     return kInvalidArg;
   }
-  if (format != kVideoFormatI420 && format != kVideoFormatVP8) {
-    LOG(ERROR) << "Unknown VideoFormat.";
-    return kInvalidArg;
-  }
-  if (data_length > buffer_capacity_) {
-    buffer_.reset(new (std::nothrow) uint8[data_length]);  // NOLINT
-    if (!buffer_) {
-      LOG(ERROR) << "VideoFrame Init cannot allocate buffer.";
-      return kNoMemory;
+
+  const bool needs_conversion =
+      (format != kVideoFormatI420 &&
+       format != kVideoFormatYV12 &&
+       format != kVideoFormatVP8);
+
+  if (needs_conversion) {
+    // Convert the video frame to I420.
+    const int32 status = ConvertToI420(format, width, height, stride,
+                                       ptr_data);
+    if (status) {
+      LOG(ERROR) << "Video format conversion failed " << status;
+      return status;
     }
-    buffer_capacity_ = data_length;
+  } else {
+    // Data does not need conversion: copy directly into |buffer_|.
+    if (data_length > buffer_capacity_) {
+      buffer_.reset(new (std::nothrow) uint8[data_length]);  // NOLINT
+      if (!buffer_) {
+        LOG(ERROR) << "VideoFrame Init cannot allocate buffer.";
+        return kNoMemory;
+      }
+      buffer_capacity_ = data_length;
+    }
+    memcpy(&buffer_[0], ptr_data, data_length);
+    buffer_length_ = data_length;
+    format_ = format;
+    width_ = width;
+    height_ = height;
+    stride_ = stride;
   }
-  memcpy(&buffer_[0], ptr_data, data_length);
-  buffer_length_ = data_length;
-  format_ = format;
   keyframe_ = keyframe;
-  width_ = width;
-  height_ = height;
   timestamp_ = timestamp;
   duration_ = duration;
   return kSuccess;
@@ -91,6 +158,7 @@ int32 VideoFrame::Clone(VideoFrame* ptr_frame) const {
   ptr_frame->keyframe_ = keyframe_;
   ptr_frame->width_ = width_;
   ptr_frame->height_ = height_;
+  ptr_frame->stride_ = stride_;
   ptr_frame->timestamp_ = timestamp_;
   ptr_frame->duration_ = duration_;
   return kSuccess;
@@ -116,6 +184,10 @@ void VideoFrame::Swap(VideoFrame* ptr_frame) {
   height_ = ptr_frame->height_;
   ptr_frame->height_ = temp;
 
+  temp = stride_;
+  stride_ = ptr_frame->stride_;
+  ptr_frame->stride_ = temp;
+
   int64 temp_time = timestamp_;
   timestamp_ = ptr_frame->timestamp_;
   ptr_frame->timestamp_ = temp_time;
@@ -133,6 +205,83 @@ void VideoFrame::Swap(VideoFrame* ptr_frame) {
   temp = buffer_length_;
   buffer_length_ = ptr_frame->buffer_length_;
   ptr_frame->buffer_length_ = temp;
+}
+
+int32 VideoFrame::ConvertToI420(VideoFormat format,
+                                int32 width,
+                                int32 height,
+                                int32 source_stride,
+                                const uint8* ptr_data) {
+  // Allocate storage for the I420 frame.
+  const int32 size_required = width * height * 3 / 2;
+  if (size_required > buffer_capacity_) {
+    buffer_.reset(new (std::nothrow) uint8[size_required]);  // NOLINT
+    if (!buffer_) {
+      LOG(ERROR) << "VideoFrame ConvertToI420 cannot allocate buffer.";
+      return kNoMemory;
+    }
+    buffer_capacity_ = size_required;
+  }
+  buffer_length_ = size_required;
+
+  format_ = kVideoFormatI420;
+  width_ = width;
+  height_ = abs(height);
+  stride_ = width;
+
+  // Calculate length and stride for the I420 planes.
+  const int32 y_length = width * height_;
+  const int32 uv_stride = stride_ / 2;
+  const int32 uv_length = uv_stride * (height_ / 2);
+  CHECK_EQ(buffer_length_, y_length + (uv_length * 2));
+
+  // Assign the pointers to the I420 planes.
+  uint8* const ptr_i420_y = buffer_.get();
+  uint8* const ptr_i420_u = ptr_i420_y + y_length;
+  uint8* const ptr_i420_v = ptr_i420_u + uv_length;
+
+  int status = kConversionFailed;
+  switch (format) {
+    case kVideoFormatYUY2:
+      status = libyuv::YUY2ToI420(ptr_data, source_stride,
+                                  ptr_i420_y, stride_,
+                                  ptr_i420_u, uv_stride,
+                                  ptr_i420_v, uv_stride,
+                                  width, height_);
+      break;
+
+    case kVideoFormatUYVY:
+      status = libyuv::UYVYToI420(ptr_data, source_stride,
+                                  ptr_i420_y, stride_,
+                                  ptr_i420_u, uv_stride,
+                                  ptr_i420_v, uv_stride,
+                                  width, height_);
+      break;
+
+    // Note that RGB conversions always negate the height to ensure correct
+    // image orientation.
+    case kVideoFormatRGB:
+      status = libyuv::RGB24ToI420(ptr_data, source_stride,
+                                   ptr_i420_y, stride_,
+                                   ptr_i420_u, uv_stride,
+                                   ptr_i420_v, uv_stride,
+                                   width, -height);
+      break;
+
+    case kVideoFormatRGBA:
+      status = libyuv::BGRAToI420(ptr_data, source_stride,
+                                  ptr_i420_y, stride_,
+                                  ptr_i420_u, uv_stride,
+                                  ptr_i420_v, uv_stride,
+                                  width, -height);
+      break;
+
+    default:
+      LOG(ERROR) << "Cannot convert to I420: invalid video format.";
+      status = kInvalidArg;
+  }
+
+  return status;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
