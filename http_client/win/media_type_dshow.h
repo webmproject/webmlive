@@ -17,6 +17,12 @@
 
 namespace webmlive {
 
+// Converts |format| to its associated AM_MEDIA_TYPE subtype field value,
+// copies the subtype value to |ptr_sub_type|, and returns true. Always returns
+// false when |ptr_sub_type| is NULL. Returns false for unknown |format|
+// values.
+bool VideoFormatToSubTypeGuid(VideoFormat format, GUID* ptr_sub_type);
+
 // Base class for audio and video AM_MEDIA_TYPE management classes.
 class MediaType {
  public:
@@ -79,6 +85,11 @@ class VideoMediaType : public MediaType {
   // Allocates AM_MEDIA_TYPE with VIDEOINFOHEADER format blob, and sets
   // contents to 0.
   virtual int Init();
+
+  // Sets |subtype| field in |ptr_type_| and returns |kSuccess|. Always returns
+  // |kNullType| when |ptr_type_| is NULL.
+  // Note: 
+  int ConfigurePartialType(VideoFormat format);
 
   // Configures format block using |sub_type| and |config|. Directly applies
   // settings specified by |config| and returns success for supported
@@ -154,7 +165,8 @@ class AudioMediaType : public MediaType {
 class MediaTypePtr {
  public:
   enum {
-    kNullType = 1,
+    kNoMemory = -2,
+    kInvalidArg = -1,
     kSuccess = 0,
   };
   MediaTypePtr();
@@ -166,6 +178,10 @@ class MediaTypePtr {
   // CoTaskMemAlloc. Both pointers will be be passed to CoTaskMemFree in
   // |~MediaTypePtr()|.
   int Attach(AM_MEDIA_TYPE* ptr_type);
+
+  // Allocates storage for a copy of |ptr_type|, copies contents of |ptr_type|,
+  // and passes the resulting AM_MEDIA_TYPE to |Attach()|.
+  int Copy(const AM_MEDIA_TYPE* ptr_type);
 
   // |Free()|s |ptr_type_| and sets it to NULL.
   void Free();
