@@ -45,7 +45,8 @@ VideoSinkPin::VideoSinkPin(TCHAR* ptr_object_name,
                            LPCWSTR ptr_pin_name)
     : CBaseInputPin(ptr_object_name, ptr_filter, ptr_filter_lock, ptr_result,
                     ptr_pin_name),
-      stride_(0) {
+      stride_(0),
+      video_format_(kVideoFormatI420) {
 }
 
 VideoSinkPin::~VideoSinkPin() {
@@ -54,8 +55,7 @@ VideoSinkPin::~VideoSinkPin() {
 // Returns preferred media type.
 HRESULT VideoSinkPin::GetMediaType(int32 type_index,
                                    CMediaType* ptr_media_type) {
-  // TODO: add libyuv and support types other than I420
-  if (type_index != 0) {
+  if (type_index > 1) {
     return VFW_S_NO_MORE_ITEMS;
   }
   VIDEOINFOHEADER* const ptr_video_info =
@@ -79,13 +79,19 @@ HRESULT VideoSinkPin::GetMediaType(int32 type_index,
   ptr_media_type->SetTemporalCompression(FALSE);
   ptr_video_info->bmiHeader.biWidth = requested_config_.width;
   ptr_video_info->bmiHeader.biHeight = requested_config_.height;
-
-  // Set sub type and format data for I420.
-  ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('I','4','2','0');
-  const int kI420BitCount = 12;
-  ptr_video_info->bmiHeader.biBitCount = kI420BitCount;
   ptr_video_info->bmiHeader.biPlanes = 1;
-  ptr_media_type->SetSubtype(&MEDIASUBTYPE_I420);
+
+  if (type_index == 0) {
+    // Set sub type and format data for I420.
+    ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('I','4','2','0');
+    ptr_video_info->bmiHeader.biBitCount = kI420BitCount;
+    ptr_media_type->SetSubtype(&MEDIASUBTYPE_I420);
+  } else {
+    // Set sub type and format data for YV12.
+    ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('Y','V','1','2');
+    ptr_video_info->bmiHeader.biBitCount = kYV12BitCount;
+    ptr_media_type->SetSubtype(&MEDIASUBTYPE_YV12);
+  }
 
   // Set sample size.
   ptr_video_info->bmiHeader.biSizeImage = DIBSIZE(ptr_video_info->bmiHeader);
@@ -96,6 +102,26 @@ HRESULT VideoSinkPin::GetMediaType(int32 type_index,
             << std::hex << "   biCompression="
             << ptr_video_info->bmiHeader.biCompression;
   return S_OK;
+}
+
+const BITMAPINFOHEADER* BitmapInfo(const GUID& format_guid,
+                                   const uint8* ptr_format_blob,
+                                   uint32 format_length) {
+  const BITMAPINFOHEADER* ptr_header = NULL;
+  if (ptr_format_blob) {
+    if (format_guid == FORMAT_VideoInfo &&
+        format_length >= sizeof(VIDEOINFOHEADER)) {
+      const VIDEOINFOHEADER* ptr_video_info =
+          reinterpret_cast<const VIDEOINFOHEADER*>(ptr_format_blob);
+      ptr_header = &ptr_video_info->bmiHeader;
+    } else if (format_guid == FORMAT_VideoInfo2 &&
+               format_length >= sizeof(VIDEOINFOHEADER2)) {
+      const VIDEOINFOHEADER2* ptr_video_info =
+          reinterpret_cast<const VIDEOINFOHEADER2*>(ptr_format_blob);
+      ptr_header = &ptr_video_info->bmiHeader;
+    }
+  }
+  return ptr_header;
 }
 
 // Confirms that |ptr_media_type| is VIDEOINFOHEADER or VIDEOINFOHEADER2 and
@@ -114,50 +140,40 @@ HRESULT VideoSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
       return E_INVALIDARG;
   }
 
-  // Inspect the format stored in |ptr_media_type|.
   const GUID& format_guid = *ptr_format_guid;
   const GUID& subtype_guid = *ptr_subtype_guid;
-  if (format_guid == FORMAT_VideoInfo) {
-    const VIDEOINFOHEADER* const ptr_video_info =
-        reinterpret_cast<VIDEOINFOHEADER*>(ptr_media_type->Format());
-    if (!ptr_video_info) {
-      return VFW_E_TYPE_NOT_ACCEPTED;
-    }
-    const DWORD& four_cc = ptr_video_info->bmiHeader.biCompression;
-    if (subtype_guid != MEDIASUBTYPE_I420 ||
-        four_cc != MAKEFOURCC('I','4','2','0')) {
-      return VFW_E_TYPE_NOT_ACCEPTED;
-    }
 
-    // Store current format in |actual_config_|; |CBasePin::ReceiveConnection|
-    // always calls |CheckMediaType|.
-    actual_config_.width = ptr_video_info->bmiHeader.biWidth;
-    actual_config_.height = abs(ptr_video_info->bmiHeader.biHeight);
-  } else if (format_guid == FORMAT_VideoInfo2) {
-    const VIDEOINFOHEADER2* const ptr_video_info =
-        reinterpret_cast<VIDEOINFOHEADER2*>(ptr_media_type->Format());
-    if (!ptr_video_info) {
-      return VFW_E_TYPE_NOT_ACCEPTED;
-    }
-    const DWORD& four_cc = ptr_video_info->bmiHeader.biCompression;
-    if (subtype_guid != MEDIASUBTYPE_I420 ||
-        four_cc != MAKEFOURCC('I','4','2','0')) {
-      return VFW_E_TYPE_NOT_ACCEPTED;
-    }
-
-    // Store current format in |actual_config_|; |CBasePin::ReceiveConnection|
-    // always calls |CheckMediaType|.
-    actual_config_.width = ptr_video_info->bmiHeader.biWidth;
-    actual_config_.height = abs(ptr_video_info->bmiHeader.biHeight);
-
-    // Store the stride for use with |VideoFrame::Init()|-- it's needed for
-    // format conversion.
-    stride_ = DIBWIDTHBYTES(ptr_video_info->bmiHeader);
+  // Confirm that the subtype is acceptable.
+  if (!AcceptableSubType(subtype_guid)) {
+    return VFW_E_TYPE_NOT_ACCEPTED;
   }
-  LOG(INFO) << "\n CheckMediaType actual settings\n"
+
+  // Obtain access to the BITMAPINFOHEADER, and confirm that the video format
+  // is acceptable.
+  const uint8* ptr_format = ptr_media_type->Format();
+  const uint32 format_length = ptr_media_type->FormatLength();
+  const BITMAPINFOHEADER* ptr_header =
+      BitmapInfo(format_guid, ptr_format, format_length);
+  if (ptr_header) {
+    if (FourCCToVideoFormat(ptr_header->biCompression,
+                            ptr_header->biBitCount,
+                            &video_format_)) {
+      // |ptr_media_type| contains a video frame with a pixel format that is
+      // acceptable-- store format information.
+      actual_config_.width = ptr_header->biWidth;
+      actual_config_.height = ptr_header->biHeight;
+
+      // Store the stride for use with |VideoFrame::Init()|-- it's needed for
+      // format conversion.
+      stride_ = DIBWIDTHBYTES(*ptr_header);
+    }
+  }
+
+  LOG(INFO) << "\n CheckMediaType actual video settings\n"
             << "   width=" << requested_config_.width << "\n"
             << "   height=" << requested_config_.height << "\n"
-            << "   stride=" << stride_;
+            << "   stride=" << stride_ << "\n"
+            << "   format=" << video_format_;
   return S_OK;
 }
 
@@ -182,6 +198,16 @@ HRESULT VideoSinkPin::Receive(IMediaSample* ptr_sample) {
     LOG(ERROR) << "OnFrameReceived failed. " << HRLOG(hr);
   }
   return S_OK;
+}
+
+bool VideoSinkPin::AcceptableSubType(const GUID& media_sub_type) {
+  return (media_sub_type == MEDIASUBTYPE_I420 ||
+          media_sub_type == MEDIASUBTYPE_YV12 ||
+          media_sub_type == MEDIASUBTYPE_YUY2 ||
+          media_sub_type == MEDIASUBTYPE_YUYV ||
+          media_sub_type == MEDIASUBTYPE_UYVY ||
+          media_sub_type == MEDIASUBTYPE_RGB24 ||
+          media_sub_type == MEDIASUBTYPE_RGB32);
 }
 
 // Copies |actual_config_| to |ptr_config|. Note that the filter lock is always
@@ -289,19 +315,28 @@ HRESULT VideoSinkFilter::OnFrameReceived(IMediaSample* ptr_sample) {
   }
   const int32 width = sink_pin_->actual_config_.width;
   const int32 height = sink_pin_->actual_config_.height;
+
   // TODO(tomfinegan): Write an allocator that retrieves frames from
   //                   |WebmEncoder::EncoderThread| and avoid this extra copy.
-  const int32 status = frame_.Init(kVideoFormatI420,
-                                   true,  // all I420 frames are "keyframes"
-                                   width, height, timestamp, duration,
-                                   ptr_sample_buffer,
-                                   ptr_sample->GetActualDataLength());
+
+  const int32 status =
+      frame_.Init(sink_pin_->video_format_,
+                  true,  // uncompressed frames are always "keyframes"
+                  width,
+                  height,
+                  sink_pin_->stride_,
+                  timestamp,
+                  duration,
+                  ptr_sample_buffer,
+                  ptr_sample->GetActualDataLength());
   if (status) {
     LOG(ERROR) << "OnFrameReceived frame init failed: " << status;
     return E_FAIL;
   }
   LOG(INFO) << "OnFrameReceived received a frame:"
-            << " width=" << width << " height=" << height
+            << " width=" << width
+            << " height=" << height
+            << " stride=" << sink_pin_->stride_
             << " timestamp(sec)=" << (timestamp / 1000.0)
             << " timestamp=" << timestamp
             << " duration(sec)= " << (duration / 1000.0)

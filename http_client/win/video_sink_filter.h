@@ -88,6 +88,13 @@ class VideoSinkPin : public CBaseInputPin {
   // then returns S_OK.
   HRESULT set_config(const VideoConfig& config);
 
+  // Returns true when |media_sub_type| is an acceptable video format.
+  bool AcceptableSubType(const GUID& media_sub_type);
+
+  // Returns true and sets |actual_config_|, |stride_|, and |video_format_|
+  // when |header| describes a compatible video format.
+  bool StoreVideoFormat(const BITMAPINFOHEADER& header);
+
   // Filter user's requested video config.
   VideoConfig requested_config_;
 
@@ -96,6 +103,9 @@ class VideoSinkPin : public CBaseInputPin {
 
   // Video frame stride.
   int32 stride_;
+
+  // Video frame pixel format.
+  VideoFormat video_format_;
 
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoSinkPin);
   friend class VideoSinkFilter;
