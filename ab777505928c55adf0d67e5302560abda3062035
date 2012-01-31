@@ -16,6 +16,24 @@
       "revId": "ab777505928c55adf0d67e5302560abda3062035",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//2qE\u003d",
+        "filename": "http_client/win/media_source_dshow.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-31T15:22:59Z",
+      "side": 0,
+      "message": "That\u0027s pretty much it-- I\u0027m removing things as the functionality is replaced elsewhere. I should probably get rid of all the muxing and file related stuff, but I haven\u0027t had the opportunity to do an exhaustive cleanup. I\u0027m just removing what catches my eye while I do work in the file.",
+      "parentUuid": "AAAAHn//2vM\u003d",
+      "revId": "ab777505928c55adf0d67e5302560abda3062035",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
