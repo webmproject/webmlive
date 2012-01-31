@@ -16,6 +16,24 @@
       "revId": "165117289e91a4815bba239986f5923364600444",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//24k\u003d",
+        "filename": "http_client/win/video_sink_filter.cc",
+        "patchSetId": 10
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-01-31T01:02:05Z",
+      "side": 1,
+      "message": "Done. http://msdn.microsoft.com/en-us/library/windows/desktop/dd368709(v\u003dvs.85).aspx says to return E_INVALIDARG, so I do now.",
+      "parentUuid": "AAAAHn//3IY\u003d",
+      "revId": "165117289e91a4815bba239986f5923364600444",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
