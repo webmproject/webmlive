@@ -80,9 +80,12 @@ HRESULT VideoSinkPin::GetMediaType(int32 type_index,
   ptr_media_type->SetType(&MEDIATYPE_Video);
   ptr_media_type->SetFormatType(&FORMAT_VideoInfo);
   ptr_media_type->SetTemporalCompression(FALSE);
-  ptr_video_info->bmiHeader.biWidth = requested_config_.width;
-  ptr_video_info->bmiHeader.biHeight = requested_config_.height;
   ptr_video_info->bmiHeader.biPlanes = 1;
+
+  if (requested_config_.width != kDefaultVideoWidth)
+    ptr_video_info->bmiHeader.biWidth = requested_config_.width;
+  if (requested_config_.width != kDefaultVideoHeight)
+    ptr_video_info->bmiHeader.biHeight = requested_config_.height;
 
   if (type_index == 0) {
     // Set sub type and format data for I420.
@@ -100,8 +103,8 @@ HRESULT VideoSinkPin::GetMediaType(int32 type_index,
   ptr_video_info->bmiHeader.biSizeImage = DIBSIZE(ptr_video_info->bmiHeader);
   ptr_media_type->SetSampleSize(ptr_video_info->bmiHeader.biSizeImage);
   LOG(INFO) << "\n GetMediaType type_index=" << type_index << "\n"
-            << "   width=" << requested_config_.width << "\n"
-            << "   height=" << requested_config_.height << "\n"
+            << "   width=" << ptr_video_info->bmiHeader.biWidth << "\n"
+            << "   height=" << ptr_video_info->bmiHeader.biHeight << "\n"
             << std::hex << "   biCompression="
             << ptr_video_info->bmiHeader.biCompression;
   return S_OK;
@@ -173,8 +176,8 @@ HRESULT VideoSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
   }
 
   LOG(INFO) << "\n CheckMediaType actual video settings\n"
-            << "   width=" << requested_config_.width << "\n"
-            << "   height=" << requested_config_.height << "\n"
+            << "   width=" << actual_config_.width << "\n"
+            << "   height=" << actual_config_.height << "\n"
             << "   stride=" << stride_ << "\n"
             << "   format=" << video_format_;
   return S_OK;
