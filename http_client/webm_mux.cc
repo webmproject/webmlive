@@ -42,9 +42,9 @@ class WebmMuxWriter : public mkvmuxer::IMkvWriter {
   int64 bytes_written() const { return bytes_written_; }
   int64 chunk_end() const { return chunk_end_; }
 
-  // Resets |chunk_end_| to 0. Used by |LiveWebmMuxer| to mark a chunk as
-  // consumed.
-  void ResetChunkEnd() { chunk_end_ = 0; }
+  // Erases chunk from |ptr_write_buffer_|, resets |chunk_end_| to 0, and
+  // updates |bytes_buffered_|.
+  void EraseChunk();
 
   // mkvmuxer::IMkvWriter methods
   // Returns total bytes of data passed to |Write|.
@@ -88,6 +88,16 @@ int32 WebmMuxWriter::Init(LiveWebmMuxer::WriteBuffer* ptr_write_buffer) {
   }
   ptr_write_buffer_ = ptr_write_buffer;
   return kSuccess;
+}
+
+void WebmMuxWriter::EraseChunk() {
+  if (ptr_write_buffer_) {
+    LiveWebmMuxer::WriteBuffer::iterator erase_end_pos =
+        ptr_write_buffer_->begin() + static_cast<int32>(chunk_end_);
+    ptr_write_buffer_->erase(ptr_write_buffer_->begin(), erase_end_pos);
+    bytes_buffered_ = ptr_write_buffer_->size();
+    chunk_end_ = 0;
+  }
 }
 
 int32 WebmMuxWriter::Write(const void* ptr_buffer, uint32 buffer_length) {
@@ -268,13 +278,13 @@ int32 LiveWebmMuxer::ReadChunk(int32 buffer_capacity, uint8* ptr_buf) {
     return kUserBufferTooSmall;
   }
 
-  // Copy chunk to user buffer, and remove it from |buffer_|.
-  memcpy(ptr_buf, &buffer_[0], chunk_length);
-  WriteBuffer::iterator erase_end_pos = buffer_.begin() + chunk_length;
-  buffer_.erase(buffer_.begin(), erase_end_pos);
+  LOG(INFO) << "ReadChunk capacity=" << buffer_capacity
+            << " length=" << chunk_length
+            << " total buffered=" << buffer_.size();
 
-  // Clear chunk end position, which causes |ChunkReady| to return false.
-  ptr_writer_->ResetChunkEnd();
+  // Copy chunk to user buffer, and erase it from |buffer_|.
+  memcpy(ptr_buf, &buffer_[0], chunk_length);
+  ptr_writer_->EraseChunk();
   return kSuccess;
 }
 
