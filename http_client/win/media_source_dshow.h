@@ -81,6 +81,7 @@ int64 media_time_to_milliseconds(REFERENCE_TIME media_time);
 double media_time_to_seconds(REFERENCE_TIME media_time);
 REFERENCE_TIME seconds_to_media_time(double seconds);
 
+class MediaTypePtr;
 class PinInfo;
 class VideoFrameCallbackInterface;
 
@@ -114,6 +115,8 @@ class MediaSourceImpl {
     // Unable to connect video source to VP8 encoder.
     kVideoConnectError = -207,
 
+    // Unable to configure video source.
+    kVideoConfigureError = WebmEncoder::kVideoConfigureError,
 
     // Unable to add a filter to the graph.
     kCannotAddFilter = -204,
@@ -179,8 +182,11 @@ class MediaSourceImpl {
   int ConnectVideoSourceToVideoSink();
 
   // Configures the video capture source using |sub_type| and
-  // |config_.requested_video_config|.
-  int ConfigureVideoSource(const IPinPtr& pin, int sub_type);
+  // |config_.requested_video_config|. Returns |kSuccess| and stores
+  // |AM_MEDIA_TYPE| accepted by |pin| in |ptr_type|.
+  int ConfigureVideoSource(const IPinPtr& pin,
+                           int sub_type,
+                           MediaTypePtr* ptr_type);
 
   // Obtains interfaces and data needed to monitor and control the graph.
   int InitGraphControl();

@@ -316,15 +316,17 @@ int MediaSourceImpl::ConnectVideoSourceToVideoSink() {
   }
   status = kVideoConnectError;
   HRESULT hr = E_FAIL;
-  for (int i = 0; i < VideoMediaType::kNumVideoSubtypes && hr != S_OK; ++i) {
-    status = ConfigureVideoSource(video_source_pin, i);
+  for (int i = 0; i < kVideoFormatCount && hr != S_OK; ++i) {
+    MediaTypePtr accepted_type;
+    status = ConfigureVideoSource(video_source_pin, i, &accepted_type);
     if (status == kSuccess) {
       LOG(INFO) << "Format " << i << " configuration OK.";
     } else {
       continue;
     }
-    hr = graph_builder_->ConnectDirect(video_source_pin, sink_input_pin, NULL);
-    LOG(INFO) << "Format " << i << (hr == S_OK) ? " connected." : " failed.";
+    hr = graph_builder_->ConnectDirect(video_source_pin, sink_input_pin,
+                                       accepted_type.get());
+    LOG(INFO) << "Format " << i << ((hr == S_OK) ? " connected." : " failed.");
   }
   if (status || hr != S_OK) {
     // All previous connection attempts failed. Try one last time using
@@ -367,16 +369,23 @@ int MediaSourceImpl::ConnectVideoSourceToVideoSink() {
 // to produce an AM_MEDIA_TYPE struct suitable for use with
 // IAMStreamConfig::SetFormat. Returns |kSuccess| upon successful
 // configuration.
-int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin, int sub_type) {
+int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin,
+                                          int sub_type,
+                                          MediaTypePtr* ptr_type) {
+  if (!ptr_type) {
+    LOG(ERROR) << "NULL media type output pointer!";
+    return kInvalidArg;
+  }
   VideoConfig& video_config = requested_video_config_;
   if (video_config.manual_config) {
     // Always disable manual configuration.
     // |ConfigureVideoSource| is called in a loop, so this avoids making the
     // user mess with the dialog repeatedly if/when manual settings disagree
-    // with the VP8 encoder filter.
+    // with the video sink filter.
     video_config.manual_config = false;
-    bool filter_config_ok = false;
+
     // Try showing |video_source_|'s property page.
+    bool filter_config_ok = false;
     HRESULT hr = ShowFilterPropertyPage(video_source_);
     if (FAILED(hr)) {
       LOG(WARNING) << "Unable to show video source filter property page."
@@ -384,10 +393,11 @@ int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin, int sub_type) {
     } else {
       filter_config_ok = true;
     }
-    bool pin_config_ok = false;
+
     // Try showing the pin property page. Extremely common video sources (I.E.
     // Logitech webcams) show vastly different configuration options on the
     // filter and pin property pages.
+    bool pin_config_ok = false;
     hr = ShowPinPropertyPage(pin);
     if (FAILED(hr)) {
       LOG(WARNING) << "Unable to show video source pin property page."
@@ -396,35 +406,63 @@ int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin, int sub_type) {
       pin_config_ok = true;
     }
     if (filter_config_ok || pin_config_ok) {
-      LOG(INFO) << "Manual video configuration successful.";
-      return kSuccess;
+      PinFormat formatter(pin);
+      const int status = ptr_type->Attach(formatter.format());
+      if (status) {
+        LOG(WARNING) << "Manual video config failed: user config successful, "
+                        "but pin has no media type.";
+
+        // Fall through and try configuring the pin without user intervention.
+      } else {
+        LOG(INFO) << "Manual video configuration successful.";
+        return kSuccess;
+      }
     }
+
     // Fall through and use settings in |video_config| when property page
     // stuff fails.
     LOG(WARNING) << "Manual video configuration failed.";
   }
+  VideoMediaType video_format;
+  int status = video_format.Init(MEDIATYPE_Video, FORMAT_VideoInfo);
+  if (status) {
+    LOG(ERROR) << "video media type init failed.";
+    return kVideoConfigureError;
+  }
+  const VideoFormat video_sub_type = static_cast<VideoFormat>(sub_type);
   if (video_config.width != kDefaultVideoWidth ||
       video_config.height != kDefaultVideoHeight ||
       video_config.frame_rate != kDefaultVideoFrameRate) {
-    VideoMediaType video_format;
-    int status = video_format.Init(MEDIATYPE_Video, FORMAT_VideoInfo);
-    if (status) {
-      LOG(ERROR) << "video media type init failed.";
-      return WebmEncoder::kVideoConfigureError;
-    }
-    VideoMediaType::VideoSubType video_sub_type =
-        static_cast<VideoMediaType::VideoSubType>(sub_type);
+    // User specified video settings are present: build a complete media type
+    // and attempt configuration of the source device.
     status = video_format.ConfigureSubType(video_sub_type, video_config);
     if (status) {
       LOG(ERROR) << "video sub type configuration failed.";
-      return WebmEncoder::kVideoConfigureError;
+      return kVideoConfigureError;
     }
     PinFormat formatter(pin);
     status = formatter.set_format(
         const_cast<AM_MEDIA_TYPE*>(video_format.get()));
     if (status) {
-      LOG(ERROR) << "cannot set pin format";
-      return WebmEncoder::kVideoConfigureError;
+      LOG(WARNING) << "cannot set pin format: " << status;
+      return kVideoConfigureError;
+    }
+    status = ptr_type->Attach(formatter.format());
+    if (status) {
+      LOG(ERROR) << "Cannot attach to pin format: " << status;
+      return kVideoConfigureError;
+    }
+  } else {
+    // No user settings: configure a partial media type.
+    status = video_format.ConfigurePartialType(video_sub_type);
+    if (status) {
+      LOG(ERROR) << "cannot set partial pin format: " << status;
+      return kVideoConfigureError;
+    }
+    status = ptr_type->Copy(video_format.get());
+    if (status) {
+      LOG(ERROR) << "Cannot copy partial type: " << status;
+      return kVideoConfigureError;
     }
   }
   return WebmEncoder::kSuccess;
