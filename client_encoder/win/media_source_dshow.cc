@@ -18,21 +18,15 @@
 #include "boost/scoped_array.hpp"
 #include "client_encoder/video_encoder.h"
 #include "client_encoder/webm_encoder.h"
+#include "client_encoder/win/dshow_util.h"
 #include "client_encoder/win/media_type_dshow.h"
 #include "client_encoder/win/video_sink_filter.h"
 #include "client_encoder/win/webm_guids.h"
 #include "glog/logging.h"
 #include "oggdsf/IVorbisEncodeSettings.h"
 #include "oggdsf/VorbisTypes.h"
-#include "webmdshow/common/hrtext.hpp"
-#include "webmdshow/common/odbgstream.hpp"
 #include "webmdshow/IDL/vp8encoderidl.h"
 #include "webmdshow/IDL/webmmuxidl.h"
-
-// Extracts error from the HRESULT, and outputs its hex and decimal values.
-#define HRLOG(X) \
-    " {" << #X << "=" << X << "/" << std::hex << X << std::dec << " (" << \
-    hrtext(X) << ")}"
 
 namespace webmlive {
 
