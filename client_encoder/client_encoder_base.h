@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef HTTP_CLIENT_HTTP_CLIENT_BASE_H_
-#define HTTP_CLIENT_HTTP_CLIENT_BASE_H_
+#ifndef CLIENT_ENCODER_CLIENT_ENCODER_BASE_H_
+#define CLIENT_ENCODER_CLIENT_ENCODER_BASE_H_
 
 #if _WIN32
 
@@ -21,4 +21,4 @@
 
 #endif  // _WIN32
 
-#endif  // HTTP_CLIENT_HTTP_CLIENT_BASE_H_
+#endif  // CLIENT_ENCODER_CLIENT_ENCODER_BASE_H_

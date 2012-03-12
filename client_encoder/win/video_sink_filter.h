@@ -5,13 +5,12 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-
+//
 // Defines the video sink filter used to obtain raw frames from user input
 // devices available via DirectShow. Based on WebRTC's CaptureInputPin and
 // CaptureSinkFilter.
-
-#ifndef HTTP_CLIENT_WIN_VIDEO_SINK_FILTER_H_
-#define HTTP_CLIENT_WIN_VIDEO_SINK_FILTER_H_
+#ifndef CLIENT_ENCODER_WIN_VIDEO_SINK_FILTER_H_
+#define CLIENT_ENCODER_WIN_VIDEO_SINK_FILTER_H_
 
 #pragma warning(push)
 #pragma warning(disable:4005)
@@ -24,10 +23,10 @@
 #pragma warning(pop)
 #include "boost/scoped_array.hpp"
 #include "boost/scoped_ptr.hpp"
-#include "http_client/basictypes.h"
-#include "http_client/http_client_base.h"
-#include "http_client/video_encoder.h"
-#include "http_client/webm_encoder.h"
+#include "client_encoder/basictypes.h"
+#include "client_encoder/client_encoder_base.h"
+#include "client_encoder/video_encoder.h"
+#include "client_encoder/webm_encoder.h"
 
 namespace webmlive {
 
@@ -159,4 +158,4 @@ class VideoSinkFilter : public CBaseFilter {
 
 }  // namespace webmlive
 
-#endif  // HTTP_CLIENT_WIN_VIDEO_SINK_FILTER_H_
+#endif  // CLIENT_ENCODER_WIN_VIDEO_SINK_FILTER_H_

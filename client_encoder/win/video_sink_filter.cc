@@ -5,15 +5,14 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-
-#include "http_client/win/video_sink_filter.h"
+#include "client_encoder/win/video_sink_filter.h"
 
 #include <dvdmedia.h>
 #include <vfwmsgs.h>
 
+#include "client_encoder/win/media_source_dshow.h"
+#include "client_encoder/win/webm_guids.h"
 #include "glog/logging.h"
-#include "http_client/win/media_source_dshow.h"
-#include "http_client/win/webm_guids.h"
 #include "webmdshow/common/hrtext.hpp"
 #include "webmdshow/common/odbgstream.hpp"
 
@@ -89,12 +88,12 @@ HRESULT VideoSinkPin::GetMediaType(int32 type_index,
 
   if (type_index == 0) {
     // Set sub type and format data for I420.
-    ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('I','4','2','0');
+    ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('I', '4', '2', '0');
     ptr_video_info->bmiHeader.biBitCount = kI420BitCount;
     ptr_media_type->SetSubtype(&MEDIASUBTYPE_I420);
   } else {
     // Set sub type and format data for YV12.
-    ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('Y','V','1','2');
+    ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('Y', 'V', '1', '2');
     ptr_video_info->bmiHeader.biBitCount = kYV12BitCount;
     ptr_media_type->SetSubtype(&MEDIASUBTYPE_YV12);
   }

@@ -5,17 +5,17 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef HTTP_CLIENT_HTTP_UPLOADER_H_
-#define HTTP_CLIENT_HTTP_UPLOADER_H_
+#ifndef CLIENT_ENCODER_HTTP_UPLOADER_H_
+#define CLIENT_ENCODER_HTTP_UPLOADER_H_
 
 #include <map>
 #include <queue>
 #include <string>
 
 #include "boost/scoped_ptr.hpp"
-#include "http_client/basictypes.h"
-#include "http_client/data_sink.h"
-#include "http_client/http_client_base.h"
+#include "client_encoder/basictypes.h"
+#include "client_encoder/data_sink.h"
+#include "client_encoder/client_encoder_base.h"
 
 namespace webmlive {
 
@@ -140,4 +140,4 @@ class HttpUploader : public DataSinkInterface {
 
 }  // namespace webmlive
 
-#endif  // HTTP_CLIENT_HTTP_UPLOADER_H_
+#endif  // CLIENT_ENCODER_HTTP_UPLOADER_H_

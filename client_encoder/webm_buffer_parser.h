@@ -5,15 +5,15 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef HTTP_CLIENT_WEBM_BUFFER_PARSER_H_
-#define HTTP_CLIENT_WEBM_BUFFER_PARSER_H_
+#ifndef CLIENT_ENCODER_WEBM_BUFFER_PARSER_H_
+#define CLIENT_ENCODER_WEBM_BUFFER_PARSER_H_
 
 #include <string>
 #include <vector>
 
 #include "boost/scoped_ptr.hpp"
-#include "http_client/basictypes.h"
-#include "http_client/http_client_base.h"
+#include "client_encoder/basictypes.h"
+#include "client_encoder/client_encoder_base.h"
 
 namespace mkvparser {
 
@@ -49,6 +49,7 @@ class WebmBufferParser {
   // Returns |kNeedMoreData| when more data is needed. Returns |kSuccess| and
   // sets |ptr_element_size| when all data has been parsed.
   int Parse(const Buffer& buf, int32* ptr_element_size);
+
  private:
   // Parse function pointer type.
   typedef int (WebmBufferParser::*ParseFunc)(int32* ptr_element_size);
@@ -81,4 +82,4 @@ class WebmBufferParser {
 
 }  // namespace webmlive
 
-#endif  // HTTP_CLIENT_WEBM_BUFFER_PARSER_H_
+#endif  // CLIENT_ENCODER_WEBM_BUFFER_PARSER_H_

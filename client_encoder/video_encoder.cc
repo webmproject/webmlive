@@ -5,8 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-
-#include "http_client/video_encoder.h"
+#include "client_encoder/video_encoder.h"
 
 #include <new>
 
@@ -21,7 +20,7 @@
 // vp8.h and vp8cx.h (included by vpx_encoder.h).
 #pragma warning(disable:4505)
 #endif
-#include "http_client/vpx_encoder.h"
+#include "client_encoder/vpx_encoder.h"
 
 namespace webmlive {
 
@@ -414,7 +413,7 @@ VideoEncoder::~VideoEncoder() {
 }
 
 int32 VideoEncoder::Init(const WebmEncoderConfig& config) {
-  ptr_vpx_encoder_.reset(new (std::nothrow) VpxEncoder());
+  ptr_vpx_encoder_.reset(new (std::nothrow) VpxEncoder());  // NOLINT
   if (!ptr_vpx_encoder_) {
     return kNoMemory;
   }

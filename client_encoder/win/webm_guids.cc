@@ -5,8 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-
-#include "http_client/win/webm_guids.h"
+#include "client_encoder/win/webm_guids.h"
 
 // 30323449-0000-0010-8000-00AA00389B71 'I420'
 const GUID webmlive::MEDIASUBTYPE_I420 = {

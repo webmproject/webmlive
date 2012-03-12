@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "http_client/http_client_base.h"
+#include "client_encoder/client_encoder_base.h"
 
 #include <conio.h>
 #include <stdio.h>
@@ -15,10 +15,10 @@
 #include <vector>
 
 #include "boost/scoped_array.hpp"
+#include "client_encoder/buffer_util.h"
+#include "client_encoder/http_uploader.h"
+#include "client_encoder/webm_encoder.h"
 #include "glog/logging.h"
-#include "http_client/buffer_util.h"
-#include "http_client/http_uploader.h"
-#include "http_client/webm_encoder.h"
 
 namespace {
 enum {
@@ -102,9 +102,6 @@ int store_string_map_entries(const StringVector& unparsed_entries,
   using std::vector;
   StringVector::const_iterator entry_iter = unparsed_entries.begin();
   while (entry_iter != unparsed_entries.end()) {
-
-    // TODO(tomfinegan): support empty headers?
-
     const string& entry = *entry_iter;
     size_t sep = entry.find(":");
 

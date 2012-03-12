@@ -5,15 +5,15 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef HTTP_CLIENT_BUFFER_UTIL_H_
-#define HTTP_CLIENT_BUFFER_UTIL_H_
+#ifndef CLIENT_ENCODER_BUFFER_UTIL_H_
+#define CLIENT_ENCODER_BUFFER_UTIL_H_
 
 #include <vector>
 
 #include "boost/scoped_ptr.hpp"
 #include "boost/thread/mutex.hpp"
-#include "http_client/basictypes.h"
-#include "http_client/http_client_base.h"
+#include "client_encoder/basictypes.h"
+#include "client_encoder/client_encoder_base.h"
 
 namespace webmlive {
 
@@ -48,6 +48,7 @@ class LockableBuffer {
   int Lock();
   // Unlock the buffer. Returns |kNotLocked| if buffer already unlocked.
   int Unlock();
+
  private:
   // Lock status.
   bool locked_;
@@ -93,6 +94,7 @@ class WebmChunkBuffer {
   // Returns the length of the currently parsed and buffered chunk, or 0 if
   // a complete chunk is not buffered.
   int32 chunk_length() const { return chunk_length_; }
+
  private:
   typedef std::vector<uint8> Buffer;
   // WebM data parser.
@@ -106,4 +108,4 @@ class WebmChunkBuffer {
 
 }  // namespace webmlive
 
-#endif  // HTTP_CLIENT_BUFFER_UTIL_H_
+#endif  // CLIENT_ENCODER_BUFFER_UTIL_H_

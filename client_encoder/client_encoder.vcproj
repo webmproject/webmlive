@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="http_client"
+	Name="client_encoder"
 	ProjectGUID="{8408F263-901F-4C53-AAEC-4163E38A6504}"
-	RootNamespace="http_client"
+	RootNamespace="client_encoder"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -205,11 +205,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\http_client_base.h"
+				RelativePath=".\client_encoder_base.h"
 				>
 			</File>
 			<File
-				RelativePath=".\http_client_main.cc"
+				RelativePath=".\client_encoder_main.cc"
 				>
 			</File>
 			<File

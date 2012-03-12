@@ -5,16 +5,16 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "http_client/webm_encoder.h"
+#include "client_encoder/webm_encoder.h"
 
 #include <cstdio>
 #include <sstream>
 
-#include "glog/logging.h"
-#include "http_client/webm_mux.h"
+#include "client_encoder/webm_mux.h"
 #ifdef _WIN32
-#include "http_client/win/media_source_dshow.h"
+#include "client_encoder/win/media_source_dshow.h"
 #endif
+#include "glog/logging.h"
 
 namespace webmlive {
 
@@ -39,7 +39,8 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
   ptr_data_sink_ = ptr_data_sink;
 
   // Allocate the chunk buffer.
-  chunk_buffer_.reset(new (std::nothrow) uint8[kDefaultChunkBufferSize]);
+  chunk_buffer_.reset(
+      new (std::nothrow) uint8[kDefaultChunkBufferSize]);  // NOLINT
   if (!chunk_buffer_) {
     LOG(ERROR) << "Unable to allocate chunk buffer!";
     return kNoMemory;
@@ -162,7 +163,7 @@ bool WebmEncoder::ReadChunkFromMuxer(int32 chunk_length) {
   // Confirm that there's enough space in the chunk buffer.
   if (chunk_length > chunk_buffer_size_) {
     const int32 new_size = chunk_length * 2;
-    chunk_buffer_.reset(new (std::nothrow) uint8[new_size]);
+    chunk_buffer_.reset(new (std::nothrow) uint8[new_size]);  // NOLINT
     if (!chunk_buffer_) {
       LOG(ERROR) << "chunk buffer reallocation failed!";
       return false;
