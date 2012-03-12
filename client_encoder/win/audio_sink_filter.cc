@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "client_encoder/win/video_sink_filter.h"
+#include "client_encoder/win/audio_sink_filter.h"
 
 #include <dvdmedia.h>
 #include <vfwmsgs.h>
@@ -18,103 +18,51 @@
 namespace webmlive {
 
 ///////////////////////////////////////////////////////////////////////////////
-// VideoSinkPin
+// AudioSinkPin
 //
 
-VideoSinkPin::VideoSinkPin(TCHAR* ptr_object_name,
-                           VideoSinkFilter* ptr_filter,
+AudioSinkPin::AudioSinkPin(TCHAR* ptr_object_name,
+                           AudioSinkFilter* ptr_filter,
                            CCritSec* ptr_filter_lock,
                            HRESULT* ptr_result,
                            LPCWSTR ptr_pin_name)
     : CBaseInputPin(ptr_object_name, ptr_filter, ptr_filter_lock, ptr_result,
-                    ptr_pin_name),
-      stride_(0),
-      video_format_(kVideoFormatI420) {
+                    ptr_pin_name)
 }
 
-VideoSinkPin::~VideoSinkPin() {
+AudioSinkPin::~AudioSinkPin() {
 }
 
 // Returns preferred media type.
-HRESULT VideoSinkPin::GetMediaType(int32 type_index,
+HRESULT AudioSinkPin::GetMediaType(int32 type_index,
                                    CMediaType* ptr_media_type) {
   if (type_index < 0 || !ptr_media_type) {
     return E_INVALIDARG;
   }
-  if (type_index > 1) {
+  if (type_index > 5) {
     return VFW_S_NO_MORE_ITEMS;
   }
-  VIDEOINFOHEADER* const ptr_video_info =
-      reinterpret_cast<VIDEOINFOHEADER*>(
-          ptr_media_type->AllocFormatBuffer(sizeof(VIDEOINFOHEADER)));
-  if (!ptr_video_info) {
-    LOG(ERROR) << "VIDEOINFOHEADER alloc failed.";
-    return E_OUTOFMEMORY;
-  }
-  ZeroMemory(ptr_video_info, sizeof(VIDEOINFOHEADER));
-  ptr_video_info->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 
-  // Use empty source/dest rectangle-- the entire image is needed, and there is
-  // no target subrect.
-  SetRectEmpty(&ptr_video_info->rcSource);
-  SetRectEmpty(&ptr_video_info->rcTarget);
+  // TODO(tomfinegan): Must support these inputs:
+  // MEDIATYPE_Audio/
+  //  - FORMAT_WaveFormatEx/WAVE_FORMAT_IEE_FLOAT
+  //  - FORMAT_WaveFormatEx/WAVE_FORMAT_PCM
+  // The above provides mono/stereo support. For multi channel
+  // |WAVEFORMATEXTENSIBLE| support is needed, which has some rules.
+  // MSDN (http://goo.gl/tkK2y) says |WAVEFORMATEXTENSIBLE| must contain a
+  // |WAVEFORMATEX| with |wFormatTag| set to |WAVE_FORMAT_EXTENSIBLE| and
+  // |cbSize| >= 22.
+  // Support of the following should be reasonable:
+  //  - FORMAT_WaveFormatEx/WAVE_FORMAT_EXTENSIBLE/
+  //      KSDATAFORMAT_SUBTYPE_IEEE_FLOAT
+  //  - FORMAT_WaveFormatEx/WAVE_FORMAT_EXTENSIBLE/
+  //      KSDATAFORMAT_SUBTYPE_PCM
+  //  - FORMAT_WaveFormatEx/WAVE_FORMAT_EXTENSIBLE/
+  //      KSDATAFORMAT_SUBTYPE_WAVEFORMATEX
 
-  // Set values for all input types supported.
-  ptr_media_type->SetType(&MEDIATYPE_Video);
-  ptr_media_type->SetFormatType(&FORMAT_VideoInfo);
-  ptr_media_type->SetTemporalCompression(FALSE);
-  ptr_video_info->bmiHeader.biPlanes = 1;
-
-  if (requested_config_.width != kDefaultVideoWidth)
-    ptr_video_info->bmiHeader.biWidth = requested_config_.width;
-  if (requested_config_.height != kDefaultVideoHeight)
-    ptr_video_info->bmiHeader.biHeight = requested_config_.height;
-
-  if (type_index == 0) {
-    // Set sub type and format data for I420.
-    ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('I', '4', '2', '0');
-    ptr_video_info->bmiHeader.biBitCount = kI420BitCount;
-    ptr_media_type->SetSubtype(&MEDIASUBTYPE_I420);
-  } else {
-    // Set sub type and format data for YV12.
-    ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('Y', 'V', '1', '2');
-    ptr_video_info->bmiHeader.biBitCount = kYV12BitCount;
-    ptr_media_type->SetSubtype(&MEDIASUBTYPE_YV12);
-  }
-
-  // Set sample size.
-  ptr_video_info->bmiHeader.biSizeImage = DIBSIZE(ptr_video_info->bmiHeader);
-  ptr_media_type->SetSampleSize(ptr_video_info->bmiHeader.biSizeImage);
-  LOG(INFO) << "\n GetMediaType type_index=" << type_index << "\n"
-            << "   width=" << ptr_video_info->bmiHeader.biWidth << "\n"
-            << "   height=" << ptr_video_info->bmiHeader.biHeight << "\n"
-            << std::hex << "   biCompression="
-            << ptr_video_info->bmiHeader.biCompression;
-  return S_OK;
+  return E_NOTIMPL;
 }
 
-const BITMAPINFOHEADER* BitmapInfo(const GUID& format_guid,
-                                   const uint8* ptr_format_blob,
-                                   uint32 format_length) {
-  const BITMAPINFOHEADER* ptr_header = NULL;
-  if (ptr_format_blob) {
-    if (format_guid == FORMAT_VideoInfo &&
-        format_length >= sizeof(VIDEOINFOHEADER)) {
-      const VIDEOINFOHEADER* ptr_video_info =
-          reinterpret_cast<const VIDEOINFOHEADER*>(ptr_format_blob);
-      ptr_header = &ptr_video_info->bmiHeader;
-    } else if (format_guid == FORMAT_VideoInfo2 &&
-               format_length >= sizeof(VIDEOINFOHEADER2)) {
-      const VIDEOINFOHEADER2* ptr_video_info =
-          reinterpret_cast<const VIDEOINFOHEADER2*>(ptr_format_blob);
-      ptr_header = &ptr_video_info->bmiHeader;
-    }
-  }
-  return ptr_header;
-}
-
-// Confirms that |ptr_media_type| is VIDEOINFOHEADER or VIDEOINFOHEADER2 and
-// has a subtype of MEDIASUBTYPE_I420.
 HRESULT VideoSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
   // Confirm media type is acceptable.
   const GUID* const ptr_type_guid = ptr_media_type->Type();
