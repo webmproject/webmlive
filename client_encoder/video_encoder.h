@@ -5,17 +5,16 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-
-#ifndef HTTP_CLIENT_VIDEO_ENCODER_H_
-#define HTTP_CLIENT_VIDEO_ENCODER_H_
+#ifndef CLIENT_ENCODER_VIDEO_ENCODER_H_
+#define CLIENT_ENCODER_VIDEO_ENCODER_H_
 
 #include <queue>
 
 #include "boost/scoped_array.hpp"
 #include "boost/scoped_ptr.hpp"
 #include "boost/thread/mutex.hpp"
-#include "http_client/basictypes.h"
-#include "http_client/http_client_base.h"
+#include "client_encoder/basictypes.h"
+#include "client_encoder/client_encoder_base.h"
 
 namespace webmlive {
 
@@ -261,5 +260,5 @@ class VideoEncoder {
 
 }  // namespace webmlive
 
-#endif  // HTTP_CLIENT_VIDEO_ENCODER_H_
+#endif  // CLIENT_ENCODER_VIDEO_ENCODER_H_
 

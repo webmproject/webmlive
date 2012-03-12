@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "http_client", "http_client.vcproj", "{8408F263-901F-4C53-AAEC-4163E38A6504}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_encoder", "client_encoder.vcproj", "{8408F263-901F-4C53-AAEC-4163E38A6504}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
