@@ -1277,7 +1277,7 @@ AM_MEDIA_TYPE* PinFormat::FindMatchingFormat(const AudioConfig& config) {
     }
     if (audio_format.channels() == config.channels &&
         audio_format.sample_rate() == config.sample_rate &&
-        audio_format.sample_size() == config.sample_size) {
+        audio_format.bits_per_sample() == config.sample_size) {
       LOG(INFO) << "Found matching audio media type.";
       break;
     }

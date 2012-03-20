@@ -26,6 +26,7 @@ bool VideoFormatToSubTypeGuid(VideoFormat format, GUID* ptr_sub_type);
 class MediaType {
  public:
   enum {
+    kInvalidFormat = -9,  // Unsupported/nonsense format blob values.
     kUnsupportedFormatTag = -8,
     kNullType = -7,  // |ptr_type_| NULL.
     kInvalidArg = -6,
@@ -50,7 +51,7 @@ class MediaType {
   static void FreeMediaType(AM_MEDIA_TYPE* ptr_media_type);
   static void FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type);
 
- private:
+ protected:
   // Allocates memory for |ptr_type_|.
   int AllocTypeStruct();
 
@@ -59,8 +60,6 @@ class MediaType {
 
   // Pointer to AM_MEDIA_TYPE memory allocated via CoTaskMemAlloc.
   AM_MEDIA_TYPE* ptr_type_;
-  friend class AudioMediaType;
-  friend class VideoMediaType;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(MediaType);
 };
 
@@ -132,31 +131,60 @@ class VideoMediaType : public MediaType {
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoMediaType);
 };
 
-// Audio specific AM_MEDIA_TYPE management class. Always allocates internal
-// storage for the AM_MEDIA_TYPE data.
+// Audio specific |AM_MEDIA_TYPE| management class. Always allocates internal
+// storage for the |AM_MEDIA_TYPE| data.
 class AudioMediaType : public MediaType {
  public:
   typedef WebmEncoderConfig::AudioCaptureConfig AudioConfig;
   AudioMediaType();
   virtual ~AudioMediaType();
 
-  // Allocates AM_MEDIA_TYPE for specified |major_type| and |format_type|.
+  // Allocates |AM_MEDIA_TYPE| for specified |major_type| and |format_type|,
+  // and returns |MediaType::kSuccess|.
   virtual int Init(const GUID& major_type, const GUID& format_type);
 
-  // Copies |media_type| and returns |kSuccess|.
+  // Copies |media_type| and returns |MediaType::kSuccess|.
   virtual int Init(const AM_MEDIA_TYPE& media_type);
 
-  // Allocates AM_MEDIA_TYPE with WAVEFORMATEX format blob, and sets contents
-  // to 0.
+  // Allocates |AM_MEDIA_TYPE| with |WAVEFORMATEX| format blob, sets contents
+  // to 0, and returns |MediaType::kSuccess|.
   virtual int Init();
 
-  // Validates |ptr_type_| and verifies that format blob has capacity for a
-  // WAVEFORMATEX struct.
+  // Validates |MediaType::ptr_type_| and verifies that format blob has
+  // capacity for a |WAVEFORMATEX| struct. Returns true for valid blobs.
   bool IsValidWaveFormatExBlob() const;
+
+  // Checks |ptr_type_| using |IsValidWaveFormatExBlob()|, and then confirms
+  // the additional storage necessary for a |WAVEFORMATEXTENSIBLE| blob is
+  // present. Returns true for valid blobs.
+  bool IsValidWaveFormatExtensibleBlob() const;
+
+  // Configures |ptr_type_| using format specified by |config|, and returns
+  // |MediaType::kSuccess|.
   int Configure(const AudioConfig& config);
-  int channels() const;
-  int sample_rate() const;
-  int sample_size() const;
+
+  // Accessors that reach into the |WAVEFORMATEX| stored within the format
+  // blob. All return 0 when |IsValidWaveFormatExBlob()| returns false,
+  // otherwise the value stored within the format blob is returned.
+  uint16 block_align() const;
+  uint32 bytes_per_second() const;
+  uint16 channels() const;
+  uint16 format_tag() const;
+  uint32 sample_rate() const;
+  uint16 bits_per_sample() const;
+
+  // Accessors that reach into the |WAVEFORMATEXTENSIBLE| stored within the
+  // format blob. All return 0 when |IsValidWaveFormatExBlob()| or
+  // |IsValidWaveFormatExtensibleBlob()| return false, otherwise the value
+  // stored within the format blob is returned.
+  uint16 valid_bits_per_sample() const;
+  uint16 samples_per_block() const;
+  uint32 channel_mask() const;
+
+  // Sub format |GUID| accessor; returns |GUID_NULL| when
+  // |MediaType::ptr_type_| format blob is not |WAVEFORMATEXTENSIBLE|.
+  GUID sub_format() const;
+
  private:
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(AudioMediaType);
 };
