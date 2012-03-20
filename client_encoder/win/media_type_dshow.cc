@@ -535,14 +535,10 @@ int AudioMediaType::Init(const AM_MEDIA_TYPE& media_type) {
   return kSuccess;
 }
 
-// Calls |Init()| with major type MEDIATYPE_Audio and format type
-// FORMAT_WaveFormatEx, and returns result.
 int AudioMediaType::Init() {
   return Init(MEDIATYPE_Audio, FORMAT_WaveFormatEx);
 }
 
-// Validates |ptr_type_| and verifies that format blob has capacity for a
-// WAVEFORMATEX struct.
 bool AudioMediaType::IsValidWaveFormatExBlob() const {
   if (!ptr_type_) {
     LOG(ERROR) << "Invalid wave format: null media type.";
@@ -559,8 +555,18 @@ bool AudioMediaType::IsValidWaveFormatExBlob() const {
   return true;
 }
 
-// Configures AM_MEDIA_TYPE FORMAT_WaveFormatEx format blob using user settings
-// stored in |config|. Supports only WAVE_FORMAT_PCM.
+bool AudioMediaType::IsValidWaveFormatExtensibleBlob() const {
+  if (!IsValidWaveFormatExBlob()) {
+    LOG(ERROR) << "Invalid WAVEFORMATEXTENSIBLE: invalid WAVEFORMATEX.";
+    return false;
+  }
+  if (ptr_type_->cbFormat < sizeof(WAVEFORMATEXTENSIBLE)) {
+    LOG(ERROR) << "Invalid WAVEFORMATEXTENSIBLE: format blob too small.";
+    return false;
+  }
+  return true;
+}
+
 int AudioMediaType::Configure(const AudioConfig& config) {
   WAVEFORMATEX* const ptr_wave_format =
       reinterpret_cast<WAVEFORMATEX* const>(ptr_type_->pbFormat);
@@ -568,10 +574,20 @@ int AudioMediaType::Configure(const AudioConfig& config) {
     LOG(ERROR) << "NULL audio format blob.";
     return kUnsupportedFormatType;
   }
-  if (ptr_wave_format->wFormatTag != WAVE_FORMAT_PCM) {
-    LOG(ERROR) << "Types other than WAVE_FORMAT_PCM are unsupported.";
+
+  if (ptr_wave_format->wFormatTag != WAVE_FORMAT_PCM &&
+      ptr_wave_format->wFormatTag != WAVE_FORMAT_IEEE_FLOAT) {
+    LOG(ERROR) << "cannot configure, internal type is not PCM or IEEE_FLOAT.";
     return kUnsupportedFormatType;
   }
+
+  const int bits_per_ieee_float = sizeof(float) * 8;
+  if (ptr_wave_format->wFormatTag == WAVE_FORMAT_IEEE_FLOAT &&
+      config.sample_size != bits_per_ieee_float) {
+    LOG(ERROR) << "cannot configure, sample size incorrect for IEEE_FLOAT.";
+    return kInvalidFormat;
+  }
+
   ptr_wave_format->nChannels = static_cast<WORD>(config.channels);
   ptr_wave_format->nSamplesPerSec = config.sample_rate;
   ptr_wave_format->wBitsPerSample = static_cast<uint16>(config.sample_size);
@@ -584,37 +600,74 @@ int AudioMediaType::Configure(const AudioConfig& config) {
   return kSuccess;
 }
 
-// Returns number of channels.
 int AudioMediaType::channels() const {
   int num_channels = 0;
   if (IsValidWaveFormatExBlob()) {
     const WAVEFORMATEX* ptr_wave_format =
-        reinterpret_cast<const WAVEFORMATEX*>(ptr_type_->pbFormat);
+        reinterpret_cast<WAVEFORMATEX*>(ptr_type_->pbFormat);
     num_channels = ptr_wave_format->nChannels;
   }
   return num_channels;
 }
 
-// Returns sample rate in samples per second.
 int AudioMediaType::sample_rate() const {
   int samples_per_second = 0;
   if (IsValidWaveFormatExBlob()) {
     const WAVEFORMATEX* ptr_wave_format =
-        reinterpret_cast<const WAVEFORMATEX*>(ptr_type_->pbFormat);
+        reinterpret_cast<WAVEFORMATEX*>(ptr_type_->pbFormat);
     samples_per_second = ptr_wave_format->nSamplesPerSec;
   }
   return samples_per_second;
 }
 
-// Returns sample size in bits.
 int AudioMediaType::sample_size() const {
   int bits_per_sample = 0;
   if (IsValidWaveFormatExBlob()) {
     const WAVEFORMATEX* ptr_wave_format =
-        reinterpret_cast<const WAVEFORMATEX*>(ptr_type_->pbFormat);
+        reinterpret_cast<WAVEFORMATEX*>(ptr_type_->pbFormat);
     bits_per_sample = ptr_wave_format->wBitsPerSample;
   }
   return bits_per_sample;
+}
+
+uint16 AudioMediaType::valid_bits_per_sample() const {
+  uint16 num_valid_bits = 0;
+  if (IsValidWaveFormatExtensibleBlob()) {
+    const WAVEFORMATEXTENSIBLE* ptr_wave_format =
+        reinterpret_cast<WAVEFORMATEXTENSIBLE*>(ptr_type_->pbFormat);
+    num_valid_bits = ptr_wave_format->Samples.wValidBitsPerSample;
+  }
+  return num_valid_bits;
+}
+
+uint16 AudioMediaType::samples_per_block() const {
+  uint16 num_samples = 0;
+  if (IsValidWaveFormatExtensibleBlob()) {
+    const WAVEFORMATEXTENSIBLE* ptr_wave_format =
+        reinterpret_cast<WAVEFORMATEXTENSIBLE*>(ptr_type_->pbFormat);
+    num_samples = ptr_wave_format->Samples.wSamplesPerBlock;
+  }
+  return num_samples;
+}
+
+uint32 AudioMediaType::channel_mask() const {
+  uint32 channels_present = 0;
+  if (IsValidWaveFormatExtensibleBlob()) {
+    const WAVEFORMATEXTENSIBLE* ptr_wave_format =
+        reinterpret_cast<WAVEFORMATEXTENSIBLE*>(ptr_type_->pbFormat);
+    channels_present = ptr_wave_format->dwChannelMask;
+  }
+  return channels_present;
+}
+
+GUID AudioMediaType::sub_format() const {
+  GUID audio_sub_format = GUID_NULL;
+  if (IsValidWaveFormatExtensibleBlob()) {
+    const WAVEFORMATEXTENSIBLE* ptr_wave_format =
+        reinterpret_cast<WAVEFORMATEXTENSIBLE*>(ptr_type_->pbFormat);
+    audio_sub_format = ptr_wave_format->SubFormat;
+  }
+  return audio_sub_format;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
