@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//QRQ\u003d",
+        "filename": "client_encoder/win/media_type_dshow.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 563,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-03-20T20:56:15Z",
+      "side": 1,
+      "message": "wFormatTag \u003d\u003d WAVE_FORMAT_EXTENSIBLE ?",
+      "revId": "388acbaf58c788c16971d093efaa62bd853e020a",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
