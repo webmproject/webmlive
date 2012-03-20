@@ -9,8 +9,8 @@
 // Defines the video sink filter used to obtain raw frames from user input
 // devices available via DirectShow. Based on WebRTC's CaptureInputPin and
 // CaptureSinkFilter.
-#ifndef CLIENT_ENCODER_WIN_VIDEO_SINK_FILTER_H_
-#define CLIENT_ENCODER_WIN_VIDEO_SINK_FILTER_H_
+#ifndef CLIENT_ENCODER_WIN_AUDIO_SINK_FILTER_H_
+#define CLIENT_ENCODER_WIN_AUDIO_SINK_FILTER_H_
 
 #pragma warning(push)
 #pragma warning(disable:4005)
@@ -30,29 +30,33 @@
 
 namespace webmlive {
 
-// Forward declare |VideoSinkFilter| for use in |VideoSinkPin|.
-class VideoSinkFilter;
+// Forward declare |AudioSinkFilter| for use in |AudioSinkPin|.
+class AudioSinkFilter;
 
-// Pin class used by |VideoSinkFilter|. Accepts only I420 video input.
-class VideoSinkPin : public CBaseInputPin {
+// TODO(tomfinegan): temporary typedef for sample callback interface
+typedef UINT_PTR* AudioSamplesCallbackInterface;
+
+// Pin class used by |AudioSinkFilter|.
+class AudioSinkPin : public CBaseInputPin {
  public:
-  typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
-
+  typedef WebmEncoderConfig::AudioCaptureConfig AudioConfig;
+  const static int kNumInputSubTypes = 2;
+  const static GUID kInputSubTypes[kNumInputSubTypes];
   // Constructs CBaseInputPin and returns result via |ptr_result|. Returns
   // S_OK when successful.
-  VideoSinkPin(TCHAR* ptr_object_name,
-               VideoSinkFilter* ptr_filter,
+  AudioSinkPin(TCHAR* ptr_object_name,
+               AudioSinkFilter* ptr_filter,
                CCritSec* ptr_filter_lock,
                HRESULT* ptr_result,
                LPCWSTR ptr_pin_name);
-  virtual ~VideoSinkPin();
+  virtual ~AudioSinkPin();
 
   //
   // CBaseInputPin methods
   //
 
   // Stores preferred media type for |type_index| in |ptr_media_type|. Supports
-  // only a single type, I420.
+  //
   // Return values:
   // S_OK - success, |type_index| in range and |ptr_media_type| written.
   // VFW_S_NO_MORE_ITEMS - |type_index| != 0.
@@ -60,8 +64,7 @@ class VideoSinkPin : public CBaseInputPin {
   HRESULT GetMediaType(int32 type_index, CMediaType* ptr_media_type);
 
   // Checks if AM_MEDIA_TYPE stored in CMediaType pointer is acceptable.
-  // Supports only MEDIASUBTYPE_I420 wrapped in VIDEOINFOHEADER or
-  // VIDEOINFOHEADER2 structures.
+  // Supports only
   // Return values:
   // S_OK - |ptr_media_type| is supported.
   // E_INVALIDARG - NULL |ptr_media_type|.
@@ -72,8 +75,8 @@ class VideoSinkPin : public CBaseInputPin {
   // IPin method(s).
   //
 
-  // Receives video buffers from the upstream filter and passes them to
-  // |VideoSinkFilter::OnFrameReceived|.
+  // Receives audio buffers from the upstream filter and passes them to
+  // |AudioSinkFilter::OnSamplesReceived|.
   // Returns S_OK, or the HRESULT error value returned CBaseInputPin::Receive
   // if it fails.
   STDMETHODIMP Receive(IMediaSample* ptr_sample);
@@ -81,54 +84,45 @@ class VideoSinkPin : public CBaseInputPin {
  private:
   // Copies |actual_config_| to |ptr_config| and returns S_OK. Returns
   // E_POINTER when |ptr_config| is NULL.
-  HRESULT config(VideoConfig* ptr_config);
+  HRESULT config(AudioConfig* ptr_config);
 
   // Resets |actual_config_| and copies |config| values to |requested_config_|,
   // then returns S_OK.
-  HRESULT set_config(const VideoConfig& config);
-
-  // Returns true when |media_sub_type| is an acceptable video format.
-  bool AcceptableSubType(const GUID& media_sub_type);
+  HRESULT set_config(const AudioConfig& config);
 
   // Filter user's requested video config.
-  VideoConfig requested_config_;
+  AudioConfig requested_config_;
 
   // Actual video config (from upstream filter).
-  VideoConfig actual_config_;
+  AudioConfig actual_config_;
 
-  // Video frame stride.
-  int32 stride_;
-
-  // Video frame pixel format.
-  VideoFormat video_format_;
-
-  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoSinkPin);
-  friend class VideoSinkFilter;
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(AudioSinkPin);
+  friend class AudioSinkFilter;
 };
 
 // Video sink filter class. Receives I420 video frames from upstream
-// DirectShow filter via |VideoSinkPin|.
-class VideoSinkFilter : public CBaseFilter {
+// DirectShow filter via |AudioSinkPin|.
+class AudioSinkFilter : public CBaseFilter {
  public:
-  typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
+  typedef WebmEncoderConfig::AudioCaptureConfig AudioConfig;
 
-  // Stores |ptr_frame_callback|, constructs CBaseFilter and |VideoSinkPin, and
-  // returns result via |ptr_result|.
+  // Stores |ptr_samples_callback|, constructs CBaseFilter and |AudioSinkPin|,
+  // and returns result via |ptr_result|.
   // Return values:
   // S_OK - success.
-  // E_INVALIDARG - |ptr_Frame_callback| is NULL.
+  // E_INVALIDARG - |ptr_samples_callback| is NULL.
   // E_OUTOFMEMORY - cannot construct |sink_pin_|.
-  VideoSinkFilter(const TCHAR* ptr_filter_name,
+  AudioSinkFilter(const TCHAR* ptr_filter_name,
                   LPUNKNOWN ptr_iunknown,
-                  VideoFrameCallbackInterface* ptr_frame_callback,
+                  AudioSamplesCallbackInterface* ptr_samples_callback,
                   HRESULT* ptr_result);
-  virtual ~VideoSinkFilter();
+  virtual ~AudioSinkFilter();
 
   // Copies actual video configuration to |ptr_config| and returns S_OK.
-  HRESULT config(VideoConfig* ptr_config);
+  HRESULT config(AudioConfig* ptr_config);
 
   // Sets actual requested video configuration and returns S_OK.
-  HRESULT set_config(const VideoConfig& config);
+  HRESULT set_config(const AudioConfig& config);
 
   // IUnknown
   DECLARE_IUNKNOWN;
@@ -140,18 +134,17 @@ class VideoSinkFilter : public CBaseFilter {
   CBasePin* GetPin(int index);
 
  private:
-  // Copes video frame from |ptr_sample| to |frame_|, and passes |frame_| to
-  // |VideoFrameCallbackInterface::OnVideoFrameReceived| for processing.
+  // Copes audio samples from |ptr_sample|
+  // |AudioSamplesCallbackInterface| for processing.
   // Returns S_OK when successful.
-  HRESULT OnFrameReceived(IMediaSample* ptr_sample);
+  HRESULT OnSamplesReceived(IMediaSample* ptr_sample);
   CCritSec filter_lock_;
-  VideoFrame frame_;
-  boost::scoped_ptr<VideoSinkPin> sink_pin_;
-  VideoFrameCallbackInterface* ptr_frame_callback_;
-  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoSinkFilter);
-  friend class VideoSinkPin;
+  boost::scoped_ptr<AudioSinkPin> sink_pin_;
+  AudioSamplesCallbackInterface* ptr_samples_callback_;
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(AudioSinkFilter);
+  friend class AudioSinkPin;
 };
 
 }  // namespace webmlive
 
-#endif  // CLIENT_ENCODER_WIN_VIDEO_SINK_FILTER_H_
+#endif  // CLIENT_ENCODER_WIN_AUDIO_SINK_FILTER_H_

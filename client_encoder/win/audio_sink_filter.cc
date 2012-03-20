@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "client_encoder/win/video_sink_filter.h"
+#include "client_encoder/win/audio_sink_filter.h"
 
 #include <dvdmedia.h>
 #include <vfwmsgs.h>
@@ -18,107 +18,71 @@
 namespace webmlive {
 
 ///////////////////////////////////////////////////////////////////////////////
-// VideoSinkPin
+// AudioSinkPin
 //
 
-VideoSinkPin::VideoSinkPin(TCHAR* ptr_object_name,
-                           VideoSinkFilter* ptr_filter,
+const GUID AudioSinkPin::kInputSubTypes[kNumInputSubTypes] = {
+  MEDIASUBTYPE_IEEE_FLOAT,
+  MEDIASUBTYPE_PCM
+};
+
+AudioSinkPin::AudioSinkPin(TCHAR* ptr_object_name,
+                           AudioSinkFilter* ptr_filter,
                            CCritSec* ptr_filter_lock,
                            HRESULT* ptr_result,
                            LPCWSTR ptr_pin_name)
     : CBaseInputPin(ptr_object_name, ptr_filter, ptr_filter_lock, ptr_result,
-                    ptr_pin_name),
-      stride_(0),
-      video_format_(kVideoFormatI420) {
+                    ptr_pin_name) {
 }
 
-VideoSinkPin::~VideoSinkPin() {
+AudioSinkPin::~AudioSinkPin() {
 }
 
-// Returns preferred media type.
-HRESULT VideoSinkPin::GetMediaType(int32 type_index,
+// Returns preferred media types.
+HRESULT AudioSinkPin::GetMediaType(int32 type_index,
                                    CMediaType* ptr_media_type) {
   if (type_index < 0 || !ptr_media_type) {
     return E_INVALIDARG;
   }
-  if (type_index > 1) {
+  if (type_index > kNumInputSubTypes) {
     return VFW_S_NO_MORE_ITEMS;
   }
-  VIDEOINFOHEADER* const ptr_video_info =
-      reinterpret_cast<VIDEOINFOHEADER*>(
-          ptr_media_type->AllocFormatBuffer(sizeof(VIDEOINFOHEADER)));
-  if (!ptr_video_info) {
-    LOG(ERROR) << "VIDEOINFOHEADER alloc failed.";
-    return E_OUTOFMEMORY;
-  }
-  ZeroMemory(ptr_video_info, sizeof(VIDEOINFOHEADER));
-  ptr_video_info->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-
-  // Use empty source/dest rectangle-- the entire image is needed, and there is
-  // no target subrect.
-  SetRectEmpty(&ptr_video_info->rcSource);
-  SetRectEmpty(&ptr_video_info->rcTarget);
-
-  // Set values for all input types supported.
-  ptr_media_type->SetType(&MEDIATYPE_Video);
-  ptr_media_type->SetFormatType(&FORMAT_VideoInfo);
-  ptr_media_type->SetTemporalCompression(FALSE);
-  ptr_video_info->bmiHeader.biPlanes = 1;
-
-  if (requested_config_.width != kDefaultVideoWidth)
-    ptr_video_info->bmiHeader.biWidth = requested_config_.width;
-  if (requested_config_.height != kDefaultVideoHeight)
-    ptr_video_info->bmiHeader.biHeight = requested_config_.height;
-
-  if (type_index == 0) {
-    // Set sub type and format data for I420.
-    ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('I', '4', '2', '0');
-    ptr_video_info->bmiHeader.biBitCount = kI420BitCount;
-    ptr_media_type->SetSubtype(&MEDIASUBTYPE_I420);
-  } else {
-    // Set sub type and format data for YV12.
-    ptr_video_info->bmiHeader.biCompression = MAKEFOURCC('Y', 'V', '1', '2');
-    ptr_video_info->bmiHeader.biBitCount = kYV12BitCount;
-    ptr_media_type->SetSubtype(&MEDIASUBTYPE_YV12);
-  }
-
-  // Set sample size.
-  ptr_video_info->bmiHeader.biSizeImage = DIBSIZE(ptr_video_info->bmiHeader);
-  ptr_media_type->SetSampleSize(ptr_video_info->bmiHeader.biSizeImage);
-  LOG(INFO) << "\n GetMediaType type_index=" << type_index << "\n"
-            << "   width=" << ptr_video_info->bmiHeader.biWidth << "\n"
-            << "   height=" << ptr_video_info->bmiHeader.biHeight << "\n"
-            << std::hex << "   biCompression="
-            << ptr_video_info->bmiHeader.biCompression;
+  ptr_media_type->SetType(&MEDIATYPE_Audio);
+  ptr_media_type->SetFormatType(&FORMAT_WaveFormatEx);
+  ptr_media_type->SetSubtype(&kInputSubTypes[type_index]);
   return S_OK;
 }
 
-const BITMAPINFOHEADER* BitmapInfo(const GUID& format_guid,
-                                   const uint8* ptr_format_blob,
-                                   uint32 format_length) {
-  const BITMAPINFOHEADER* ptr_header = NULL;
-  if (ptr_format_blob) {
-    if (format_guid == FORMAT_VideoInfo &&
-        format_length >= sizeof(VIDEOINFOHEADER)) {
-      const VIDEOINFOHEADER* ptr_video_info =
-          reinterpret_cast<const VIDEOINFOHEADER*>(ptr_format_blob);
-      ptr_header = &ptr_video_info->bmiHeader;
-    } else if (format_guid == FORMAT_VideoInfo2 &&
-               format_length >= sizeof(VIDEOINFOHEADER2)) {
-      const VIDEOINFOHEADER2* ptr_video_info =
-          reinterpret_cast<const VIDEOINFOHEADER2*>(ptr_format_blob);
-      ptr_header = &ptr_video_info->bmiHeader;
-    }
-  }
-  return ptr_header;
-}
+HRESULT AudioSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
+  // TODO(tomfinegan): Must support these inputs:
+  // MEDIATYPE_Audio/
+  //  - FORMAT_WaveFormatEx/WAVE_FORMAT_IEE_FLOAT
+  //  - FORMAT_WaveFormatEx/WAVE_FORMAT_PCM
+  // The above provides mono/stereo support. For multi channel
+  // |WAVEFORMATEXTENSIBLE| support is needed, which has some rules.
+  // MSDN (http://goo.gl/tkK2y) says |WAVEFORMATEXTENSIBLE| must contain a
+  // |WAVEFORMATEX| with |wFormatTag| set to |WAVE_FORMAT_EXTENSIBLE| and
+  // |cbSize| >= 22.
+  // Support of the following should be reasonable:
+  //  - FORMAT_WaveFormatEx/WAVE_FORMAT_EXTENSIBLE/
+  //      KSDATAFORMAT_SUBTYPE_IEEE_FLOAT
+  //  - FORMAT_WaveFormatEx/WAVE_FORMAT_EXTENSIBLE/
+  //      KSDATAFORMAT_SUBTYPE_PCM
+  //  - FORMAT_WaveFormatEx/WAVE_FORMAT_EXTENSIBLE/
+  //      KSDATAFORMAT_SUBTYPE_WAVEFORMATEX
+  // The above all need handling when wrapped in AM_MEDIA_TYPE w/these subtypes
+  // MEDIASUBTYPE_PCM
+  // MEDIASUBTYPE_IEEE_FLOAT
 
-// Confirms that |ptr_media_type| is VIDEOINFOHEADER or VIDEOINFOHEADER2 and
-// has a subtype of MEDIASUBTYPE_I420.
-HRESULT VideoSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
   // Confirm media type is acceptable.
   const GUID* const ptr_type_guid = ptr_media_type->Type();
-  if (!ptr_type_guid || *ptr_type_guid != MEDIATYPE_Video) {
+  if (!ptr_type_guid || *ptr_type_guid != MEDIATYPE_Audio) {
+    LOG(INFO) << "rejecting type: majortype not audio.";
+    return VFW_E_TYPE_NOT_ACCEPTED;
+  }
+
+  if (ptr_media_type->bTemporalCompression) {
+    LOG(INFO) << "rejecting type: compressed audio.";
     return VFW_E_TYPE_NOT_ACCEPTED;
   }
 
@@ -126,52 +90,48 @@ HRESULT VideoSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
   const GUID* const ptr_subtype_guid = ptr_media_type->Subtype();
   const GUID* const ptr_format_guid = ptr_media_type->FormatType();
   if (!ptr_subtype_guid || !ptr_format_guid) {
+      LOG(INFO) << "invalid media type: missing subtype or formattype.";
       return E_INVALIDARG;
   }
 
   const GUID& format_guid = *ptr_format_guid;
+  if (format_guid != FORMAT_WaveFormatEx) {
+    LOG(INFO) << "rejecting type: format not FORMAT_WaveFormatEx.";
+  }
+
   const GUID& subtype_guid = *ptr_subtype_guid;
 
   // Confirm that the subtype is acceptable.
-  if (!AcceptableSubType(subtype_guid)) {
+  if (subtype_guid != MEDIASUBTYPE_PCM &&
+      subtype_guid != MEDIASUBTYPE_IEEE_FLOAT) {
+    LOG(INFO) << "rejecting type: subtype not PCM or IEEE_FLOAT.";
     return VFW_E_TYPE_NOT_ACCEPTED;
   }
 
-  // Obtain access to the BITMAPINFOHEADER, and confirm that the video format
-  // is acceptable.
+  // Obtain access to the WAVEFORMATEX(TENSIBLE), and confirm that the audio
+  // format is acceptable.
   const uint8* ptr_format = ptr_media_type->Format();
   const uint32 format_length = ptr_media_type->FormatLength();
-  const BITMAPINFOHEADER* ptr_header =
-      BitmapInfo(format_guid, ptr_format, format_length);
-  if (ptr_header) {
-    if (FourCCToVideoFormat(ptr_header->biCompression,
-                            ptr_header->biBitCount,
-                            &video_format_)) {
-      // |ptr_media_type| contains a video frame with a pixel format that is
-      // acceptable-- store format information.
-      actual_config_.width = ptr_header->biWidth;
-      actual_config_.height = ptr_header->biHeight;
 
-      // Store the stride for use with |VideoFrame::Init()|-- it's needed for
-      // format conversion.
-      stride_ = DIBWIDTHBYTES(*ptr_header);
-    }
+  if (format_length >= sizeof(WAVEFORMATEXTENSIBLE)) {
+    LOG(INFO) << "format blob looks like WAVEFORMATEXTENSIBLE.";
+  } else if (format_length >= sizeof(WAVEFORMATEX)) {
+    LOG(INFO) << "format blob looks like WAVEFORMATEX, size=" << format_length;
   }
 
-  LOG(INFO) << "\n CheckMediaType actual video settings\n"
-            << "   width=" << actual_config_.width << "\n"
-            << "   height=" << actual_config_.height << "\n"
-            << "   stride=" << stride_ << "\n"
-            << "   format=" << video_format_;
+  LOG(INFO) << "\n CheckMediaType actual audio settings\n"
+            << "   channels=" << actual_config_.channels << "\n"
+            << "   sample_rate=" << actual_config_.sample_rate << "\n"
+            << "   sample_size=" << actual_config_.sample_size;
   return S_OK;
 }
 
 // Calls CBaseInputPin::Receive and then passes |ptr_sample| to
-// |VideoSinkFilter::OnFrameReceived|.
-HRESULT VideoSinkPin::Receive(IMediaSample* ptr_sample) {
+// |AudioSinkFilter::OnFrameReceived|.
+HRESULT AudioSinkPin::Receive(IMediaSample* ptr_sample) {
   CHECK_NOTNULL(m_pFilter);
   CHECK_NOTNULL(ptr_sample);
-  VideoSinkFilter* ptr_filter = reinterpret_cast<VideoSinkFilter*>(m_pFilter);
+  AudioSinkFilter* ptr_filter = reinterpret_cast<AudioSinkFilter*>(m_pFilter);
   CAutoLock lock(&ptr_filter->filter_lock_);
   HRESULT hr = CBaseInputPin::Receive(ptr_sample);
   if (FAILED(hr)) {
@@ -189,7 +149,7 @@ HRESULT VideoSinkPin::Receive(IMediaSample* ptr_sample) {
   return S_OK;
 }
 
-bool VideoSinkPin::AcceptableSubType(const GUID& media_sub_type) {
+bool AudioSinkPin::AcceptableSubType(const GUID& media_sub_type) {
   return (media_sub_type == MEDIASUBTYPE_I420 ||
           media_sub_type == MEDIASUBTYPE_YV12 ||
           media_sub_type == MEDIASUBTYPE_YUY2 ||
@@ -201,7 +161,7 @@ bool VideoSinkPin::AcceptableSubType(const GUID& media_sub_type) {
 
 // Copies |actual_config_| to |ptr_config|. Note that the filter lock is always
 // held by caller, |VideoSinkFilter::config|.
-HRESULT VideoSinkPin::config(VideoConfig* ptr_config) {
+HRESULT AudioSinkPin::config(VideoConfig* ptr_config) {
   if (!ptr_config) {
     return E_POINTER;
   }
@@ -211,7 +171,7 @@ HRESULT VideoSinkPin::config(VideoConfig* ptr_config) {
 
 // Sets |requested_config_| and resets |actual_config_|. Filter lock always
 // held by caller, |VideoSinkFilter::set_config|.
-HRESULT VideoSinkPin::set_config(const VideoConfig& config) {
+HRESULT AudioSinkPin::set_config(const VideoConfig& config) {
   requested_config_ = config;
   actual_config_ = WebmEncoderConfig::VideoCaptureConfig();
   return S_OK;
@@ -220,7 +180,7 @@ HRESULT VideoSinkPin::set_config(const VideoConfig& config) {
 ///////////////////////////////////////////////////////////////////////////////
 // VideoSinkFilter
 //
-VideoSinkFilter::VideoSinkFilter(
+AudioSinkFilter::AudioSinkFilter(
     const TCHAR* ptr_filter_name,
     LPUNKNOWN ptr_iunknown,
     VideoFrameCallbackInterface* ptr_frame_callback,
@@ -228,14 +188,14 @@ VideoSinkFilter::VideoSinkFilter(
     : CBaseFilter(ptr_filter_name,
                   ptr_iunknown,
                   &filter_lock_,
-                  CLSID_VideoSinkFilter) {
+                  CLSID_AudioSinkFilter) {
   if (!ptr_frame_callback) {
     *ptr_result = E_INVALIDARG;
     return;
   }
   ptr_frame_callback_ = ptr_frame_callback;
   sink_pin_.reset(
-      new (std::nothrow) VideoSinkPin(NAME("VideoSinkInputPin"),  // NOLINT
+      new (std::nothrow) AudioSinkPin(NAME("VideoSinkInputPin"),  // NOLINT
                                       this, &filter_lock_, ptr_result,
                                       L"VideoSink"));
   if (!sink_pin_) {
@@ -245,17 +205,17 @@ VideoSinkFilter::VideoSinkFilter(
   }
 }
 
-VideoSinkFilter::~VideoSinkFilter() {
+AudioSinkFilter::~AudioSinkFilter() {
 }
 
-// Locks filter and returns |VideoSinkPin::config|.
-HRESULT VideoSinkFilter::config(VideoConfig* ptr_config) {
+// Locks filter and returns |AudioSinkPin::config|.
+HRESULT AudioSinkFilter::config(VideoConfig* ptr_config) {
   CAutoLock lock(&filter_lock_);
   return sink_pin_->config(ptr_config);
 }
 
-// Locks filter and returns |VideoSinkPin::set_config|.
-HRESULT VideoSinkFilter::set_config(const VideoConfig& config) {
+// Locks filter and returns |AudioSinkPin::set_config|.
+HRESULT AudioSinkFilter::set_config(const VideoConfig& config) {
   if (m_State != State_Stopped) {
     return VFW_E_NOT_STOPPED;
   }
@@ -263,8 +223,8 @@ HRESULT VideoSinkFilter::set_config(const VideoConfig& config) {
   return sink_pin_->set_config(config);
 }
 
-// Locks filter and returns VideoSinkPin pointer wrapped by |sink_pin_|.
-CBasePin* VideoSinkFilter::GetPin(int index) {
+// Locks filter and returns AudioSinkPin pointer wrapped by |sink_pin_|.
+CBasePin* AudioSinkFilter::GetPin(int index) {
   CBasePin* ptr_pin = NULL;
   CAutoLock lock(&filter_lock_);
   if (index == 0) {
@@ -273,10 +233,8 @@ CBasePin* VideoSinkFilter::GetPin(int index) {
   return ptr_pin;
 }
 
-// Lock owned by |VideoSinkPin::Receive|. Copies buffer from |ptr_sample| into
-// |frame_|, and then passes |frame_| to
-// |VideoFrameCallbackInterface::OnVideoFrameReceived|.
-HRESULT VideoSinkFilter::OnFrameReceived(IMediaSample* ptr_sample) {
+// Lock owned by |AudioSinkPin::Receive|. Copies buffer from |ptr_sample|
+HRESULT AudioSinkFilter::OnSamplesReceived(IMediaSample* ptr_sample) {
   if (!ptr_sample) {
     return E_POINTER;
   }
