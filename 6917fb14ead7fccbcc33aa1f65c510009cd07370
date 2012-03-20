@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//QKc\u003d",
+        "filename": "client_encoder/win/media_type_dshow.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2012-03-20T21:46:13Z",
+      "side": 1,
+      "message": "Static function",
+      "revId": "6917fb14ead7fccbcc33aa1f65c510009cd07370",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//QKQ\u003d",
+        "filename": "client_encoder/win/media_type_dshow.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2012-03-20T21:46:13Z",
+      "side": 1,
+      "message": "You only ever call this function with \"ptr_type_\". Why not make this a member function with less chance of using it wrong?",
+      "revId": "6917fb14ead7fccbcc33aa1f65c510009cd07370",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//QJk\u003d",
+        "filename": "client_encoder/win/media_type_dshow.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 576,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2012-03-20T21:46:13Z",
+      "side": 1,
+      "message": "Possible null dereference.",
+      "revId": "6917fb14ead7fccbcc33aa1f65c510009cd07370",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//QJU\u003d",
+        "filename": "client_encoder/win/media_type_dshow.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 657,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2012-03-20T21:46:13Z",
+      "side": 1,
+      "message": "This looks a little weird with size referring to bits.",
+      "revId": "6917fb14ead7fccbcc33aa1f65c510009cd07370",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
