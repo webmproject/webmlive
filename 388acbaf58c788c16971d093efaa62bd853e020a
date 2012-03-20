@@ -16,6 +16,24 @@
       "revId": "388acbaf58c788c16971d093efaa62bd853e020a",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//QMQ\u003d",
+        "filename": "client_encoder/win/media_type_dshow.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 563,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-03-20T21:07:20Z",
+      "side": 1,
+      "message": "Initially I wasn\u0027t going to do this, but supporting weird devices that are outputting odd format tags because they misuse the struct doesn\u0027t really make sense now that I think about it. Done.",
+      "parentUuid": "AAAAHn//QRQ\u003d",
+      "revId": "388acbaf58c788c16971d093efaa62bd853e020a",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
