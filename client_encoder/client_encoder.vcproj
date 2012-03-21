@@ -209,15 +209,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\data_sink.h"
-				>
-			</File>
-			<File
 				RelativePath=".\client_encoder_base.h"
 				>
 			</File>
 			<File
 				RelativePath=".\client_encoder_main.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\data_sink.h"
 				>
 			</File>
 			<File
@@ -271,6 +271,14 @@
 			<Filter
 				Name="win"
 				>
+				<File
+					RelativePath=".\win\audio_sink_filter.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\audio_sink_filter.h"
+					>
+				</File>
 				<File
 					RelativePath=".\win\build_config_win.cc"
 					>
