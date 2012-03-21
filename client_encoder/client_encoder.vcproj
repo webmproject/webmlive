@@ -268,6 +268,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\win\dshow_util.cc"
+					>
+				</File>
+				<File
+					RelativePath=".\win\dshow_util.h"
+					>
+				</File>
+				<File
 					RelativePath=".\win\media_source_dshow.cc"
 					>
 				</File>

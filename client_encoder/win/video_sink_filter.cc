@@ -10,26 +10,10 @@
 #include <dvdmedia.h>
 #include <vfwmsgs.h>
 
+#include "client_encoder/win/dshow_util.h"
 #include "client_encoder/win/media_source_dshow.h"
 #include "client_encoder/win/webm_guids.h"
 #include "glog/logging.h"
-#include "webmdshow/common/hrtext.hpp"
-#include "webmdshow/common/odbgstream.hpp"
-
-// Extracts error from the HRESULT, and outputs its hex and decimal values.
-#define HRLOG(X) \
-    " {" << #X << "=" << X << "/" << std::hex << X << std::dec << " (" << \
-    hrtext(X) << ")}"
-
-// TODO(tomfinegan): webrtc uses baseclasses, but has worked around the need
-//                   for the next two lines. Determining how to do so would be
-//                   enlightening, but isn't that important.
-//                   Without these two lines dllentry.cpp from the baseclasses
-//                   sources will cause an error at link time (LNK2001,
-//                   unresolved external symbol) because of use of the following
-//                   two globals via extern.
-CFactoryTemplate* g_Templates = NULL;   // NOLINT
-int g_cTemplates = 0;                   // NOLINT
 
 namespace webmlive {
 
