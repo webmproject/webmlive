@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -209,24 +209,47 @@ class VideoFrameCallbackInterface {
 };
 
 struct VpxConfig {
+  // Special value that means use the default value for the current option.
+  const static int kUseDefault = -200;
+  VpxConfig()
+      : keyframe_interval(1000),
+        bitrate(500),
+        decimate(kUseDefault),
+        min_quantizer(10),
+        max_quantizer(46),
+        speed(kUseDefault),
+        static_threshold(kUseDefault),
+        thread_count(kUseDefault),
+        token_partitions(kUseDefault),
+        undershoot(kUseDefault) {}
+
   // Time between keyframes, in milliseconds.
   int keyframe_interval;
+
   // Video bitrate, in kilobits.
   int bitrate;
+
   // Video frame rate decimation factor.
   int decimate;
+
   // Minimum quantizer value.
   int min_quantizer;
+
   // Maxium quantizer value.
   int max_quantizer;
+
   // Encoder complexity.
   int speed;
+
   // Threshold at which a macroblock is considered static.
   int static_threshold;
+
   // Encoder thead count.
   int thread_count;
+
   // Number of token partitions.
   int token_partitions;
+
   // Percentage to undershoot the requested datarate.
   int undershoot;
 };

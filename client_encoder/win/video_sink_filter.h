@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -36,7 +36,7 @@ class VideoSinkFilter;
 // Pin class used by |VideoSinkFilter|. Accepts only I420 video input.
 class VideoSinkPin : public CBaseInputPin {
  public:
-  typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
+  typedef WebmEncoderConfig::VideoConfig VideoConfig;
 
   // Constructs CBaseInputPin and returns result via |ptr_result|. Returns
   // S_OK when successful.
@@ -110,7 +110,7 @@ class VideoSinkPin : public CBaseInputPin {
 // DirectShow filter via |VideoSinkPin|.
 class VideoSinkFilter : public CBaseFilter {
  public:
-  typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
+  typedef WebmEncoderConfig::VideoConfig VideoConfig;
 
   // Stores |ptr_frame_callback|, constructs CBaseFilter and |VideoSinkPin, and
   // returns result via |ptr_result|.

@@ -38,7 +38,7 @@ VideoSinkPin::~VideoSinkPin() {
 // Returns preferred media type.
 HRESULT VideoSinkPin::GetMediaType(int32 type_index,
                                    CMediaType* ptr_media_type) {
-  if (type_index < 0) {
+  if (type_index < 0 || !ptr_media_type) {
     return E_INVALIDARG;
   }
   if (type_index > 1) {
@@ -65,9 +65,9 @@ HRESULT VideoSinkPin::GetMediaType(int32 type_index,
   ptr_media_type->SetTemporalCompression(FALSE);
   ptr_video_info->bmiHeader.biPlanes = 1;
 
-  if (requested_config_.width != kDefaultVideoWidth)
+  if (requested_config_.width != 0)
     ptr_video_info->bmiHeader.biWidth = requested_config_.width;
-  if (requested_config_.height != kDefaultVideoHeight)
+  if (requested_config_.height != 0)
     ptr_video_info->bmiHeader.biHeight = requested_config_.height;
 
   if (type_index == 0) {
@@ -171,7 +171,7 @@ HRESULT VideoSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
 HRESULT VideoSinkPin::Receive(IMediaSample* ptr_sample) {
   CHECK_NOTNULL(m_pFilter);
   CHECK_NOTNULL(ptr_sample);
-  VideoSinkFilter* ptr_filter = reinterpret_cast <VideoSinkFilter*>(m_pFilter);
+  VideoSinkFilter* ptr_filter = reinterpret_cast<VideoSinkFilter*>(m_pFilter);
   CAutoLock lock(&ptr_filter->filter_lock_);
   HRESULT hr = CBaseInputPin::Receive(ptr_sample);
   if (FAILED(hr)) {
@@ -213,7 +213,7 @@ HRESULT VideoSinkPin::config(VideoConfig* ptr_config) {
 // held by caller, |VideoSinkFilter::set_config|.
 HRESULT VideoSinkPin::set_config(const VideoConfig& config) {
   requested_config_ = config;
-  actual_config_ = WebmEncoderConfig::VideoCaptureConfig();
+  actual_config_ = WebmEncoderConfig::VideoConfig();
   return S_OK;
 }
 
