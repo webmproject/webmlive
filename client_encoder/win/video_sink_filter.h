@@ -90,10 +90,6 @@ class VideoSinkPin : public CBaseInputPin {
   // Returns true when |media_sub_type| is an acceptable video format.
   bool AcceptableSubType(const GUID& media_sub_type);
 
-  // Returns true and sets |actual_config_|, |stride_|, and |video_format_|
-  // when |header| describes a compatible video format.
-  bool StoreVideoFormat(const BITMAPINFOHEADER& header);
-
   // Filter user's requested video config.
   VideoConfig requested_config_;
 
