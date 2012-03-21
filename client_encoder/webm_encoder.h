@@ -23,85 +23,88 @@ namespace webmlive {
 // All timestamps are in milliseconds.
 const int kTimebase = 1000;
 
-// Special value interpreted by |WebmEncoder| as "use implementation default".
-const int kUseEncoderDefault = -200;
-// Special value interpreted by |WebmEncoder| as "use capture device default".
-const int kUseDeviceDefault = -200;
-
-// Defaults for live encodes.
-// Audio capture defaults.
-const int kDefaultAudioChannels = 2;
-const int kDefaultAudioSampleRate = 44100;
-const int kDefaultAudioSampleSize = 16;
-// Video capture defaults.
-const int kDefaultVideoWidth = kUseDeviceDefault;
-const int kDefaultVideoHeight = kUseDeviceDefault;
-const int kDefaultVideoFrameRate = kUseDeviceDefault;
-// Vorbis defaults.
-const int kDefaultVorbisBitrate = 128;
-// VP8 defaults.
-const int kDefaultVpxKeyframeInterval = 1000;
-const int kDefaultVpxBitrate = 500;
-const int kDefaultVpxDecimate = kUseEncoderDefault;
-const int kDefaultVpxMinQ = 10;
-const int kDefaultVpxMaxQ = 46;
-const int kDefaultVpxSpeed = kUseEncoderDefault;
-const int kDefaultVpxStaticThreshold = kUseEncoderDefault;
-const int kDefaultVpxUndershoot = kUseEncoderDefault;
-const int kDefaultVpxThreadCount = kUseEncoderDefault;
-const int kDefaultVpxTokenPartitions = kUseEncoderDefault;
-
 struct WebmEncoderConfig {
-  struct AudioCaptureConfig {
-    AudioCaptureConfig() {
-      manual_config = false;
-      channels = kDefaultAudioChannels;
-      sample_rate = kDefaultAudioSampleRate;
-      sample_size = kDefaultAudioSampleSize;
-    }
-    // Attempt manual configuration through source UI (if available).
-    bool manual_config;
-    // Number of channels.
-    int channels;
-    // Sample rate.
-    int sample_rate;
-    // Sample size.
-    int sample_size;
+  // Audio configuration control structure. Values set to 0 mean use default.
+  // Only |channels|, |sample_rate|, and |bits_per_sample| are user
+  // configurable.
+  struct AudioConfig {
+    const static uint16 kFormatPcm = 1;
+    const static uint16 kFormatIeeeFloat = 3;
+    AudioConfig()
+        : format_tag(kFormatPcm),
+          channels(2),
+          bytes_per_second(0),
+          sample_rate(44100),
+          block_align(0),
+          bits_per_sample(16),
+          valid_bits_per_sample(0),
+          channel_mask(0) {}
+
+    uint16 format_tag;              // Audio format.
+    uint16 channels;                // Number of channels.
+    uint32 sample_rate;             // Samples per second.
+    uint32 bytes_per_second;        // Average bytes per second.
+    uint16 block_align;             // Atomic audio unit size in bytes.
+    uint16 bits_per_sample;         // Sample container size.
+    uint16 valid_bits_per_sample;   // Valid bits in sample container.
+    uint32 channel_mask;            // Channels present in audio stream.
   };
-  struct VideoCaptureConfig {
-    VideoCaptureConfig() {
-      manual_config = false;
-      width = kDefaultVideoWidth;
-      height = kDefaultVideoHeight;
-      frame_rate = kDefaultVideoFrameRate;
-    }
-    // Attempt manual configuration through source UI (if available).
-    bool manual_config;
-    // Width, in pixels.
-    int width;
-    // Height, in pixels.
-    int height;
-    // Frame rate, in frames per second.
-    double frame_rate;
+
+  // Video configuration control structure. Values set to 0 mean use default.
+  // Only |width|, |height|, and |frame_rate| are configurable. |format| is
+  // controlled by the input device.
+  struct VideoConfig {
+    VideoConfig()
+        : format(kVideoFormatI420),
+          width(0),
+          height(0),
+          frame_rate(0) {}
+
+    VideoFormat format;   // Video pixel format.
+    int32 width;          // Width in pixels.
+    int32 height;         // Height in pixels.
+    double frame_rate;    // Frame rate in frames per second.
   };
+
+  // User interface control structure. |MediaSourceImpl| will attempt to
+  // display configuration control dialogs when fields are set to true.
+  struct UserInterfaceOptions {
+    UserInterfaceOptions()
+        : manual_audio_config(false),
+          manual_video_config(false) {}
+
+    bool manual_audio_config;   // Show audio source configuration interface.
+    bool manual_video_config;   // Show video source configuration interface.
+  };
+
+  WebmEncoderConfig() : vorbis_bitrate(128) {}
+
   // Vorbis encoder bitrate.
-  int vorbis_bitrate;
-  // Output file name.
-  std::string output_file_name;
+  int32 vorbis_bitrate;
+
   // Name of the audio device.  Leave empty to use system default.
   std::string audio_device_name;
+
   // Name of the video device.  Leave empty to use system default.
   std::string video_device_name;
+
   // Requested audio capture settings.
-  AudioCaptureConfig requested_audio_config;
+  AudioConfig requested_audio_config;
+
   // Actual audio capture settings.
-  AudioCaptureConfig actual_audio_config;
+  AudioConfig actual_audio_config;
+
   // Requested video capture settings.
-  VideoCaptureConfig requested_video_config;
+  VideoConfig requested_video_config;
+
   // Actual video capture settings.
-  VideoCaptureConfig actual_video_config;
+  VideoConfig actual_video_config;
+
   // VP8 encoder settings.
   VpxConfig vpx_config;
+
+  // Source device options.
+  UserInterfaceOptions ui_opts;
 };
 
 class MediaSourceImpl;

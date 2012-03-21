@@ -59,10 +59,10 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
 
   // Leave the libvpx thread count and undershoot settings alone if not
   // specified by the user.
-  if (config_.thread_count != kDefaultVpxThreadCount) {
+  if (config_.thread_count != VpxConfig::kUseDefault) {
     libvpx_config.g_threads = config_.thread_count;
   }
-  if (config_.undershoot != kDefaultVpxUndershoot) {
+  if (config_.undershoot != VpxConfig::kUseDefault) {
     libvpx_config.rc_undershoot_pct = config_.undershoot;
   }
 
@@ -77,15 +77,15 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
 
   // Pass the remaining configuration settings into libvpx, but leave them at
   // the library defaults if not specified by the user.
-  if (CodecControl(VP8E_SET_CPUUSED, config_.speed, kDefaultVpxSpeed)) {
+  if (CodecControl(VP8E_SET_CPUUSED, config_.speed, VpxConfig::kUseDefault)) {
       return VideoEncoder::kCodecError;
   }
   if (CodecControl(VP8E_SET_STATIC_THRESHOLD, config_.static_threshold,
-                   kDefaultVpxStaticThreshold)) {
+                   VpxConfig::kUseDefault)) {
       return VideoEncoder::kCodecError;
   }
   if (CodecControl(VP8E_SET_TOKEN_PARTITIONS, config_.token_partitions,
-                   kDefaultVpxTokenPartitions)) {
+                   VpxConfig::kUseDefault)) {
       return VideoEncoder::kCodecError;
   }
   return kSuccess;

@@ -301,42 +301,4 @@ void WebmEncoder::EncoderThread() {
   LOG(INFO) << "EncoderThread finished.";
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// WebmEncoderConfig
-//
-
-// Returns default |WebmEncoderConfig|.
-WebmEncoderConfig WebmEncoder::DefaultConfig() {
-  WebmEncoderConfig c;
-
-  // Use the configuration ctors to default the requested capture
-  // configurations....
-  c.requested_audio_config = WebmEncoderConfig::AudioCaptureConfig();
-  c.requested_video_config = WebmEncoderConfig::VideoCaptureConfig();
-
-  // And 0 the actual configurations.
-  c.actual_audio_config.manual_config = false;
-  c.actual_audio_config.channels = 0;
-  c.actual_audio_config.sample_rate = 0;
-  c.actual_audio_config.sample_size = 0;
-  c.actual_video_config.manual_config = false;
-  c.actual_video_config.width = 0;
-  c.actual_video_config.height = 0;
-  c.actual_video_config.frame_rate = 0;
-
-  c.vorbis_bitrate = kDefaultVorbisBitrate;
-  c.vpx_config.bitrate = kDefaultVpxBitrate;
-  c.vpx_config.decimate = kDefaultVpxDecimate;
-  c.vpx_config.min_quantizer = kDefaultVpxMinQ;
-  c.vpx_config.max_quantizer = kDefaultVpxMaxQ;
-  c.vpx_config.keyframe_interval = kDefaultVpxKeyframeInterval;
-  c.vpx_config.speed = kDefaultVpxSpeed;
-  c.vpx_config.static_threshold = kDefaultVpxStaticThreshold;
-  c.vpx_config.thread_count = kDefaultVpxThreadCount;
-  c.vpx_config.token_partitions = kDefaultVpxTokenPartitions;
-  c.vpx_config.undershoot = kDefaultVpxUndershoot;
-  return c;
-}
-
 }  // namespace webmlive
-

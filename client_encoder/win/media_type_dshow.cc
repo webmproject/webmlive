@@ -225,7 +225,7 @@ int VideoMediaType::ConfigureSubType(VideoFormat sub_type,
     LOG(ERROR) << "Invalid height.";
     return kInvalidArg;
   }
-  if (config.frame_rate <= 0 && config.frame_rate != kDefaultVideoFrameRate) {
+  if (config.frame_rate <= 0) {
     LOG(ERROR) << "Invalid frame rate.";
     return kInvalidArg;
   }
@@ -443,7 +443,7 @@ int VideoMediaType::ConfigureVideoInfoHeader(
     VIDEOINFOHEADER* ptr_header) {
   // Set source and target rectangles.
   ConfigureRects(config, ptr_header->rcSource, ptr_header->rcTarget);
-  if (config.frame_rate != kDefaultVideoFrameRate) {
+  if (config.frame_rate != 0) {
     // Set frame rate.
     ptr_header->AvgTimePerFrame =
         seconds_to_media_time(1.0 / config.frame_rate);
@@ -460,7 +460,7 @@ int VideoMediaType::ConfigureVideoInfoHeader2(
     VIDEOINFOHEADER2* ptr_header) {
   // Set source and target rectangles.
   ConfigureRects(config, ptr_header->rcSource, ptr_header->rcTarget);
-  if (config.frame_rate != kDefaultVideoFrameRate) {
+  if (config.frame_rate != 0) {
     // Set frame rate.
     ptr_header->AvgTimePerFrame =
         seconds_to_media_time(1.0 / config.frame_rate);
@@ -578,7 +578,7 @@ int AudioMediaType::Configure(const AudioConfig& config) {
   }
 
   WAVEFORMATEX* const ptr_wave_format =
-      reinterpret_cast<WAVEFORMATEX* const>(ptr_type_->pbFormat);
+      reinterpret_cast<WAVEFORMATEX*>(ptr_type_->pbFormat);
   if (!ptr_wave_format) {
     LOG(ERROR) << "NULL audio format blob.";
     return kUnsupportedFormatType;
@@ -591,14 +591,14 @@ int AudioMediaType::Configure(const AudioConfig& config) {
 
   const int kBitsPerIeeeFloat = 32;
   if (ptr_wave_format->wFormatTag == WAVE_FORMAT_IEEE_FLOAT &&
-      config.sample_size != kBitsPerIeeeFloat) {
+      config.bits_per_sample != kBitsPerIeeeFloat) {
     LOG(ERROR) << "cannot configure, sample size incorrect for IEEE_FLOAT.";
     return kInvalidFormat;
   }
 
-  ptr_wave_format->nChannels = static_cast<WORD>(config.channels);
+  ptr_wave_format->nChannels = config.channels;
   ptr_wave_format->nSamplesPerSec = config.sample_rate;
-  ptr_wave_format->wBitsPerSample = static_cast<uint16>(config.sample_size);
+  ptr_wave_format->wBitsPerSample = config.bits_per_sample;
   const int bytes_per_sample = (ptr_wave_format->wBitsPerSample + 7) / 8;
   ptr_wave_format->nAvgBytesPerSec =
       config.channels * config.sample_rate * bytes_per_sample;

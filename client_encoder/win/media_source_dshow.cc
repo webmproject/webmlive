@@ -113,6 +113,7 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
   ptr_video_callback_ = ptr_video_callback;
   requested_audio_config_ = config.requested_audio_config;
   requested_video_config_ = config.requested_video_config;
+  ui_opts_ = config.ui_opts;
   const HRESULT hr = CoInitialize(NULL);
   if (FAILED(hr)) {
     LOG(ERROR) << "CoInitialize failed: " << HRLOG(hr);
@@ -370,13 +371,12 @@ int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin,
     LOG(ERROR) << "NULL media type output pointer!";
     return kInvalidArg;
   }
-  VideoConfig& video_config = requested_video_config_;
-  if (video_config.manual_config) {
+  if (ui_opts_.manual_video_config) {
     // Always disable manual configuration.
     // |ConfigureVideoSource| is called in a loop, so this avoids making the
     // user mess with the dialog repeatedly if/when manual settings disagree
     // with the video sink filter.
-    video_config.manual_config = false;
+    ui_opts_.manual_video_config = false;
 
     // Try showing |video_source_|'s property page.
     bool filter_config_ok = false;
@@ -424,9 +424,10 @@ int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin,
     return kVideoConfigureError;
   }
   const VideoFormat video_sub_type = static_cast<VideoFormat>(sub_type);
-  if (video_config.width != kDefaultVideoWidth ||
-      video_config.height != kDefaultVideoHeight ||
-      video_config.frame_rate != kDefaultVideoFrameRate) {
+  const VideoConfig& video_config = requested_video_config_;
+  if (video_config.width != 0 ||
+      video_config.height != 0 ||
+      video_config.frame_rate != 0) {
     // User specified video settings are present: build a complete media type
     // and attempt configuration of the source device.
     status = video_format.ConfigureSubType(video_sub_type, video_config);
@@ -542,7 +543,7 @@ int MediaSourceImpl::CreateAudioSource() {
 // to configure pin with an AM_MEDIA_TYPE matching the user's settings if no
 // match is found. Returns kSuccess upon successful configuration.
 int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin) {
-  if (requested_audio_config_.manual_config) {
+  if (ui_opts_.manual_audio_config) {
     bool filter_config_ok = false, pin_config_ok = false;
     // Manual audio configuration is enabled; try showing |audio_source_|'s
     // property page, but only if the audio source is not a pin on
@@ -1271,7 +1272,7 @@ AM_MEDIA_TYPE* PinFormat::FindMatchingFormat(const AudioConfig& config) {
     }
     if (audio_format.channels() == config.channels &&
         audio_format.sample_rate() == config.sample_rate &&
-        audio_format.bits_per_sample() == config.sample_size) {
+        audio_format.bits_per_sample() == config.bits_per_sample) {
       LOG(INFO) << "Found matching audio media type.";
       break;
     }

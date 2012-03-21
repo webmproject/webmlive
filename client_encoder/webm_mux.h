@@ -51,8 +51,8 @@ class WebmMuxWriter;
 class LiveWebmMuxer {
  public:
   typedef std::vector<uint8> WriteBuffer;
-  typedef WebmEncoderConfig::AudioCaptureConfig AudioConfig;
-  typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
+  typedef WebmEncoderConfig::AudioConfig AudioConfig;
+  typedef WebmEncoderConfig::VideoConfig VideoConfig;
 
   static const uint64 kTimecodeScale = 1000000;
 
