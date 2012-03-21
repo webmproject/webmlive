@@ -16,6 +16,24 @@
       "revId": "094aa912654044509644c768a23dac1d15c4d7ce",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//QI0\u003d",
+        "filename": "client_encoder/win/media_type_dshow.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-03-21T00:18:15Z",
+      "side": 0,
+      "message": "If there was a reason, I don\u0027t remember-- made entire section protected.",
+      "parentUuid": "AAAAHn//QLA\u003d",
+      "revId": "094aa912654044509644c768a23dac1d15c4d7ce",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }

@@ -36,6 +36,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//QIg\u003d",
+        "filename": "client_encoder/win/media_type_dshow.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-03-21T00:18:15Z",
+      "side": 1,
+      "message": "DRY rule...\n\nIt\u0027s useful elsewhere-- media_source_dshow used to use it directly, but that was before MediaTypePtr came along. \n\nAlso, one of the uses in this file is in MediaTypePtr. Making it non-static means duping it. \n\nI\u0027d prefer not to make the change.",
+      "parentUuid": "AAAAHn//QKQ\u003d",
+      "revId": "6917fb14ead7fccbcc33aa1f65c510009cd07370",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//QJk\u003d",
         "filename": "client_encoder/win/media_type_dshow.cc",
         "patchSetId": 5
@@ -53,6 +71,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAHn//QII\u003d",
+        "filename": "client_encoder/win/media_type_dshow.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 576,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-03-21T00:18:15Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAHn//QJk\u003d",
+      "revId": "6917fb14ead7fccbcc33aa1f65c510009cd07370",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAHn//QJU\u003d",
         "filename": "client_encoder/win/media_type_dshow.cc",
         "patchSetId": 5
@@ -64,6 +100,24 @@
       "writtenOn": "2012-03-20T21:46:13Z",
       "side": 1,
       "message": "This looks a little weird with size referring to bits.",
+      "revId": "6917fb14ead7fccbcc33aa1f65c510009cd07370",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//QAc\u003d",
+        "filename": "client_encoder/win/media_type_dshow.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 657,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-03-21T00:18:15Z",
+      "side": 1,
+      "message": "Done; went with bits_per_sample instead.",
+      "parentUuid": "AAAAHn//QJU\u003d",
       "revId": "6917fb14ead7fccbcc33aa1f65c510009cd07370",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
