@@ -91,8 +91,9 @@ class VideoFrameCallbackInterface;
 // users through VideoFrameCallbackInterface.
 class MediaSourceImpl {
  public:
-  typedef WebmEncoderConfig::AudioCaptureConfig AudioConfig;
-  typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
+  typedef WebmEncoderConfig::AudioConfig AudioConfig;
+  typedef WebmEncoderConfig::VideoConfig VideoConfig;
+  typedef WebmEncoderConfig::UserInterfaceOptions UserInterfaceOptions;
   enum {
     // Error creating the video sink filter.
     kVideoSinkCreateError = -222,
@@ -251,6 +252,9 @@ class MediaSourceImpl {
 
   // Actual video settings.
   VideoConfig actual_video_config_;
+
+  // Controls display of device configuration dialogs.
+  UserInterfaceOptions ui_opts_;
 
   // Callback interface used by video sink filter to deliver raw frames to
   // |WebmEncoder::EncoderThread|.
@@ -420,8 +424,8 @@ class PinFormat {
     kCannotSetFormat = -1,
     kSuccess = 0,
   };
-  typedef WebmEncoderConfig::AudioCaptureConfig AudioConfig;
-  typedef WebmEncoderConfig::VideoCaptureConfig VideoConfig;
+  typedef WebmEncoderConfig::AudioConfig AudioConfig;
+  typedef WebmEncoderConfig::VideoConfig VideoConfig;
 
   // Copies supplied pin to |pin_|.
   explicit PinFormat(const IPinPtr& pin);

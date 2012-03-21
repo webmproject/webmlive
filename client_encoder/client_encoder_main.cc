@@ -70,7 +70,7 @@ void usage(const char** argv) {
   printf("    --amanual                      Attempt manual configuration.\n");
   printf("    --achannels <channels>         Number of audio channels.\n");
   printf("    --arate <sample rate>          Audio sample rate.\n");
-  printf("    --asize <sample size>          Audio sample size.\n");
+  printf("    --asize <sample size>          Audio bits per sample.\n");
   printf("  Vorbis Encoder options:\n");
   printf("    --vorbis_bitrate <kbps>            Audio bitrate.\n");
   printf("  Video source configuration options:\n");
@@ -152,15 +152,16 @@ void parse_command_line(int argc, const char** argv,
       enc_config.audio_device_name = argv[++i];
     } else if (!strcmp("--achannels", argv[i]) &&
                arg_has_value(i, argc, argv)) {
-      enc_config.requested_audio_config.channels = strtol(argv[++i], NULL, 10);
+      enc_config.requested_audio_config.channels =
+          static_cast<uint16>(strtol(argv[++i], NULL, 10));
     } else if (!strcmp("--amanual", argv[i])) {
-      enc_config.requested_audio_config.manual_config = true;
+      enc_config.ui_opts.manual_audio_config = true;
     } else if (!strcmp("--arate", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.requested_audio_config.sample_rate =
           strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--asize", argv[i]) && arg_has_value(i, argc, argv)) {
-      enc_config.requested_audio_config.sample_size =
-          strtol(argv[++i], NULL, 10);
+      enc_config.requested_audio_config.bits_per_sample =
+          static_cast<uint16>(strtol(argv[++i], NULL, 10));
     } else if (!strcmp("--stream_name", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       uploader_settings.stream_name = argv[++i];
@@ -173,7 +174,7 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vdev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_device_name = argv[++i];
     } else if (!strcmp("--vmanual", argv[i])) {
-      enc_config.requested_video_config.manual_config = true;
+      enc_config.ui_opts.manual_video_config = true;
     } else if (!strcmp("--vwidth", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.requested_video_config.width = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vheight", argv[i]) && arg_has_value(i, argc, argv)) {
@@ -322,7 +323,6 @@ int client_main(WebmEncoderClientConfig* ptr_config) {
 int main(int argc, const char** argv) {
   google::InitGoogleLogging(argv[0]);
   WebmEncoderClientConfig config;
-  config.enc_config = webmlive::WebmEncoder::DefaultConfig();
   parse_command_line(argc, argv, config);
 
   // validate params
