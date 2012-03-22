@@ -16,6 +16,24 @@
       "revId": "acb65bc4f49af449385414a1181d25056413dc88",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//N7Y\u003d",
+        "filename": "client_encoder/win/dshow_util.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-03-22T18:32:14Z",
+      "side": 1,
+      "message": "Yes/Oops/Done.",
+      "parentUuid": "AAAAHn//N7s\u003d",
+      "revId": "acb65bc4f49af449385414a1181d25056413dc88",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
