@@ -166,11 +166,8 @@ int32 VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
       const bool is_keyframe = !!(pkt->data.frame.flags & VPX_FRAME_IS_KEY);
       uint8* const ptr_vp8_frame_buf =
           reinterpret_cast<uint8*>(pkt->data.frame.buf);
-      const int32 status = ptr_vp8_frame->Init(kVideoFormatVP8,
+      const int32 status = ptr_vp8_frame->Init(raw_frame.config(),
                                                is_keyframe,
-                                               raw_frame.width(),
-                                               raw_frame.height(),
-                                               raw_frame.stride(),
                                                raw_frame.timestamp(),
                                                raw_frame.duration(),
                                                ptr_vp8_frame_buf,
