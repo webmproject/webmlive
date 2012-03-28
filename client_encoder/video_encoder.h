@@ -55,6 +55,24 @@ bool FourCCToVideoFormat(uint32 fourcc,
                          uint16 bits_per_pixel,
                          VideoFormat* ptr_format);
 
+// Video configuration control structure. Values set to 0 mean use default.
+// Only |width|, |height|, and |frame_rate| are configurable. |format| and
+// |stride| are controlled by the input device.
+struct VideoConfig {
+  VideoConfig()
+      : format(kVideoFormatI420),
+        width(0),
+        height(0),
+        stride(0),
+        frame_rate(0) {}
+
+  VideoFormat format;   // Video pixel format.
+  int32 width;          // Width in pixels.
+  int32 height;         // Height in pixels.
+  int32 stride;
+  double frame_rate;    // Frame rate in frames per second.
+};
+
 // Storage class for I420, YV12, and VP8 video frames. The main idea here is to
 // store frames in such a way that they can easily be obtained from the capture
 // source and passed to the libvpx VP8 encoder.
@@ -81,11 +99,8 @@ class VideoFrame {
   // allocate storage for |ptr_data|.
   // Note: When format is not one of |kVideoFormatI420|, |kVideoFormatYV12|,
   //       |kVideoFormatVP8|, |Init()| converts the frame data to I420.
-  int32 Init(VideoFormat format,
+  int32 Init(const VideoConfig& config,
              bool keyframe,
-             int32 width,
-             int32 height,
-             int32 stride,
              int64 timestamp,
              int64 duration,
              const uint8* ptr_data,
@@ -102,38 +117,32 @@ class VideoFrame {
 
   // Accessors.
   bool keyframe() const { return keyframe_; }
-  int32 width() const { return width_; }
-  int32 height() const { return height_; }
-  int32 stride() const { return stride_; }
+  int32 width() const { return config_.width; }
+  int32 height() const { return config_.height; }
+  int32 stride() const { return config_.stride; }
   int64 timestamp() const { return timestamp_; }
   int64 duration() const { return duration_; }
   uint8* buffer() const { return buffer_.get(); }
   int32 buffer_length() const { return buffer_length_; }
   int32 buffer_capacity() const { return buffer_capacity_; }
-  VideoFormat format() const { return format_; }
+  VideoFormat format() const { return config_.format; }
+  const VideoConfig& config() const { return config_; }
 
  private:
-  // Converts video frame from |format| to I420, and stores the I420 frame in
-  // |buffer_|. Returns |kSuccess| when successful. Returns |kNoMemory| if
-  // unable to allocate storage for the converted video frame.
-  // Note: Output stride is equal to |width| after conversion, and stored in
-  //       |stride_|.
-  int32 ConvertToI420(VideoFormat format,
-                      int32 width,
-                      int32 height,
-                      int32 stride,
-                      const uint8* ptr_data);
+  // Converts video frame from |config.format| to I420, and stores the I420
+  // frame in |buffer_|. Returns |kSuccess| when successful. Returns
+  // |kNoMemory| if unable to allocate storage for the converted video frame.
+  // Note: Output stride is equal to |config.width| after conversion, and stored
+  //       in |config_.stride|.
+  int32 ConvertToI420(const VideoConfig& config, const uint8* ptr_data);
 
   bool keyframe_;
-  int32 width_;
-  int32 height_;
-  int32 stride_;
   int64 timestamp_;
   int64 duration_;
   boost::scoped_array<uint8> buffer_;
   int32 buffer_capacity_;
   int32 buffer_length_;
-  VideoFormat format_;
+  VideoConfig config_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoFrame);
 };
 

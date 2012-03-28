@@ -50,22 +50,6 @@ struct WebmEncoderConfig {
     uint32 channel_mask;            // Channels present in audio stream.
   };
 
-  // Video configuration control structure. Values set to 0 mean use default.
-  // Only |width|, |height|, and |frame_rate| are configurable. |format| is
-  // controlled by the input device.
-  struct VideoConfig {
-    VideoConfig()
-        : format(kVideoFormatI420),
-          width(0),
-          height(0),
-          frame_rate(0) {}
-
-    VideoFormat format;   // Video pixel format.
-    int32 width;          // Width in pixels.
-    int32 height;         // Height in pixels.
-    double frame_rate;    // Frame rate in frames per second.
-  };
-
   // User interface control structure. |MediaSourceImpl| will attempt to
   // display configuration control dialogs when fields are set to true.
   struct UserInterfaceOptions {
