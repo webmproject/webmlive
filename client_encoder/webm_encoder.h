@@ -14,6 +14,7 @@
 #include "boost/scoped_ptr.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/thread.hpp"
+#include "client_encoder/audio_encoder.h"
 #include "client_encoder/basictypes.h"
 #include "client_encoder/data_sink.h"
 #include "client_encoder/client_encoder_base.h"
@@ -24,32 +25,6 @@ namespace webmlive {
 const int kTimebase = 1000;
 
 struct WebmEncoderConfig {
-  // Audio configuration control structure. Values set to 0 mean use default.
-  // Only |channels|, |sample_rate|, and |bits_per_sample| are user
-  // configurable.
-  struct AudioConfig {
-    const static uint16 kFormatPcm = 1;
-    const static uint16 kFormatIeeeFloat = 3;
-    AudioConfig()
-        : format_tag(kFormatPcm),
-          channels(2),
-          bytes_per_second(0),
-          sample_rate(44100),
-          block_align(0),
-          bits_per_sample(16),
-          valid_bits_per_sample(0),
-          channel_mask(0) {}
-
-    uint16 format_tag;              // Audio format.
-    uint16 channels;                // Number of channels.
-    uint32 sample_rate;             // Samples per second.
-    uint32 bytes_per_second;        // Average bytes per second.
-    uint16 block_align;             // Atomic audio unit size in bytes.
-    uint16 bits_per_sample;         // Sample container size.
-    uint16 valid_bits_per_sample;   // Valid bits in sample container.
-    uint32 channel_mask;            // Channels present in audio stream.
-  };
-
   // User interface control structure. |MediaSourceImpl| will attempt to
   // display configuration control dialogs when fields are set to true.
   struct UserInterfaceOptions {
