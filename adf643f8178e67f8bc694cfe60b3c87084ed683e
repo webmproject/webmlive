@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAHn//JR8\u003d",
+        "filename": "client_encoder/video_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 202,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-03-28T21:33:55Z",
+      "side": 1,
+      "message": "not sure this justification is needed.",
+      "revId": "adf643f8178e67f8bc694cfe60b3c87084ed683e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAHn//JSE\u003d",
+        "filename": "client_encoder/video_encoder.h",
+        "patchSetId": 3
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-03-28T21:33:55Z",
+      "side": 1,
+      "message": "might do with a Validate()",
+      "revId": "adf643f8178e67f8bc694cfe60b3c87084ed683e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
