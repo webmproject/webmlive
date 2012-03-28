@@ -189,6 +189,14 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\audio_encoder.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\audio_encoder.h"
+				>
+			</File>
+			<File
 				RelativePath=".\basictypes.h"
 				>
 			</File>
@@ -230,6 +238,14 @@
 			</File>
 			<File
 				RelativePath=".\video_encoder.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vorbis_encoder.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\vorbis_encoder.h"
 				>
 			</File>
 			<File
