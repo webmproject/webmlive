@@ -67,7 +67,6 @@ class MediaType {
 // storage for the AM_MEDIA_TYPE data.
 class VideoMediaType : public MediaType {
  public:
-  typedef WebmEncoderConfig::VideoConfig VideoConfig;
   VideoMediaType();
   virtual ~VideoMediaType();
 

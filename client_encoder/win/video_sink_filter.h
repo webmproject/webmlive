@@ -36,8 +36,6 @@ class VideoSinkFilter;
 // Pin class used by |VideoSinkFilter|. Accepts only I420 video input.
 class VideoSinkPin : public CBaseInputPin {
  public:
-  typedef WebmEncoderConfig::VideoConfig VideoConfig;
-
   // Constructs CBaseInputPin and returns result via |ptr_result|. Returns
   // S_OK when successful.
   VideoSinkPin(TCHAR* ptr_object_name,
@@ -96,12 +94,6 @@ class VideoSinkPin : public CBaseInputPin {
   // Actual video config (from upstream filter).
   VideoConfig actual_config_;
 
-  // Video frame stride.
-  int32 stride_;
-
-  // Video frame pixel format.
-  VideoFormat video_format_;
-
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoSinkPin);
   friend class VideoSinkFilter;
 };
@@ -110,8 +102,6 @@ class VideoSinkPin : public CBaseInputPin {
 // DirectShow filter via |VideoSinkPin|.
 class VideoSinkFilter : public CBaseFilter {
  public:
-  typedef WebmEncoderConfig::VideoConfig VideoConfig;
-
   // Stores |ptr_frame_callback|, constructs CBaseFilter and |VideoSinkPin, and
   // returns result via |ptr_result|.
   // Return values:

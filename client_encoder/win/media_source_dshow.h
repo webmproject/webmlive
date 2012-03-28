@@ -92,7 +92,6 @@ class VideoFrameCallbackInterface;
 class MediaSourceImpl {
  public:
   typedef WebmEncoderConfig::AudioConfig AudioConfig;
-  typedef WebmEncoderConfig::VideoConfig VideoConfig;
   typedef WebmEncoderConfig::UserInterfaceOptions UserInterfaceOptions;
   enum {
     // Error creating the video sink filter.
@@ -425,7 +424,6 @@ class PinFormat {
     kSuccess = 0,
   };
   typedef WebmEncoderConfig::AudioConfig AudioConfig;
-  typedef WebmEncoderConfig::VideoConfig VideoConfig;
 
   // Copies supplied pin to |pin_|.
   explicit PinFormat(const IPinPtr& pin);

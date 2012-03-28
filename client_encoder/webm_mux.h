@@ -52,8 +52,6 @@ class LiveWebmMuxer {
  public:
   typedef std::vector<uint8> WriteBuffer;
   typedef WebmEncoderConfig::AudioConfig AudioConfig;
-  typedef WebmEncoderConfig::VideoConfig VideoConfig;
-
   static const uint64 kTimecodeScale = 1000000;
 
   // Status codes returned by class methods.

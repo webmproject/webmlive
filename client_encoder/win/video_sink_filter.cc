@@ -26,10 +26,11 @@ VideoSinkPin::VideoSinkPin(TCHAR* ptr_object_name,
                            CCritSec* ptr_filter_lock,
                            HRESULT* ptr_result,
                            LPCWSTR ptr_pin_name)
-    : CBaseInputPin(ptr_object_name, ptr_filter, ptr_filter_lock, ptr_result,
-                    ptr_pin_name),
-      stride_(0),
-      video_format_(kVideoFormatI420) {
+    : CBaseInputPin(ptr_object_name,
+                    ptr_filter,
+                    ptr_filter_lock,
+                    ptr_result,
+                    ptr_pin_name) {
 }
 
 VideoSinkPin::~VideoSinkPin() {
@@ -146,7 +147,7 @@ HRESULT VideoSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
   if (ptr_header) {
     if (FourCCToVideoFormat(ptr_header->biCompression,
                             ptr_header->biBitCount,
-                            &video_format_)) {
+                            &actual_config_.format)) {
       // |ptr_media_type| contains a video frame with a pixel format that is
       // acceptable-- store format information.
       actual_config_.width = ptr_header->biWidth;
@@ -154,15 +155,15 @@ HRESULT VideoSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
 
       // Store the stride for use with |VideoFrame::Init()|-- it's needed for
       // format conversion.
-      stride_ = DIBWIDTHBYTES(*ptr_header);
+      actual_config_.stride = DIBWIDTHBYTES(*ptr_header);
     }
   }
 
   LOG(INFO) << "\n CheckMediaType actual video settings\n"
             << "   width=" << actual_config_.width << "\n"
             << "   height=" << actual_config_.height << "\n"
-            << "   stride=" << stride_ << "\n"
-            << "   format=" << video_format_;
+            << "   stride=" << actual_config_.stride << "\n"
+            << "   format=" << actual_config_.format;
   return S_OK;
 }
 
@@ -213,7 +214,7 @@ HRESULT VideoSinkPin::config(VideoConfig* ptr_config) {
 // held by caller, |VideoSinkFilter::set_config|.
 HRESULT VideoSinkPin::set_config(const VideoConfig& config) {
   requested_config_ = config;
-  actual_config_ = WebmEncoderConfig::VideoConfig();
+  actual_config_ = VideoConfig();
   return S_OK;
 }
 
@@ -302,34 +303,29 @@ HRESULT VideoSinkFilter::OnFrameReceived(IMediaSample* ptr_sample) {
       LOG(WARNING) << "OnFrameReceived frame has no stop time.";
     }
   }
-  const int32 width = sink_pin_->actual_config_.width;
-  const int32 height = sink_pin_->actual_config_.height;
 
   // TODO(tomfinegan): Write an allocator that retrieves frames from
   //                   |WebmEncoder::EncoderThread| and avoid this extra copy.
 
-  const int32 status =
-      frame_.Init(sink_pin_->video_format_,
-                  true,  // uncompressed frames are always "keyframes"
-                  width,
-                  height,
-                  sink_pin_->stride_,
-                  timestamp,
-                  duration,
-                  ptr_sample_buffer,
-                  ptr_sample->GetActualDataLength());
+  const int32 status = frame_.Init(sink_pin_->actual_config_,
+                                   true,  // always "keyframes"
+                                   timestamp,
+                                   duration, 
+                                   ptr_sample_buffer,
+                                   ptr_sample->GetActualDataLength());
   if (status) {
     LOG(ERROR) << "OnFrameReceived frame init failed: " << status;
     return E_FAIL;
   }
   LOG(INFO) << "OnFrameReceived received a frame:"
-            << " width=" << width
-            << " height=" << height
-            << " stride=" << sink_pin_->stride_
+            << " width="  << sink_pin_->actual_config_.width
+            << " height=" << sink_pin_->actual_config_.height
+            << " format=" << sink_pin_->actual_config_.format
+            << " stride=" << sink_pin_->actual_config_.stride
             << " timestamp(sec)=" << (timestamp / 1000.0)
-            << " timestamp=" << timestamp
+            << " timestamp="      << timestamp
             << " duration(sec)= " << (duration / 1000.0)
-            << " duration= " << duration
+            << " duration= "      << duration
             << " size=" << frame_.buffer_length();
   int frame_status = ptr_frame_callback_->OnVideoFrameReceived(&frame_);
   if (frame_status && frame_status != VideoFrameCallbackInterface::kDropped) {
