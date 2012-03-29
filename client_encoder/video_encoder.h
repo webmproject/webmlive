@@ -100,17 +100,17 @@ class VideoFrame {
   // allocate storage for |ptr_data|.
   // Note: When format is not one of |kVideoFormatI420|, |kVideoFormatYV12|,
   //       |kVideoFormatVP8|, |Init()| converts the frame data to I420.
-  int32 Init(const VideoConfig& config,
-             bool keyframe,
-             int64 timestamp,
-             int64 duration,
-             const uint8* ptr_data,
-             int32 data_length);
+  int Init(const VideoConfig& config,
+           bool keyframe,
+           int64 timestamp,
+           int64 duration,
+           const uint8* ptr_data,
+           int32 data_length);
 
   // Copies |VideoFrame| data to |ptr_frame|. Performs allocation if necessary.
   // Returns |kSuccess| when successful. Returns |kInvalidArg| when |ptr_frame|
   // is NULL. Returns |kNoMemory| when memory allocation fails.
-  int32 Clone(VideoFrame* ptr_frame) const;
+  int Clone(VideoFrame* ptr_frame) const;
 
   // Swaps |VideoFrame| member data with |ptr_frame|'s. The |VideoFrame|s
   // must have non-NULL buffers.
@@ -135,7 +135,7 @@ class VideoFrame {
   // |kNoMemory| if unable to allocate storage for the converted video frame.
   // Note: Output stride is equal to |config.width| after conversion, and stored
   //       in |config_.stride|.
-  int32 ConvertToI420(const VideoConfig& config, const uint8* ptr_data);
+  int ConvertToI420(const VideoConfig& config, const uint8* ptr_data);
 
   bool keyframe_;
   int64 timestamp_;

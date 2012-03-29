@@ -38,7 +38,7 @@ class VpxEncoder {
 
   // Initializes libvpx for VP8 encoding and returns |kSuccess|. Returns
   // |kCodecError| if a libvpx operation fails.
-  int32 Init(const WebmEncoderConfig& config);
+  int Init(const WebmEncoderConfig& config);
 
   // Encodes |ptr_raw_frame| using libvpx and returns the compressed data via
   // |ptr_vp8_frame|.
@@ -48,8 +48,9 @@ class VpxEncoder {
   //              |ptr_raw_frame| was dropped.
   // |kCodecError| - a libvpx operation failed.
   // |kEncoderError| - compressed data cannot be stored in |ptr_vp8_frame|.
-  int32 EncodeFrame(const VideoFrame& raw_frame,
-                    VideoFrame* ptr_vp8_frame);
+  int EncodeFrame(const VideoFrame& raw_frame, VideoFrame* ptr_vp8_frame);
+
+  // Accessors.
   int64 frames_in() const { return frames_in_; }
   int64 frames_out() const { return frames_out_; }
   int64 last_keyframe_time() const { return last_keyframe_time_; }
