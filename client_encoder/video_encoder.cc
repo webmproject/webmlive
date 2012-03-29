@@ -87,12 +87,12 @@ VideoFrame::VideoFrame()
 VideoFrame::~VideoFrame() {
 }
 
-int32 VideoFrame::Init(const VideoConfig& config,
-                       bool keyframe,
-                       int64 timestamp,
-                       int64 duration,
-                       const uint8* ptr_data,
-                       int32 data_length) {
+int VideoFrame::Init(const VideoConfig& config,
+                     bool keyframe,
+                     int64 timestamp,
+                     int64 duration,
+                     const uint8* ptr_data,
+                     int32 data_length) {
   if (!ptr_data) {
     LOG(ERROR) << "VideoFrame can't Init with NULL data pointer.";
     return kInvalidArg;
@@ -130,7 +130,7 @@ int32 VideoFrame::Init(const VideoConfig& config,
   return kSuccess;
 }
 
-int32 VideoFrame::Clone(VideoFrame* ptr_frame) const {
+int VideoFrame::Clone(VideoFrame* ptr_frame) const {
   if (!ptr_frame) {
     LOG(ERROR) << "cannot Clone to a NULL VideoFrame.";
     return kInvalidArg;
@@ -184,8 +184,8 @@ void VideoFrame::Swap(VideoFrame* ptr_frame) {
   ptr_frame->buffer_length_ = temp;
 }
 
-int32 VideoFrame::ConvertToI420(const VideoConfig& source_config,
-                                const uint8* ptr_data) {
+int VideoFrame::ConvertToI420(const VideoConfig& source_config,
+                              const uint8* ptr_data) {
   // Allocate storage for the I420 frame.
   const int32 size_required =
       source_config.width * source_config.height * 3 / 2;
@@ -282,7 +282,7 @@ VideoFrameQueue::~VideoFrameQueue() {
 }
 
 // Obtains lock and populates |frame_pool_| with |VideoFrame| pointers.
-int32 VideoFrameQueue::Init() {
+int VideoFrameQueue::Init() {
   boost::mutex::scoped_lock lock(mutex_);
   CHECK(frame_pool_.empty());
   CHECK(active_frames_.empty());
@@ -299,7 +299,7 @@ int32 VideoFrameQueue::Init() {
 
 // Obtains lock, copies |ptr_frame| data into |VideoFrame| from |frame_pool_|,
 // and moves the frame into |active_frames_|.
-int32 VideoFrameQueue::Commit(VideoFrame* ptr_frame) {
+int VideoFrameQueue::Commit(VideoFrame* ptr_frame) {
   if (!ptr_frame || !ptr_frame->buffer()) {
     LOG(ERROR) << "VideoFrameQueue can't Commit a NULL/empty VideoFrame!";
     return kInvalidArg;
@@ -325,7 +325,7 @@ int32 VideoFrameQueue::Commit(VideoFrame* ptr_frame) {
 
 // Obtains lock, copies front |VideoFrame| from |active_frames_| to
 // |ptr_frame|, and moves the consumed |VideoFrame| back into |frame_pool_|.
-int32 VideoFrameQueue::Read(VideoFrame* ptr_frame) {
+int VideoFrameQueue::Read(VideoFrame* ptr_frame) {
   if (!ptr_frame) {
     LOG(ERROR) << "VideoFrameQueue can't Read into a NULL VideoFrame!";
     return kInvalidArg;
@@ -358,8 +358,8 @@ void VideoFrameQueue::DropFrames() {
   }
 }
 
-int32 VideoFrameQueue::ExchangeFrames(VideoFrame* ptr_source,
-                                      VideoFrame* ptr_target) {
+int VideoFrameQueue::ExchangeFrames(VideoFrame* ptr_source,
+                                    VideoFrame* ptr_target) {
   if (!ptr_source || !ptr_target) {
     return kInvalidArg;
   }
@@ -385,7 +385,7 @@ VideoEncoder::VideoEncoder() {
 VideoEncoder::~VideoEncoder() {
 }
 
-int32 VideoEncoder::Init(const WebmEncoderConfig& config) {
+int VideoEncoder::Init(const WebmEncoderConfig& config) {
   ptr_vpx_encoder_.reset(new (std::nothrow) VpxEncoder());  // NOLINT
   if (!ptr_vpx_encoder_) {
     return kNoMemory;
@@ -393,8 +393,8 @@ int32 VideoEncoder::Init(const WebmEncoderConfig& config) {
   return ptr_vpx_encoder_->Init(config);
 }
 
-int32 VideoEncoder::EncodeFrame(const VideoFrame& raw_frame,
-                                VideoFrame* ptr_vp8_frame) {
+int VideoEncoder::EncodeFrame(const VideoFrame& raw_frame,
+                              VideoFrame* ptr_vp8_frame) {
   if (!ptr_vpx_encoder_) {
     LOG(ERROR) << "VideoEncoder has NULL encoder, not Init'd";
     return kEncoderError;

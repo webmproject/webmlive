@@ -96,8 +96,8 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
 // decimation, and then checks if it's time to force a keyframe before finally
 // wrapping the data from |ptr_raw_frame| in a vpx_img_t struct and passing it
 // to libvpx.
-int32 VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
-                              VideoFrame* ptr_vp8_frame) {
+int VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
+                            VideoFrame* ptr_vp8_frame) {
   if (!raw_frame.buffer()) {
     LOG(ERROR) << "NULL raw VideoFrame buffer!";
     return kInvalidArg;
@@ -187,7 +187,7 @@ int32 VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
 }
 
 template <typename T>
-int32 VpxEncoder::CodecControl(int control_id, T val, T default_val) {
+int VpxEncoder::CodecControl(int control_id, T val, T default_val) {
   if (val != default_val) {
     vpx_codec_err_t status = VPX_CODEC_OK;
 
