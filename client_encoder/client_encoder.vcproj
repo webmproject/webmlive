@@ -193,6 +193,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\buffer_pool-inl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\buffer_pool.h"
+				>
+			</File>
+			<File
 				RelativePath=".\buffer_util.cc"
 				>
 			</File>
@@ -201,15 +209,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\data_sink.h"
-				>
-			</File>
-			<File
 				RelativePath=".\client_encoder_base.h"
 				>
 			</File>
 			<File
 				RelativePath=".\client_encoder_main.cc"
+				>
+			</File>
+			<File
+				RelativePath=".\data_sink.h"
 				>
 			</File>
 			<File
