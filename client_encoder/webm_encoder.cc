@@ -48,8 +48,8 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
   chunk_buffer_size_ = kDefaultChunkBufferSize;
 
   // Initialize the video frame queue.
-  if (video_queue_.Init()) {
-    LOG(ERROR) << "VideoFrameQueue Init failed!";
+  if (video_queue_.Init(false)) {
+    LOG(ERROR) << "BufferPool<VideoFrame*> Init failed!";
     return kInitFailed;
   }
 
@@ -138,7 +138,7 @@ int64 WebmEncoder::encoded_duration() const {
 int WebmEncoder::OnVideoFrameReceived(VideoFrame* ptr_frame) {
   int status = video_queue_.Commit(ptr_frame);
   if (status) {
-    if (status != VideoFrameQueue::kFull) {
+    if (status != BufferPool<VideoFrame>::kFull) {
       LOG(ERROR) << "VideoFrameQueue Push failed! " << status;
     }
     return VideoFrameCallbackInterface::kDropped;
@@ -211,9 +211,9 @@ void WebmEncoder::EncoderThread() {
       // Read a frame for |video_queue_|. Sets |got_frame| to true if a frame
       // is available.
       bool got_frame = false;
-      status = video_queue_.Read(&raw_frame_);
+      status = video_queue_.Decommit(&raw_frame_);
       if (status) {
-        if (status != VideoFrameQueue::kEmpty) {
+        if (status != BufferPool<VideoFrame>::kEmpty) {
           // Really an error; not just an empty queue.
           LOG(ERROR) << "VideoFrameQueue Pop failed! " << status;
           break;
