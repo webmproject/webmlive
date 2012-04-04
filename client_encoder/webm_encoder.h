@@ -15,8 +15,9 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/thread.hpp"
 #include "client_encoder/basictypes.h"
-#include "client_encoder/data_sink.h"
+#include "client_encoder/buffer_pool.h"
 #include "client_encoder/client_encoder_base.h"
+#include "client_encoder/data_sink.h"
 #include "client_encoder/video_encoder.h"
 
 namespace webmlive {
@@ -177,7 +178,7 @@ class WebmEncoder : public VideoFrameCallbackInterface {
 
   // VideoFrameCallbackInterface methods
   // Method used by MediaSourceImpl to push video frames into |EncoderThread|.
-  virtual int32 OnVideoFrameReceived(VideoFrame* ptr_frame);
+  virtual int OnVideoFrameReceived(VideoFrame* ptr_frame);
 
  private:
   // Returns true when user wants the encode thread to stop.
@@ -218,7 +219,7 @@ class WebmEncoder : public VideoFrameCallbackInterface {
 
   // Queue used to push video frames from |MediaSourceImpl| into
   // |EncoderThread|.
-  VideoFrameQueue video_queue_;
+  BufferPool<VideoFrame> video_queue_;
 
   // Most recent frame from |video_queue_|.
   VideoFrame raw_frame_;
