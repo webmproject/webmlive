@@ -212,10 +212,11 @@ class VideoFrameCallbackInterface {
     // Returned by |OnVideoFrameReceived| when |ptr_frame| is dropped.
     kDropped = 1,
   };
-  virtual ~VideoFrameCallbackInterface();
+  virtual ~VideoFrameCallbackInterface() {}
+
   // Passes a |VideoFrame| pointer to the |VideoFrameCallbackInterface|
   // implementation.
-  virtual int32 OnVideoFrameReceived(VideoFrame* ptr_frame) = 0;
+  virtual int OnVideoFrameReceived(VideoFrame* ptr_frame) = 0;
 };
 
 struct VpxConfig {

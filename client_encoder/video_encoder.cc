@@ -402,13 +402,4 @@ int VideoEncoder::EncodeFrame(const VideoFrame& raw_frame,
   return ptr_vpx_encoder_->EncodeFrame(raw_frame, ptr_vp8_frame);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// VideoFrameCallbackInterface
-//
-
-VideoFrameCallbackInterface::~VideoFrameCallbackInterface() {
-}
-
-
 }  // namespace webmlive
-
