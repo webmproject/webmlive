@@ -21,4 +21,12 @@
 
 #endif  // _WIN32
 
+// App Version/Identity
+namespace webmlive {
+
+static const char* kClientName = "webmlive client encoder";
+static const char* kClientVersion = "0.0.2.0";
+
+}  // namespace webmlive
+
 #endif  // CLIENT_ENCODER_CLIENT_ENCODER_BASE_H_
