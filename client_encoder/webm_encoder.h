@@ -20,6 +20,7 @@
 #include "client_encoder/client_encoder_base.h"
 #include "client_encoder/data_sink.h"
 #include "client_encoder/video_encoder.h"
+#include "client_encoder/vorbis_encoder.h"
 
 namespace webmlive {
 // All timestamps are in milliseconds.
@@ -76,11 +77,15 @@ class LiveWebmMuxer;
 
 // Top level WebM encoder class. Manages capture from A/V input devices, VP8
 // encoding, Vorbis encoding, and muxing into a WebM stream.
-class WebmEncoder : public VideoFrameCallbackInterface {
+class WebmEncoder : public AudioSamplesCallbackInterface,
+                    public VideoFrameCallbackInterface {
  public:
   // Default size of |chunk_buffer_|.
   static const int kDefaultChunkBufferSize = 100 * 1024;
   enum {
+    // AV capture implementation unable to setup audio buffer sink.
+    kAudioSinkError = -116,
+
     // AV capture source stopped on its own.
     kAVCaptureStopped = -115,
 
@@ -155,6 +160,10 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   static WebmEncoderConfig DefaultConfig();
   WebmEncoderConfig config() const { return config_; }
 
+  // AudioSamplesCallbackInterface methods
+  // Method used by MediaSourceImpl to push audio buffers into |EncoderThread|.
+  virtual int OnSamplesReceived(AudioBuffer* ptr_buffer);
+
   // VideoFrameCallbackInterface methods
   // Method used by MediaSourceImpl to push video frames into |EncoderThread|.
   virtual int OnVideoFrameReceived(VideoFrame* ptr_frame);
@@ -173,6 +182,8 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   // Reads a video frame from |video_pool_|, encodes it, and muxes the
   // resulting encoded frame. Returns |kSuccess| when successful.
   int ReadEncodeAndMuxVideoFrame();
+
+  int ReadEncodeAndMuxAudioBuffer();
 
   // Set to true when |Init()| is successful.
   bool initialized_;
@@ -215,6 +226,16 @@ class WebmEncoder : public VideoFrameCallbackInterface {
 
   // Encoded duration in milliseconds.
   int64 encoded_duration_;
+
+  // Buffer object used to push |AudioBuffer|s from |MediaSourceImpl| into
+  // |EncoderThread|.
+  BufferPool<AudioBuffer> audio_pool_;
+
+  // Most recent uncompressed audio buffer from |audio_pool_|.
+  AudioBuffer raw_audio_buffer_;
+
+  // Most recent vorbis audio buffer from |vorbis_encoder_|.
+  AudioBuffer vorbis_audio_buffer_;
 
   // Encoder configuration.
   WebmEncoderConfig config_;
