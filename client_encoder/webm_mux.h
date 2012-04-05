@@ -25,6 +25,23 @@ namespace webmlive {
 // Forward declaration of class implementing IMkvWriter interface for libwebm.
 class WebmMuxWriter;
 
+struct VorbisCodecPrivate {
+  VorbisCodecPrivate()
+      : ptr_ident(NULL),
+        ident_length(0),
+        ptr_comments(NULL),
+        comments_length(0),
+        ptr_setup(NULL),
+        setup_length(0) {}
+
+  const uint8* ptr_ident;
+  int32 ident_length;
+  const uint8* ptr_comments;
+  int32 comments_length;
+  const uint8* ptr_setup;
+  int32 setup_length;
+};
+
 // WebM muxing object built atop libwebm. Provides buffers containing WebM
 // "chunks" of two types:
 //  Metadata Chunk
@@ -57,6 +74,12 @@ class LiveWebmMuxer {
   enum {
     // Temporary return code for unimplemented operations.
     kNotImplemented = -200,
+
+
+    kAudioPrivateDataInvalid = -11,
+
+    kAudioTrackAlreadyExists = -10,
+    kAudioTrackError = -9,
 
     // |ReadChunk()| called when no chunk is ready.
     kNoChunkReady = -8,
@@ -93,27 +116,28 @@ class LiveWebmMuxer {
   // that type. Returns |kSuccess| when successful. Returns |kInvalidArg| if
   // both configuration pointers are NULL. Returns |kInvalidArg| when
   // |cluster_duration| is < 1.
-  int32 Init(int32 cluster_duration_milliseconds);
+  int Init(int32 cluster_duration_milliseconds);
 
   // Adds an audio track to |ptr_segment_|. Returns |kNotImplemented|.
-  int32 AddTrack(const AudioConfig& audio_config);
+  int AddTrack(const AudioConfig& audio_config,
+               const VorbisCodecPrivate* ptr_codec_private);
 
   // Adds a video track to |ptr_segment_|, and returns |kSuccess|. Returns
   // |kVideoTrackAlreadyExists| when the video track has already been added.
   // Returns |kVideoTrackError| when adding the track to the segment fails.
-  int32 AddTrack(const VideoConfig& video_config);
+  int AddTrack(const VideoConfig& video_config);
 
   // Flushes any queued frames. Users MUST call this method to ensure that all
   // buffered frames are flushed out of libwebm. To determine if calling
   // |Finalize()| resulted in production of a chunk, call |ChunkReady()| after
   // the call to |Finalize()|. Returns |kSuccess| when |Segment::Finalize()|
   // returns without error.
-  int32 Finalize();
+  int Finalize();
 
   // Writes |vp8_frame| to the video track and returns |kSuccess|. Returns
   // |kInvalidArg| when |vp8_frame| is empty or contains a non-VP8 frame.
   // Returns |kVideoWriteError| when libwebm returns an error.
-  int32 WriteVideoFrame(const VideoFrame& vp8_frame);
+  int WriteVideoFrame(const VideoFrame& vp8_frame);
 
   // Returns true and writes chunk length to |ptr_chunk_length| when |buffer_|
   // contains a complete WebM chunk.
@@ -122,7 +146,7 @@ class LiveWebmMuxer {
   // Moves WebM chunk data into |ptr_buf|. The data has been from removed from
   // |buffer_| when |kSuccess| is returned.  Returns |kUserBufferTooSmall| if
   // |buffer_capacity| is less than |chunk_length|.
-  int32 ReadChunk(int32 buffer_capacity, uint8* ptr_buf);
+  int ReadChunk(int32 buffer_capacity, uint8* ptr_buf);
 
  private:
   boost::scoped_ptr<WebmMuxWriter> ptr_writer_;
