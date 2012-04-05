@@ -310,7 +310,7 @@ HRESULT VideoSinkFilter::OnFrameReceived(IMediaSample* ptr_sample) {
   const int32 status = frame_.Init(sink_pin_->actual_config_,
                                    true,  // always "keyframes"
                                    timestamp,
-                                   duration, 
+                                   duration,
                                    ptr_sample_buffer,
                                    ptr_sample->GetActualDataLength());
   if (status) {
