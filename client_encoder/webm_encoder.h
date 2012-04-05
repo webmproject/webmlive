@@ -73,7 +73,8 @@ class LiveWebmMuxer;
 
 // Top level WebM encoder class. Manages capture from A/V input devices, VP8
 // encoding, Vorbis encoding, and muxing into a WebM stream.
-class WebmEncoder : public VideoFrameCallbackInterface {
+class WebmEncoder : public AudioSamplesCallbackInterface,
+                    public VideoFrameCallbackInterface {
  public:
   // Default size of |chunk_buffer_|.
   static const int kDefaultChunkBufferSize = 100 * 1024;
@@ -151,6 +152,10 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   // Returns |WebmEncoderConfig| with fields set to default values.
   static WebmEncoderConfig DefaultConfig();
   WebmEncoderConfig config() const { return config_; }
+
+  // AudioSamplesCallbackInterface methods
+  // Method used by MediaSourceImpl to push audio buffers into |EncoderThread|.
+  virtual int OnSamplesReceived(AudioBuffer* ptr_buffer);
 
   // VideoFrameCallbackInterface methods
   // Method used by MediaSourceImpl to push video frames into |EncoderThread|.

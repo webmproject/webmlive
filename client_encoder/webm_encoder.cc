@@ -135,6 +135,11 @@ int64 WebmEncoder::encoded_duration() const {
   return encoded_duration_;
 }
 
+// AudioSamplesCallbackInterface
+int WebmEncoder::OnSamplesReceived(AudioBuffer* ptr_buffer) {
+  return kSuccess;
+}
+
 // VideoFrameCallbackInterface
 int WebmEncoder::OnVideoFrameReceived(VideoFrame* ptr_frame) {
   int status = video_queue_.Commit(ptr_frame);
