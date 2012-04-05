@@ -58,7 +58,7 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     LOG(ERROR) << "cannot construct media source!";
     return kInitFailed;
   }
-  int status = ptr_media_source_->Init(config_, NULL, this);
+  int status = ptr_media_source_->Init(config_, this, this);
   if (status) {
     LOG(ERROR) << "media source Init failed " << status;
     return kInitFailed;
@@ -95,12 +95,43 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     // Add the video track.
     status = ptr_muxer_->AddTrack(config_.actual_video_config);
     if (status) {
-      LOG(ERROR) << "live muxer AddTrack failed " << status;
+      LOG(ERROR) << "live muxer AddTrack(video) failed " << status;
       return kInitFailed;
     }
   }
 
   if (config_.disable_audio == false) {
+    config_.actual_audio_config = ptr_media_source_->actual_audio_config();
+
+    // Initialize the audio buffer pool.
+    if (audio_pool_.Init(true)) {
+      LOG(ERROR) << "BufferPool<AudioBuffer> Init failed!";
+      return kInitFailed;
+    }
+
+    // Initialize the vorbis encoder.
+    status = vorbis_encoder_.Init(config_.actual_audio_config,
+                                  config_.vorbis_config);
+    if (status) {
+      LOG(ERROR) << "audio encoder Init failed " << status;
+      return kInitFailed;
+    }
+
+    // Fill in the private data structure.
+    VorbisCodecPrivate codec_private;
+    codec_private.ptr_ident = vorbis_encoder_.ident_header();
+    codec_private.ident_length = vorbis_encoder_.ident_header_length();
+    codec_private.ptr_comments = vorbis_encoder_.comments_header();
+    codec_private.comments_length = vorbis_encoder_.comments_header_length();
+    codec_private.ptr_setup = vorbis_encoder_.setup_header();
+    codec_private.setup_length = vorbis_encoder_.setup_header_length();
+
+    // Add the vorbis track.
+    status = ptr_muxer_->AddTrack(config_.actual_audio_config, &codec_private);
+    if (status) {
+      LOG(ERROR) << "live muxer AddTrack(audio) failed " << status;
+      return kInitFailed;
+    }
   }
 
   initialized_ = true;
@@ -143,6 +174,17 @@ void WebmEncoder::Stop() {
 int64 WebmEncoder::encoded_duration() const {
   boost::mutex::scoped_lock lock(mutex_);
   return encoded_duration_;
+}
+
+// AudioSamplesCallbackInterface
+int WebmEncoder::OnSamplesReceived(AudioBuffer* ptr_buffer) {
+  int status = audio_pool_.Commit(ptr_buffer);
+  if (status) {
+    LOG(ERROR) << "AudioBuffer pool Commit failed! " << status;
+    return AudioSamplesCallbackInterface::kNoMemory;
+  }
+  LOG(INFO) << "OnSamplesReceived committed an audio buffer.";
+  return kSuccess;
 }
 
 // VideoFrameCallbackInterface
