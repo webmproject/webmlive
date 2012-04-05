@@ -7,6 +7,7 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "client_encoder/webm_encoder.h"
 
+#include <limits>
 #include <cstdio>
 #include <sstream>
 
@@ -58,7 +59,7 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     LOG(ERROR) << "cannot construct media source!";
     return kInitFailed;
   }
-  int status = ptr_media_source_->Init(config_, NULL, this);
+  int status = ptr_media_source_->Init(config_, this, this);
   if (status) {
     LOG(ERROR) << "media source Init failed " << status;
     return kInitFailed;
@@ -95,12 +96,43 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     // Add the video track.
     status = ptr_muxer_->AddTrack(config_.actual_video_config);
     if (status) {
-      LOG(ERROR) << "live muxer AddTrack failed " << status;
+      LOG(ERROR) << "live muxer AddTrack(video) failed " << status;
       return kInitFailed;
     }
   }
 
   if (config_.disable_audio == false) {
+    config_.actual_audio_config = ptr_media_source_->actual_audio_config();
+
+    // Initialize the audio buffer pool.
+    if (audio_pool_.Init(true)) {
+      LOG(ERROR) << "BufferPool<AudioBuffer> Init failed!";
+      return kInitFailed;
+    }
+
+    // Initialize the vorbis encoder.
+    status = vorbis_encoder_.Init(config_.actual_audio_config,
+                                  config_.vorbis_config);
+    if (status) {
+      LOG(ERROR) << "audio encoder Init failed " << status;
+      return kInitFailed;
+    }
+
+    // Fill in the private data structure.
+    VorbisCodecPrivate codec_private;
+    codec_private.ptr_ident = vorbis_encoder_.ident_header();
+    codec_private.ident_length = vorbis_encoder_.ident_header_length();
+    codec_private.ptr_comments = vorbis_encoder_.comments_header();
+    codec_private.comments_length = vorbis_encoder_.comments_header_length();
+    codec_private.ptr_setup = vorbis_encoder_.setup_header();
+    codec_private.setup_length = vorbis_encoder_.setup_header_length();
+
+    // Add the vorbis track.
+    status = ptr_muxer_->AddTrack(config_.actual_audio_config, &codec_private);
+    if (status) {
+      LOG(ERROR) << "live muxer AddTrack(audio) failed " << status;
+      return kInitFailed;
+    }
   }
 
   initialized_ = true;
@@ -143,6 +175,17 @@ void WebmEncoder::Stop() {
 int64 WebmEncoder::encoded_duration() const {
   boost::mutex::scoped_lock lock(mutex_);
   return encoded_duration_;
+}
+
+// AudioSamplesCallbackInterface
+int WebmEncoder::OnSamplesReceived(AudioBuffer* ptr_buffer) {
+  int status = audio_pool_.Commit(ptr_buffer);
+  if (status) {
+    LOG(ERROR) << "AudioBuffer pool Commit failed! " << status;
+    return AudioSamplesCallbackInterface::kNoMemory;
+  }
+  LOG(INFO) << "OnSamplesReceived committed an audio buffer.";
+  return kSuccess;
 }
 
 // VideoFrameCallbackInterface
@@ -206,7 +249,6 @@ void WebmEncoder::EncoderThread() {
     // media source Run failed; fatal
     LOG(ERROR) << "Unable to run the media source! " << status;
   } else {
-    LiveWebmMuxer::WriteBuffer write_buffer;
     for (;;) {
       if (StopRequested()) {
         LOG(INFO) << "StopRequested returned true, stopping...";
@@ -222,6 +264,14 @@ void WebmEncoder::EncoderThread() {
         status = ReadEncodeAndMuxVideoFrame();
         if (status) {
           LOG(ERROR) << "ReadEncodeAndMuxVideoFrame failed, stopping... "
+                     << status;
+          break;
+        }
+      }
+      if (config_.disable_audio == false) {
+        status = ReadEncodeAndMuxAudioBuffer();
+        if (status) {
+          LOG(ERROR) << "ReadEncodeAndMuxAudioBuffer failed, stopping... "
                      << status;
           break;
         }
@@ -307,14 +357,57 @@ int WebmEncoder::ReadEncodeAndMuxVideoFrame() {
   // Update encoded duration if able to obtain the lock.
   boost::mutex::scoped_try_lock lock(mutex_);
   if (lock.owns_lock()) {
-    encoded_duration_ = vp8_frame_.timestamp();
+    encoded_duration_ = std::max(vp8_frame_.timestamp(), encoded_duration_);
   }
 
   status = ptr_muxer_->WriteVideoFrame(vp8_frame_);
   if (status) {
     LOG(ERROR) << "Video frame mux failed " << status;
   }
+  return status;
+}
 
+int WebmEncoder::ReadEncodeAndMuxAudioBuffer() {
+  // Try reading an audio buffer from the pool.
+  int status = audio_pool_.Decommit(&raw_audio_buffer_);
+  if (status) {
+    if (status != BufferPool<AudioBuffer>::kEmpty) {
+      // Really an error; not just an empty pool.
+      LOG(ERROR) << "AudioBuffer pool Decommit failed! " << status;
+      return kAudioSinkError;
+    }
+    VLOG(4) << "No buffers in AudioBuffer pool";
+    return kSuccess;
+  }
+
+  VLOG(4) << "Encoder thread read raw audio buffer.";
+
+  // Pass the uncompressed audio to libvorbis.
+  status = vorbis_encoder_.Encode(raw_audio_buffer_);
+  if (status) {
+    LOG(ERROR) << "vorbis encode failed " << status;
+    return kAudioEncoderError;
+  }
+
+  // Check for available vorbis data.
+  status = vorbis_encoder_.ReadCompressedAudio(&vorbis_audio_buffer_);
+  if (status == VorbisEncoder::kNoSamples) {
+    VLOG(4) << "Libvorbis has no samples available.";
+    return kSuccess;
+  }
+
+  // Update encoded duration if able to obtain the lock.
+  boost::mutex::scoped_try_lock lock(mutex_);
+  if (lock.owns_lock()) {
+    encoded_duration_ = std::max(vorbis_audio_buffer_.timestamp(),
+                                 encoded_duration_);
+  }
+
+  // Mux the vorbis data.
+  status = ptr_muxer_->WriteAudioBuffer(vorbis_audio_buffer_);
+  if (status) {
+    LOG(ERROR) << "Audio buffer mux failed " << status;
+  }
   return status;
 }
 
