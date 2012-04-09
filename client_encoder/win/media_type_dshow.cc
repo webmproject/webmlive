@@ -346,6 +346,16 @@ int VideoMediaType::height() const {
   return height;
 }
 
+// Returns DIBWIDTHBYTES result for BITMAPINFOHEADER.
+int VideoMediaType::stride() const {
+  const BITMAPINFOHEADER* ptr_header = bitmap_header();
+  int stride = 0;
+  if (ptr_header) {
+    stride = DIBWIDTHBYTES(*ptr_header);
+  }
+  return stride;
+}
+
 // Returns pointer to BITMAPINFOHEADER stored within |ptr_type_|'s format
 // blob.
 const BITMAPINFOHEADER* VideoMediaType::bitmap_header() const {

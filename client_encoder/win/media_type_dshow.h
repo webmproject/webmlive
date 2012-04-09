@@ -104,6 +104,7 @@ class VideoMediaType : public MediaType {
   REFERENCE_TIME avg_time_per_frame() const;
   int width() const;
   int height() const;
+  int stride() const;
 
  private:
   // Easy access helper for obtaining values from the BITMAPINFOHEADER within
