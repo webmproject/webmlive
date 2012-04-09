@@ -12,6 +12,10 @@
 #ifndef CLIENT_ENCODER_WIN_VIDEO_SINK_FILTER_H_
 #define CLIENT_ENCODER_WIN_VIDEO_SINK_FILTER_H_
 
+// Wrap include of streams.h with include guard used in the file: including the
+// file twice results in the output "STREAMS.H included TWICE" for debug
+// builds.
+#ifndef __STREAMS__
 #pragma warning(push)
 #pragma warning(disable:4005)
 // Disable C4005 via pragma
@@ -21,6 +25,7 @@
 // enabled.
 #include "baseclasses/streams.h"
 #pragma warning(pop)
+#endif  // __STREAMS__
 #include "boost/scoped_array.hpp"
 #include "boost/scoped_ptr.hpp"
 #include "client_encoder/basictypes.h"
