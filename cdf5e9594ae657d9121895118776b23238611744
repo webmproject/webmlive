@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAIH///Nw\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.cc",
+        "patchSetId": 22
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-04-10T06:33:03Z",
+      "side": 1,
+      "message": "2012",
+      "revId": "cdf5e9594ae657d9121895118776b23238611744",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAIH///No\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.cc",
+        "patchSetId": 22
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-04-10T06:33:03Z",
+      "side": 1,
+      "message": "should this be checked against kInputSubTypes instead?",
+      "revId": "cdf5e9594ae657d9121895118776b23238611744",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAIH///Nk\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.cc",
+        "patchSetId": 22
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-04-10T06:33:03Z",
+      "side": 1,
+      "message": "AudioSinkFilter* const",
+      "revId": "cdf5e9594ae657d9121895118776b23238611744",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAIH///Ng\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.h",
+        "patchSetId": 22
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-04-10T06:33:03Z",
+      "side": 1,
+      "message": "should be virtual if these are inherited:\n\nhttp://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Inheritance",
+      "revId": "cdf5e9594ae657d9121895118776b23238611744",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAIH///Nc\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.h",
+        "patchSetId": 22
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-04-10T06:33:03Z",
+      "side": 1,
+      "message": "add a note why you need this.",
+      "revId": "cdf5e9594ae657d9121895118776b23238611744",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAIH///NY\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.h",
+        "patchSetId": 22
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-04-10T06:33:03Z",
+      "side": 1,
+      "message": "Copies",
+      "revId": "cdf5e9594ae657d9121895118776b23238611744",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
