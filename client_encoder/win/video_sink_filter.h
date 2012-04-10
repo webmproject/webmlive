@@ -51,7 +51,7 @@ class VideoSinkPin : public CBaseInputPin {
   virtual ~VideoSinkPin();
 
   //
-  // CBaseInputPin methods
+  // CBasePin methods
   //
 
   // Stores preferred media type for |type_index| in |ptr_media_type|. Supports
@@ -60,7 +60,7 @@ class VideoSinkPin : public CBaseInputPin {
   // S_OK - success, |type_index| in range and |ptr_media_type| written.
   // VFW_S_NO_MORE_ITEMS - |type_index| != 0.
   // E_OUTOFMEMORY - could not allocate format buffer.
-  HRESULT GetMediaType(int32 type_index, CMediaType* ptr_media_type);
+  virtual HRESULT GetMediaType(int32 type_index, CMediaType* ptr_media_type);
 
   // Checks if AM_MEDIA_TYPE stored in CMediaType pointer is acceptable.
   // Supports only MEDIASUBTYPE_I420 wrapped in VIDEOINFOHEADER or
@@ -69,17 +69,17 @@ class VideoSinkPin : public CBaseInputPin {
   // S_OK - |ptr_media_type| is supported.
   // E_INVALIDARG - NULL |ptr_media_type|.
   // VFW_E_TYPE_NOT_ACCEPTED - |ptr_media_type| is not supported.
-  HRESULT CheckMediaType(const CMediaType* ptr_media_type);
+  virtual HRESULT CheckMediaType(const CMediaType* ptr_media_type);
 
   //
-  // IPin method(s).
+  // IMemInputPin method(s).
   //
 
   // Receives video buffers from the upstream filter and passes them to
   // |VideoSinkFilter::OnFrameReceived|.
   // Returns S_OK, or the HRESULT error value returned CBaseInputPin::Receive
   // if it fails.
-  STDMETHODIMP Receive(IMediaSample* ptr_sample);
+  virtual HRESULT STDMETHODCALLTYPE Receive(IMediaSample* ptr_sample);
 
  private:
   // Copies |actual_config_| to |ptr_config| and returns S_OK. Returns
@@ -98,8 +98,11 @@ class VideoSinkPin : public CBaseInputPin {
 
   // Actual video config (from upstream filter).
   VideoConfig actual_config_;
-
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoSinkPin);
+
+  // |VideoSinkFilter| requires access to private member |actual_config_|, and
+  // private methods |config| and |set_config| for configuration retrieval and
+  // control.
   friend class VideoSinkFilter;
 };
 
@@ -129,10 +132,10 @@ class VideoSinkFilter : public CBaseFilter {
   DECLARE_IUNKNOWN;
 
   // CBaseFilter methods
-  int GetPinCount() { return 1; }
+  virtual int GetPinCount() { return 1; }
 
   // Returns the pin at |index|, or NULL. The value of |index| must be 0.
-  CBasePin* GetPin(int index);
+  virtual CBasePin* GetPin(int index);
 
  private:
   // Copes video frame from |ptr_sample| to |frame_|, and passes |frame_| to
@@ -144,6 +147,10 @@ class VideoSinkFilter : public CBaseFilter {
   boost::scoped_ptr<VideoSinkPin> sink_pin_;
   VideoFrameCallbackInterface* ptr_frame_callback_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoSinkFilter);
+
+  // |VideoSinkPin| requires access to private member |filter_lock_|, and
+  // private method |OnFrameReceived| to lock the filter and safely deliver
+  // video frame buffers.
   friend class VideoSinkPin;
 };
 
