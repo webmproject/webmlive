@@ -84,7 +84,7 @@ class VideoSinkPin : public CBaseInputPin {
  private:
   // Copies |actual_config_| to |ptr_config| and returns S_OK. Returns
   // E_POINTER when |ptr_config| is NULL.
-  HRESULT config(VideoConfig* ptr_config);
+  HRESULT config(VideoConfig* ptr_config) const;
 
   // Resets |actual_config_| and copies |config| values to |requested_config_|,
   // then returns S_OK.
@@ -123,7 +123,7 @@ class VideoSinkFilter : public CBaseFilter {
   virtual ~VideoSinkFilter();
 
   // Copies actual video configuration to |ptr_config| and returns S_OK.
-  HRESULT config(VideoConfig* ptr_config);
+  HRESULT config(VideoConfig* ptr_config) const;
 
   // Sets actual requested video configuration and returns S_OK.
   HRESULT set_config(const VideoConfig& config);
@@ -142,7 +142,7 @@ class VideoSinkFilter : public CBaseFilter {
   // |VideoFrameCallbackInterface::OnVideoFrameReceived| for processing.
   // Returns S_OK when successful.
   HRESULT OnFrameReceived(IMediaSample* ptr_sample);
-  CCritSec filter_lock_;
+  mutable CCritSec filter_lock_;
   VideoFrame frame_;
   boost::scoped_ptr<VideoSinkPin> sink_pin_;
   VideoFrameCallbackInterface* ptr_frame_callback_;

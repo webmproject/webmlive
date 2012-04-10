@@ -202,7 +202,7 @@ bool VideoSinkPin::AcceptableSubType(const GUID& media_sub_type) {
 
 // Copies |actual_config_| to |ptr_config|. Note that the filter lock is always
 // held by caller, |VideoSinkFilter::config|.
-HRESULT VideoSinkPin::config(VideoConfig* ptr_config) {
+HRESULT VideoSinkPin::config(VideoConfig* ptr_config) const {
   if (!ptr_config) {
     return E_POINTER;
   }
@@ -250,7 +250,7 @@ VideoSinkFilter::~VideoSinkFilter() {
 }
 
 // Locks filter and returns |VideoSinkPin::config|.
-HRESULT VideoSinkFilter::config(VideoConfig* ptr_config) {
+HRESULT VideoSinkFilter::config(VideoConfig* ptr_config) const {
   CAutoLock lock(&filter_lock_);
   return sink_pin_->config(ptr_config);
 }
