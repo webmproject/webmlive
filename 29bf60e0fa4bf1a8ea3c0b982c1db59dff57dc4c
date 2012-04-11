@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAIH//9+c\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.cc",
+        "patchSetId": 24
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-11T17:16:20Z",
+      "side": 1,
+      "message": "What happens if GetTime fails?",
+      "revId": "29bf60e0fa4bf1a8ea3c0b982c1db59dff57dc4c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAIH//9+U\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.cc",
+        "patchSetId": 24
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-11T17:16:20Z",
+      "side": 1,
+      "message": "I think you also follow a path here in which duration is not assigned a value.",
+      "revId": "29bf60e0fa4bf1a8ea3c0b982c1db59dff57dc4c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
