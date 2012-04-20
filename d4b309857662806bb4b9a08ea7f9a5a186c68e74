@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAKn//698\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 258,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-20T21:52:40Z",
+      "side": 1,
+      "message": "Technically this doesn\u0027t need to be an else branch.",
+      "revId": "d4b309857662806bb4b9a08ea7f9a5a186c68e74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//69s\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 263,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-20T21:52:40Z",
+      "side": 1,
+      "message": "You don\u0027t set the value of duration if you follow this path.",
+      "revId": "d4b309857662806bb4b9a08ea7f9a5a186c68e74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//69k\u003d",
+        "filename": "client_encoder/win/video_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 298,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-20T21:52:40Z",
+      "side": 1,
+      "message": "See comments in other file.",
+      "revId": "d4b309857662806bb4b9a08ea7f9a5a186c68e74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//69Y\u003d",
+        "filename": "client_encoder/win/video_sink_filter.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-20T21:52:40Z",
+      "side": 1,
+      "message": "see comments in other file",
+      "revId": "d4b309857662806bb4b9a08ea7f9a5a186c68e74",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
