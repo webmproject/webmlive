@@ -253,14 +253,14 @@ HRESULT AudioSinkFilter::OnSamplesReceived(IMediaSample* ptr_sample) {
   REFERENCE_TIME end_time = 0;
   hr = ptr_sample->GetTime(&start_time, &end_time);
   if (FAILED(hr)) {
-    LOG(WARNING) << "OnSamplesReceived cannot get media time(s).";
+    LOG(ERROR) << "OnSamplesReceived cannot get media time(s).";
+    return hr;
+  }
+  timestamp = media_time_to_milliseconds(start_time);
+  if (hr != VFW_S_NO_STOP_TIME) {
+    duration = media_time_to_milliseconds(end_time) - timestamp;
   } else {
-    timestamp = media_time_to_milliseconds(start_time);
-    if (hr != VFW_S_NO_STOP_TIME) {
-      duration = media_time_to_milliseconds(end_time) - timestamp;
-    } else {
-      LOG(WARNING) << "OnSamplesReceived sample has no stop time.";
-    }
+    LOG(WARNING) << "OnSamplesReceived sample has no stop time.";
   }
 
   // Copy sample data into |sample_buffer_|.

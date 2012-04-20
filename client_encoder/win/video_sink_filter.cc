@@ -12,6 +12,7 @@
 
 #include "client_encoder/win/dshow_util.h"
 #include "client_encoder/win/media_source_dshow.h"
+#include "client_encoder/win/media_type_dshow.h"
 #include "client_encoder/win/webm_guids.h"
 #include "glog/logging.h"
 
@@ -294,25 +295,37 @@ HRESULT VideoSinkFilter::OnFrameReceived(IMediaSample* ptr_sample) {
   REFERENCE_TIME end_time = 0;
   hr = ptr_sample->GetTime(&start_time, &end_time);
   if (FAILED(hr)) {
-    LOG(WARNING) << "OnFrameReceived cannot get media time(s).";
+    LOG(ERROR) << "OnFrameReceived cannot get media time(s)." << HRLOG(hr);
+    return hr;
+  }
+  timestamp = media_time_to_milliseconds(start_time);
+  if (hr != VFW_S_NO_STOP_TIME) {
+    duration = media_time_to_milliseconds(end_time) - timestamp;
   } else {
-    timestamp = media_time_to_milliseconds(start_time);
-    if (hr != VFW_S_NO_STOP_TIME) {
-      duration = media_time_to_milliseconds(end_time) - timestamp;
-    } else {
-      LOG(WARNING) << "OnFrameReceived frame has no stop time.";
+    LOG(WARNING) << "OnFrameReceived using time per frame for duration.";
+    AM_MEDIA_TYPE media_type = {0};
+    hr = sink_pin_->ConnectionMediaType(&media_type);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "OnFrameReceived pin has no media type: " << HRLOG(hr);
+      return hr;
     }
+    VideoMediaType video_format;
+    if (video_format.Init(media_type)) {
+      LOG(ERROR) << "OnFrameReceived cannot Init VideoMediaType.";
+      return E_FAIL;
+    }
+    duration = media_time_to_milliseconds(video_format.avg_time_per_frame());
   }
 
   // TODO(tomfinegan): Write an allocator that retrieves frames from
   //                   |WebmEncoder::EncoderThread| and avoid this extra copy.
 
-  const int32 status = frame_.Init(sink_pin_->actual_config_,
-                                   true,  // always "keyframes"
-                                   timestamp,
-                                   duration,
-                                   ptr_sample_buffer,
-                                   ptr_sample->GetActualDataLength());
+  const int status = frame_.Init(sink_pin_->actual_config_,
+                                 true,  // always "keyframes"
+                                 timestamp,
+                                 duration,
+                                 ptr_sample_buffer,
+                                 ptr_sample->GetActualDataLength());
   if (status) {
     LOG(ERROR) << "OnFrameReceived frame init failed: " << status;
     return E_FAIL;
