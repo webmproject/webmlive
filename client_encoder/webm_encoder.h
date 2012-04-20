@@ -37,7 +37,11 @@ struct WebmEncoderConfig {
     bool manual_video_config;   // Show video source configuration interface.
   };
 
+  WebmEncoderConfig() : disable_audio(false), disable_video(false) {}
 
+  // Audio/Video disable flags.
+  bool disable_audio;
+  bool disable_video;
 
   // Name of the audio device.  Leave empty to use system default.
   std::string audio_device_name;
@@ -166,6 +170,10 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   // Encoding thread function.
   void EncoderThread();
 
+  // Reads a video frame from |video_pool_|, encodes it, and muxes the
+  // resulting encoded frame. Returns |kSuccess| when successful.
+  int ReadEncodeAndMuxVideoFrame();
+
   // Set to true when |Init()| is successful.
   bool initialized_;
 
@@ -192,11 +200,11 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   // Data sink to which WebM chunks are written.
   DataSinkInterface* ptr_data_sink_;
 
-  // Queue used to push video frames from |MediaSourceImpl| into
+  // Buffer object used to push |VideoFrame|s from |MediaSourceImpl| into
   // |EncoderThread|.
-  BufferPool<VideoFrame> video_queue_;
+  BufferPool<VideoFrame> video_pool_;
 
-  // Most recent frame from |video_queue_|.
+  // Most recent frame from |video_pool_|.
   VideoFrame raw_frame_;
 
   // Most recent frame from |video_encoder_|.
