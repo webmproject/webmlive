@@ -44,4 +44,51 @@ struct AudioConfig {
   uint16 valid_bits_per_sample;   // Valid bits in sample container.
   uint32 channel_mask;            // Channels present in audio stream.
 };
+
+class AudioBuffer {
+ public:
+  enum {
+    kNoMemory = -2,
+    kInvalidArg = -1,
+    kSuccess = 0,
+  };
+  AudioBuffer();
+  ~AudioBuffer();
+
+  // Allocates storage for |ptr_data|, sets internal fields to values of
+  // caller's args, and returns |kSuccess|. Returns |kInvalidArg| when
+  // |ptr_data| is NULL.
+  int Init(const AudioConfig& config,
+           int64 timestamp,
+           int64 duration,
+           const uint8* ptr_data,
+           int32 data_length);
+
+  // Copies |AudioBuffer| data to |ptr_buffer|. Performs allocation if
+  // necessary. Returns |kSuccess| when successful. Returns |kInvalidArg| when
+  // |ptr_buffer| is NULL. Returns |kNoMemory| when memory allocation fails.
+  int Clone(AudioBuffer* ptr_buffer) const;
+
+  // Swaps |AudioBuffer| member data with |ptr_buffer|'s. The |AudioBuffer|s
+  // must have non-NULL buffers.
+  void Swap(AudioBuffer* ptr_buffer);
+
+  // Accessors.
+  int64 timestamp() const { return timestamp_; }
+  int64 duration() const { return duration_; }
+  uint8* buffer() const { return buffer_.get(); }
+  int32 buffer_length() const { return buffer_length_; }
+  int32 buffer_capacity() const { return buffer_capacity_; }
+  const AudioConfig& config() const { return config_; }
+
+ private:
+  int64 timestamp_;
+  int64 duration_;
+  boost::scoped_array<uint8> buffer_;
+  int32 buffer_capacity_;
+  int32 buffer_length_;
+  AudioConfig config_;
+  WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(AudioBuffer);
+};
+
 #endif  // CLIENT_ENCODER_AUDIO_ENCODER_H_
