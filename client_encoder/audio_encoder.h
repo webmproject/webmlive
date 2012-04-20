@@ -91,4 +91,25 @@ class AudioBuffer {
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(AudioBuffer);
 };
 
+// Pure interface class that provides a simple callback allowing the
+// implementor class to receive |AudioBuffer| pointers.
+class AudioSamplesCallbackInterface {
+ public:
+  enum {
+    // |OnSamplesReceived()| failed because a buffer could not be allocated.
+    kNoMemory = -3,
+    // Returned by |OnSamplesReceived| when |ptr_sample_buffer| is NULL or
+    // empty.
+    kInvalidArg = -2,
+    kSuccess = 0,
+  };
+  virtual ~AudioSamplesCallbackInterface() {}
+
+  // Passes an |AudioBuffer| pointer to the |AudioSamplesCallbackInterface|
+  // implementation.
+  virtual int OnSamplesReceived(AudioBuffer* ptr_sample_buffer) = 0;
+};
+
+}  // namespace webmlive
+
 #endif  // CLIENT_ENCODER_AUDIO_ENCODER_H_
