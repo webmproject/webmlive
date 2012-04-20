@@ -18,6 +18,7 @@
 #include "boost/scoped_array.hpp"
 #include "client_encoder/video_encoder.h"
 #include "client_encoder/webm_encoder.h"
+#include "client_encoder/win/audio_sink_filter.h"
 #include "client_encoder/win/dshow_util.h"
 #include "client_encoder/win/media_type_dshow.h"
 #include "client_encoder/win/video_sink_filter.h"
@@ -35,6 +36,7 @@ namespace {
 const wchar_t* const kVideoSourceName = L"VideoSource";
 const wchar_t* const kVideoSinkName = L"VideoSink";
 const wchar_t* const kAudioSourceName = L"AudioSource";
+const wchar_t* const kAudioSinkName = L"AudioSink";
 
 // Converts a std::string to std::wstring.
 std::wstring string_to_wstring(const std::string& str) {
@@ -80,13 +82,15 @@ REFERENCE_TIME seconds_to_media_time(double seconds) {
 MediaSourceImpl::MediaSourceImpl()
     : audio_from_video_source_(false),
       media_event_handle_(INVALID_HANDLE_VALUE),
-      ptr_video_callback_(NULL) {
+      ptr_video_callback_(NULL),
+      ptr_audio_callback_(NULL) {
 }
 
 MediaSourceImpl::~MediaSourceImpl() {
   // Manually release directshow interfaces to avoid problems related to
   // destruction order of com_ptr_t members.
   audio_source_ = 0;
+  audio_sink_ = 0;
   video_source_ = 0;
   video_sink_ = 0;
   media_event_handle_ = INVALID_HANDLE_VALUE;
@@ -100,11 +104,21 @@ MediaSourceImpl::~MediaSourceImpl() {
 // Builds a DirectShow filter graph that looks like this:
 // video source -> video sink
 int MediaSourceImpl::Init(const WebmEncoderConfig& config,
+                          AudioSamplesCallbackInterface* ptr_audio_callback,
                           VideoFrameCallbackInterface* ptr_video_callback) {
-  if (!ptr_video_callback) {
+  if (!config.disable_audio && !ptr_audio_callback) {
+    LOG(ERROR) << "Null AudioSamplesCallbackInterface.";
+    return kInvalidArg;
+  }
+  if (!config.disable_video && !ptr_video_callback) {
     LOG(ERROR) << "Null VideoFrameCallbackInterface.";
     return kInvalidArg;
   }
+  if (config.disable_audio && config.disable_video) {
+    LOG(ERROR) << "Audio and video are disabled.";
+    return kInvalidArg;
+  }
+  ptr_audio_callback_ = ptr_audio_callback;
   ptr_video_callback_ = ptr_video_callback;
   requested_audio_config_ = config.requested_audio_config;
   requested_video_config_ = config.requested_video_config;
@@ -119,23 +133,42 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
     LOG(ERROR) << "CreateGraphInterfaces failed: " << status;
     return WebmEncoder::kInitFailed;
   }
-  if (!config.video_device_name.empty()) {
-    video_device_name_ = string_to_wstring(config.video_device_name);
+  if (config.disable_video == false) {
+    if (!config.video_device_name.empty()) {
+      video_device_name_ = string_to_wstring(config.video_device_name);
+    }
+    status = CreateVideoSource();
+    if (status) {
+      LOG(ERROR) << "CreateVideoSource failed: " << status;
+      return WebmEncoder::kNoVideoSource;
+    }
+    status = CreateVideoSink();
+    if (status) {
+      LOG(ERROR) << "CreateVideoSink failed: " << status;
+      return WebmEncoder::kNoVideoSource;
+    }
+    status = ConnectVideoSourceToVideoSink();
+    if (status) {
+      LOG(ERROR) << "ConnectVideoSourceToVideoSink failed: " << status;
+      return WebmEncoder::kVideoSinkError;
+    }
   }
-  status = CreateVideoSource();
-  if (status) {
-    LOG(ERROR) << "CreateVideoSource failed: " << status;
-    return WebmEncoder::kNoVideoSource;
-  }
-  status = CreateVideoSink();
-  if (status) {
-    LOG(ERROR) << "CreateVideoSink failed: " << status;
-    return WebmEncoder::kNoVideoSource;
-  }
-  status = ConnectVideoSourceToVideoSink();
-  if (status) {
-    LOG(ERROR) << "ConnectVideoSourceToVideoSink failed: " << status;
-    return WebmEncoder::kVideoSinkError;
+  if (config.disable_audio == false) {
+    status = CreateAudioSource();
+    if (status) {
+      LOG(ERROR) << "CreateAudioSource failed: " << status;
+      return WebmEncoder::kNoAudioSource;
+    }
+    status = CreateAudioSink();
+    if (status) {
+      LOG(ERROR) << "CreateAudioSink failed: " << status;
+      return WebmEncoder::kNoAudioSource;
+    }
+    //status = ConnectAudioSourceToAudioSink();
+    //if (status) {
+    //  LOG(ERROR) << "ConnectAudioSourceToAudioSink failed: " << status;
+    //  return WebmEncoder::kAudioSinkError;
+    //}
   }
   status = InitGraphControl();
   if (status) {
@@ -319,11 +352,14 @@ int MediaSourceImpl::ConnectVideoSourceToVideoSink() {
     if (hr == S_OK) {
       VideoMediaType video_format;
       if (video_format.Init(media_type) == kSuccess) {
-        LOG(INFO) << "actual capture width=" << video_format.width()
-                  << " height=" << video_format.height()
-                  << " frame_rate=" << video_format.frame_rate();
+        LOG(INFO) << "ConnectVideoSourceToVideoSink actual settings\n"
+                  << "  width=" << video_format.width() << "\n"
+                  << "  height=" << video_format.height() << "\n"
+                  << "  stride=" << video_format.stride() << "\n"
+                  << "  frame_rate=" << video_format.frame_rate() << "\n";
         actual_video_config_.width = video_format.width();
         actual_video_config_.height = video_format.height();
+        actual_video_config_.stride = video_format.stride();
         actual_video_config_.frame_rate = video_format.frame_rate();
       }
     }
@@ -585,7 +621,23 @@ int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin) {
   return kSuccess;
 }
 
+int MediaSourceImpl::CreateAudioSink() {
+  HRESULT status = E_FAIL;
+  const std::string filter_name = wstring_to_string(kAudioSinkName);
+  AudioSinkFilter* const ptr_filter =
+      new (std::nothrow) AudioSinkFilter(filter_name.c_str(),  // NOLINT
+                                         NULL,
+                                         ptr_audio_callback_,
+                                         &status);
+  if (!ptr_filter || FAILED(status)) {
+    delete ptr_filter;
+    LOG(ERROR) << "AudioSinkFilter construction failed" << HRLOG(status);
+    return kAudioSinkCreateError;
   }
+  audio_sink_ = ptr_filter;
+  status = graph_builder_->AddFilter(audio_sink_, kAudioSinkName);
+  if (FAILED(status)) {
+    LOG(ERROR) << "cannot add audio sink to graph" << HRLOG(status);
     return kCannotAddFilter;
   }
   return kSuccess;
