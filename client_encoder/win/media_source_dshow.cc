@@ -35,10 +35,6 @@ namespace {
 const wchar_t* const kVideoSourceName = L"VideoSource";
 const wchar_t* const kVideoSinkName = L"VideoSink";
 const wchar_t* const kAudioSourceName = L"AudioSource";
-const wchar_t* const kVpxEncoderName =  L"VP8Encoder";
-const wchar_t* const kVorbisEncoderName = L"VorbisEncoder";
-const wchar_t* const kWebmMuxerName = L"WebmMuxer";
-const wchar_t* const kFileWriterName = L"FileWriter";
 
 // Converts a std::string to std::wstring.
 std::wstring string_to_wstring(const std::string& str) {
@@ -90,7 +86,6 @@ MediaSourceImpl::MediaSourceImpl()
 MediaSourceImpl::~MediaSourceImpl() {
   // Manually release directshow interfaces to avoid problems related to
   // destruction order of com_ptr_t members.
-  vorbis_encoder_ = 0;
   audio_source_ = 0;
   video_source_ = 0;
   video_sink_ = 0;
@@ -147,28 +142,6 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
     LOG(ERROR) << "ConnectVideoSourceToVideoSink failed: " << status;
     return WebmEncoder::kEncodeMonitorError;
   }
-#if 0
-  status = CreateAudioSource();
-  if (status) {
-    LOG(ERROR) << "CreateAudioSource failed: " << status;
-    return WebmEncoder::kNoAudioSource;
-  }
-  status = CreateVorbisEncoder();
-  if (status) {
-    LOG(ERROR) << "CreateVorbisEncoder failed: " << status;
-    return WebmEncoder::kAudioEncoderError;
-  }
-  status = ConnectAudioSourceToVorbisEncoder();
-  if (status) {
-    LOG(ERROR) << "ConnectAudioSourceToVorbisEncoder failed: " << status;
-    return WebmEncoder::kAudioEncoderError;
-  }
-  status = ConfigureVorbisEncoder();
-  if (status) {
-    LOG(ERROR) << "ConfigureVorbisEncoder failed: " << status;
-    return WebmEncoder::kAudioEncoderError;
-  }
-#endif
   return kSuccess;
 }
 
@@ -612,94 +585,11 @@ int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin) {
   return kSuccess;
 }
 
-// Creates an instance of the Xiph.org Vorbis encoder filter, and adds it to
-// the filter graph.
-int MediaSourceImpl::CreateVorbisEncoder() {
-  HRESULT hr = vorbis_encoder_.CreateInstance(CLSID_VorbisEncoder);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Vorbis encoder creation failed." << HRLOG(hr);
-    return kCannotCreateVorbisEncoder;
   }
-  hr = graph_builder_->AddFilter(vorbis_encoder_, kVorbisEncoderName);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot add Vorbis encoder to graph." << HRLOG(hr);
     return kCannotAddFilter;
   }
   return kSuccess;
 }
-
-// Locates the output pin on |audio_source_| and the input pin on
-// |vorbis_encoder_|, and connects them directly.
-int MediaSourceImpl::ConnectAudioSourceToVorbisEncoder() {
-  PinFinder pin_finder;
-  int status = pin_finder.Init(audio_source_);
-  if (status) {
-    LOG(ERROR) << "cannot look for pins on audio source!";
-    return kAudioConnectError;
-  }
-  IPinPtr audio_source_pin = pin_finder.FindAudioOutputPin(0);
-  if (!audio_source_pin) {
-    LOG(ERROR) << "cannot find output pin on audio source!";
-    return kAudioConnectError;
-  }
-  status = pin_finder.Init(vorbis_encoder_);
-  if (status) {
-    LOG(ERROR) << "cannot look for pins on video source!";
-    return kAudioConnectError;
-  }
-  IPinPtr vorbis_input_pin = pin_finder.FindAudioInputPin(0);
-  if (!vorbis_input_pin) {
-    LOG(ERROR) << "cannot find audio input pin on Vorbis encoder!";
-    return kAudioConnectError;
-  }
-  status = ConfigureAudioSource(audio_source_pin);
-  if (status) {
-    LOG(WARNING) << "user settings not accepted by audio device, using "
-                 << "device defaults.";
-  }
-  HRESULT hr = graph_builder_->ConnectDirect(audio_source_pin,
-                                             vorbis_input_pin, NULL);
-  if (FAILED(hr) && status == kSuccess) {
-    // User format was accepted, but connection failed. Try again with device
-    // defaults.
-    LOG(WARNING) << "cannot connect audio device to vorbis encoder with user "
-                 << "settings, using device defaults.";
-    PinFormat formatter(audio_source_pin);
-    status = formatter.set_format(NULL);
-    if (status == kSuccess) {
-      hr = graph_builder_->ConnectDirect(audio_source_pin, vorbis_input_pin,
-                                         NULL);
-    }
-  }
-  if (FAILED(hr)) {
-    LOG(ERROR) << "cannot connect audio source to Vorbis encoder."
-           << HRLOG(hr);
-    return kAudioConnectError;
-  }
-  return kSuccess;
-}
-
-#if 0
-// Obtains vorbis encoder configuration interface and applies user settings.
-int MediaSourceImpl::ConfigureVorbisEncoder() {
-  // At present only vorbis audio bitrate configuration is exposed; do nothing
-  // and return kSuccess if the user has not specified a bitrate.
-  if (config_.vorbis_bitrate != kUseEncoderDefault) {
-    COMPTR_TYPEDEF(IVorbisEncodeSettings);
-    IVorbisEncodeSettingsPtr vorbis_config(vorbis_encoder_);
-    if (!vorbis_config) {
-      LOG(ERROR) << "cannot create Vorbis encoder configuration interface.";
-      return kCannotConfigureVorbisEncoder;
-    }
-    HRESULT hr = vorbis_config->setBitrateQualityMode(config_.vorbis_bitrate);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "cannot set Vorbis encoder bitrate." << HRLOG(hr);
-      return kVorbisConfigureError;
-    }
-  }
-  return kSuccess;
-}
-#endif
 
 // Checks |media_event_handle_| and reads the event from |media_event_| when
 // signaled.  Responds only to completion and error events.

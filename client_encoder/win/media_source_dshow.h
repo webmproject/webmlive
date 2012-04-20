@@ -199,14 +199,7 @@ class MediaSourceImpl {
   // Configures the audio capture source.
   int ConfigureAudioSource(const IPinPtr& pin);
 
-  // Loads the Vorbis encoder and adds it to the graph.
-  int CreateVorbisEncoder();
 
-  // Connects audio source to Vorbis encoder.
-  int ConnectAudioSourceToVorbisEncoder();
-
-  // Configures the xiph.org Vorbis encoder filter.
-  int ConfigureVorbisEncoder();
 
   // Checks graph media event for error or completion.
   int HandleMediaEvent();
@@ -225,8 +218,6 @@ class MediaSourceImpl {
   IBaseFilterPtr audio_source_;
   IBaseFilterPtr video_source_;
   IBaseFilterPtr video_sink_;
-  IBaseFilterPtr vorbis_encoder_;
-  IBaseFilterPtr vpx_encoder_;
 
   // Graph control interface.
   IMediaControlPtr media_control_;
