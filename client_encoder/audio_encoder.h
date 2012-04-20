@@ -96,6 +96,8 @@ class AudioBuffer {
 class AudioSamplesCallbackInterface {
  public:
   enum {
+    // |OnSamplesReceived()| failed because a buffer could not be allocated.
+    kNoMemory = -3,
     // Returned by |OnSamplesReceived| when |ptr_sample_buffer| is NULL or
     // empty.
     kInvalidArg = -2,
@@ -106,6 +108,33 @@ class AudioSamplesCallbackInterface {
   // Passes an |AudioBuffer| pointer to the |AudioSamplesCallbackInterface|
   // implementation.
   virtual int OnSamplesReceived(AudioBuffer* ptr_sample_buffer) = 0;
+};
+
+struct VorbisConfig {
+  // Special value that means use the default value for the current option.
+  const static int kUseDefault = -200;
+  VorbisConfig()
+      : average_bitrate(128),
+        minimum_bitrate(kUseDefault),
+        maximum_bitrate(kUseDefault),
+        channel_coupling(true),
+        impulse_block_bias(kUseDefault),
+        lowpass_frequency(kUseDefault) {}
+
+  // Rate control values. Set the min and max values to |kUseDefault| to 
+  // encode at a constant bitrate. Values are in kilobits.
+  int average_bitrate;
+  int minimum_bitrate;
+  int maximum_bitrate;
+
+  // Enables/disables channel coupling. Ignored when input audio is not stereo.
+  bool channel_coupling;
+
+  // Impulse block bias. Valid range is -15.0 to 0.0.
+  double impulse_block_bias;
+
+  // Hard-lowpass frequency. Valid range is 2 to 99.
+  double lowpass_frequency;
 };
 
 }  // namespace webmlive
