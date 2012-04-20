@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -91,7 +91,6 @@ class VideoFrameCallbackInterface;
 // users through VideoFrameCallbackInterface.
 class MediaSourceImpl {
  public:
-  typedef WebmEncoderConfig::AudioConfig AudioConfig;
   typedef WebmEncoderConfig::UserInterfaceOptions UserInterfaceOptions;
   enum {
     // Error creating the video sink filter.
@@ -414,7 +413,6 @@ class PinFormat {
     kCannotSetFormat = -1,
     kSuccess = 0,
   };
-  typedef WebmEncoderConfig::AudioConfig AudioConfig;
 
   // Copies supplied pin to |pin_|.
   explicit PinFormat(const IPinPtr& pin);
