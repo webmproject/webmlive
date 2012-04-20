@@ -161,7 +161,8 @@ class VideoFrameCallbackInterface {
   virtual ~VideoFrameCallbackInterface() {}
 
   // Passes a |VideoFrame| pointer to the |VideoFrameCallbackInterface|
-  // implementation.
+  // implementation, allowing it to take ownership of the contents. Argument
+  // is non-const to allow for use of |VideoFrame::Swap| by the implementor.
   virtual int OnVideoFrameReceived(VideoFrame* ptr_frame) = 0;
 };
 
