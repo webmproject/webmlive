@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAKn//6Bo\u003d",
+        "filename": "client_encoder/audio_encoder.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-04-23T18:41:59Z",
+      "side": 1,
+      "message": "So default is cbr? Need to set min\u003d-1, max\u003d-1 to get abr?",
+      "revId": "b36c7c60635a179e4b591481b5b1ea5c88861f3c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
