@@ -34,6 +34,24 @@
       "revId": "b36c7c60635a179e4b591481b5b1ea5c88861f3c",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//5v4\u003d",
+        "filename": "client_encoder/audio_encoder.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-04-23T23:19:56Z",
+      "side": 1,
+      "message": "OK this is ABR though, not CBR, cf.\n\nhttp://xiph.org/vorbis/doc/vorbisenc/examples.html\n\nthough from your other reference you may in fact be using bitrate-based quality selection in this case...",
+      "parentUuid": "AAAAKn//5xU\u003d",
+      "revId": "b36c7c60635a179e4b591481b5b1ea5c88861f3c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
