@@ -16,6 +16,24 @@
       "revId": "4c653fff248711bfaea829590eef7ad489baacd8",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//52I\u003d",
+        "filename": "client_encoder/audio_encoder.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-23T22:38:30Z",
+      "side": 1,
+      "message": "Yes-- that\u0027s what I want here. Callee owns the contents of the buffer when kSuccess is returned; underneath this is achieved via AudioBuffer::Swap or Clone. \n\nComment added.\n\nSame comment added to VideoFrameCallbackInterface for symmetry.",
+      "parentUuid": "AAAAKn//6Cs\u003d",
+      "revId": "4c653fff248711bfaea829590eef7ad489baacd8",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
