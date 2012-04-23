@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAKn//6Cs\u003d",
+        "filename": "client_encoder/audio_encoder.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-04-23T18:31:47Z",
+      "side": 1,
+      "message": "OK for the callee to modify or store a reference to this buffer?",
+      "revId": "4c653fff248711bfaea829590eef7ad489baacd8",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
