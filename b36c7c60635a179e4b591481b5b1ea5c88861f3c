@@ -52,6 +52,24 @@
       "revId": "b36c7c60635a179e4b591481b5b1ea5c88861f3c",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//4zA\u003d",
+        "filename": "client_encoder/audio_encoder.h",
+        "patchSetId": 4
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-24T21:02:24Z",
+      "side": 1,
+      "message": "Further expanded things to allow ABR/CBR/VBR(bitrate selected quality).",
+      "parentUuid": "AAAAKn//5v4\u003d",
+      "revId": "b36c7c60635a179e4b591481b5b1ea5c88861f3c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
