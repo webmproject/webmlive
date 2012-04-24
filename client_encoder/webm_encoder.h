@@ -37,10 +37,7 @@ struct WebmEncoderConfig {
     bool manual_video_config;   // Show video source configuration interface.
   };
 
-  WebmEncoderConfig() : vorbis_bitrate(128) {}
 
-  // Vorbis encoder bitrate.
-  int32 vorbis_bitrate;
 
   // Name of the audio device.  Leave empty to use system default.
   std::string audio_device_name;
@@ -59,6 +56,9 @@ struct WebmEncoderConfig {
 
   // Actual video capture settings.
   VideoConfig actual_video_config;
+
+  // Vorbis audio encoder settings.
+  VorbisConfig vorbis_config;
 
   // VP8 encoder settings.
   VpxConfig vpx_config;

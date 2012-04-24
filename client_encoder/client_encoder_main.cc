@@ -72,7 +72,15 @@ void usage(const char** argv) {
   printf("    --arate <sample rate>          Audio sample rate.\n");
   printf("    --asize <sample size>          Audio bits per sample.\n");
   printf("  Vorbis Encoder options:\n");
-  printf("    --vorbis_bitrate <kbps>            Audio bitrate.\n");
+  printf("    --vorbis_bitrate <kbps>            Average bitrate.\n");
+  printf("    --vorbis_minimum_bitrate <kbps>    Minimum bitrate.\n");
+  printf("    --vorbis_maximum_bitrate <kbps>    Maximum bitrate.\n");
+  printf("    --vorbis_disable_coupling          Disable channel coupling.\n");
+  printf("    --vorbis_disable_vbr               Disable VBR mode when");
+  printf("                                       specifying only an average");
+  printf("                                       bitrate.\n");
+  printf("    --vorbis_iblock_bias <-15.0-0.0>   Impulse block bias.\n");
+  printf("    --vorbis_lowpass_frequency <2-99>  Hard-low pass frequency.\n");
   printf("  Video source configuration options:\n");
   printf("    --vmanual                          Attempt manual\n");
   printf("                                       configuration.\n");
@@ -184,7 +192,23 @@ void parse_command_line(int argc, const char** argv,
       enc_config.requested_video_config.frame_rate = strtod(argv[++i], NULL);
     } else if (!strcmp("--vorbis_bitrate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
-      enc_config.vorbis_bitrate = strtol(argv[++i], NULL, 10);
+      enc_config.vorbis_config.average_bitrate = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vorbis_minimum_bitrate", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vorbis_config.minimum_bitrate = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vorbis_maximum_bitrate", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vorbis_config.maximum_bitrate = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vorbis_disable_coupling", argv[i])) {
+      enc_config.vorbis_config.channel_coupling = false;
+    } else if (!strcmp("--vorbis_disable_vbr", argv[i])) {
+      enc_config.vorbis_config.bitrate_based_quality = false;
+    } else if (!strcmp("--vorbis_iblock_bias", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vorbis_config.impulse_block_bias = strtod(argv[++i], NULL);
+    } else if (!strcmp("--vorbis_lowpass_frequency", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vorbis_config.lowpass_frequency = strtod(argv[++i], NULL);
     } else if (!strcmp("--vpx_keyframe_interval", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.keyframe_interval = strtol(argv[++i], NULL, 10);
