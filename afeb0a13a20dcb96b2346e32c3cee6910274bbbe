@@ -87,6 +87,24 @@
       "revId": "afeb0a13a20dcb96b2346e32c3cee6910274bbbe",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//5Ag\u003d",
+        "filename": "client_encoder/audio_encoder.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-24T22:17:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//5Bo\u003d",
+      "revId": "afeb0a13a20dcb96b2346e32c3cee6910274bbbe",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
