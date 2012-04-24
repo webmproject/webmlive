@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//5HM\u003d",
+        "filename": "client_encoder/audio_encoder.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-24T16:20:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//5uI\u003d",
+      "revId": "afeb0a13a20dcb96b2346e32c3cee6910274bbbe",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//5uE\u003d",
         "filename": "client_encoder/audio_encoder.h",
         "patchSetId": 5
@@ -30,6 +48,24 @@
       "writtenOn": "2012-04-23T23:21:28Z",
       "side": 1,
       "message": "Could be these under an \u0027advanced\u0027 section.",
+      "revId": "afeb0a13a20dcb96b2346e32c3cee6910274bbbe",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//5HE\u003d",
+        "filename": "client_encoder/audio_encoder.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-24T16:20:07Z",
+      "side": 1,
+      "message": "What are you thinking, just a comment to break thinngs up, or an advanced struct? Comment would be fine, struct seems like overkill (but not really a big deal, either).",
+      "parentUuid": "AAAAKn//5uE\u003d",
       "revId": "afeb0a13a20dcb96b2346e32c3cee6910274bbbe",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
