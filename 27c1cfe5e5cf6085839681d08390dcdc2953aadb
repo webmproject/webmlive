@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//0mg\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 150,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-27T21:57:09Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//5so\u003d",
+      "revId": "27c1cfe5e5cf6085839681d08390dcdc2953aadb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//5sc\u003d",
         "filename": "client_encoder/webm_encoder.cc",
         "patchSetId": 5
@@ -30,6 +48,24 @@
       "writtenOn": "2012-04-23T23:38:12Z",
       "side": 1,
       "message": "could have left this for a follow-up change and just if() wrapped the existing.",
+      "revId": "27c1cfe5e5cf6085839681d08390dcdc2953aadb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//0mY\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-27T21:57:09Z",
+      "side": 1,
+      "message": "That\u0027s true. I just wanted to keep the refactor noise in this commit.",
+      "parentUuid": "AAAAKn//5sc\u003d",
       "revId": "27c1cfe5e5cf6085839681d08390dcdc2953aadb",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//0mI\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 295,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-27T21:57:09Z",
+      "side": 1,
+      "message": "Refactored the method...",
+      "parentUuid": "AAAAKn//5sU\u003d",
+      "revId": "27c1cfe5e5cf6085839681d08390dcdc2953aadb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//5sM\u003d",
         "filename": "client_encoder/webm_encoder.cc",
         "patchSetId": 5
@@ -64,6 +118,24 @@
       "writtenOn": "2012-04-23T23:38:12Z",
       "side": 1,
       "message": "else isn\u0027t needed",
+      "revId": "27c1cfe5e5cf6085839681d08390dcdc2953aadb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//0mE\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 309,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-27T21:57:09Z",
+      "side": 1,
+      "message": "ditto",
+      "parentUuid": "AAAAKn//5sM\u003d",
       "revId": "27c1cfe5e5cf6085839681d08390dcdc2953aadb",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
