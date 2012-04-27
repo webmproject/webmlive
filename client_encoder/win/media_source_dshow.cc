@@ -101,6 +101,11 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
     LOG(ERROR) << "Null VideoFrameCallbackInterface.";
     return kInvalidArg;
   }
+  if (config.disable_audio && config.disable_video) {
+    LOG(ERROR) << "Audio and video are disabled.";
+    return kInvalidArg;
+  }
+  ptr_audio_callback_ = ptr_audio_callback;
   ptr_video_callback_ = ptr_video_callback;
   requested_audio_config_ = config.requested_audio_config;
   requested_video_config_ = config.requested_video_config;
@@ -115,23 +120,27 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
     LOG(ERROR) << "CreateGraphInterfaces failed: " << status;
     return WebmEncoder::kInitFailed;
   }
-  if (!config.video_device_name.empty()) {
-    video_device_name_ = string_to_wstring(config.video_device_name);
+  if (config.disable_video == false) {
+    if (!config.video_device_name.empty()) {
+      video_device_name_ = string_to_wstring(config.video_device_name);
+    }
+    status = CreateVideoSource();
+    if (status) {
+      LOG(ERROR) << "CreateVideoSource failed: " << status;
+      return WebmEncoder::kNoVideoSource;
+    }
+    status = CreateVideoSink();
+    if (status) {
+      LOG(ERROR) << "CreateVideoSink failed: " << status;
+      return WebmEncoder::kNoVideoSource;
+    }
+    status = ConnectVideoSourceToVideoSink();
+    if (status) {
+      LOG(ERROR) << "ConnectVideoSourceToVideoSink failed: " << status;
+      return WebmEncoder::kVideoSinkError;
+    }
   }
-  status = CreateVideoSource();
-  if (status) {
-    LOG(ERROR) << "CreateVideoSource failed: " << status;
-    return WebmEncoder::kNoVideoSource;
-  }
-  status = CreateVideoSink();
-  if (status) {
-    LOG(ERROR) << "CreateVideoSink failed: " << status;
-    return WebmEncoder::kNoVideoSource;
-  }
-  status = ConnectVideoSourceToVideoSink();
-  if (status) {
-    LOG(ERROR) << "ConnectVideoSourceToVideoSink failed: " << status;
-    return WebmEncoder::kVideoSinkError;
+  if (config.disable_audio == false) {
   }
   status = InitGraphControl();
   if (status) {
@@ -315,11 +324,14 @@ int MediaSourceImpl::ConnectVideoSourceToVideoSink() {
     if (hr == S_OK) {
       VideoMediaType video_format;
       if (video_format.Init(media_type) == kSuccess) {
-        LOG(INFO) << "actual capture width=" << video_format.width()
-                  << " height=" << video_format.height()
-                  << " frame_rate=" << video_format.frame_rate();
+        LOG(INFO) << "ConnectVideoSourceToVideoSink actual settings\n"
+                  << "  width=" << video_format.width() << "\n"
+                  << "  height=" << video_format.height() << "\n"
+                  << "  stride=" << video_format.stride() << "\n"
+                  << "  frame_rate=" << video_format.frame_rate() << "\n";
         actual_video_config_.width = video_format.width();
         actual_video_config_.height = video_format.height();
+        actual_video_config_.stride = video_format.stride();
         actual_video_config_.frame_rate = video_format.frame_rate();
       }
     }
