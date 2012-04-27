@@ -18,6 +18,7 @@
 #include "boost/scoped_array.hpp"
 #include "client_encoder/video_encoder.h"
 #include "client_encoder/webm_encoder.h"
+#include "client_encoder/win/audio_sink_filter.h"
 #include "client_encoder/win/dshow_util.h"
 #include "client_encoder/win/media_type_dshow.h"
 #include "client_encoder/win/video_sink_filter.h"
@@ -28,9 +29,11 @@ namespace webmlive {
 
 namespace {
 // DirectShow Filter name constants.
+const wchar_t* const kAudioSourceName = L"AudioSource";
+const wchar_t* const kAudioSinkName = L"AudioSink";
 const wchar_t* const kVideoSourceName = L"VideoSource";
 const wchar_t* const kVideoSinkName = L"VideoSink";
-const wchar_t* const kAudioSourceName = L"AudioSource";
+
 
 // Converts a std::string to std::wstring.
 std::wstring string_to_wstring(const std::string& str) {
@@ -44,7 +47,7 @@ std::string wstring_to_string(const std::wstring& wstr) {
   // Conversion buffer for |wcstombs| calls.
   const size_t buf_size = wstr.length() + 1;
   boost::scoped_array<char> temp_str(
-      new (std::nothrow) char[buf_size]);   // NOLINT
+      new (std::nothrow) char[buf_size]);  // NOLINT
   if (!temp_str) {
     LOG(ERROR) << "can't convert wstring of length=" << wstr.length();
     return std::string("<empty>");
@@ -56,6 +59,48 @@ std::string wstring_to_string(const std::wstring& wstr) {
   std::string str = temp_str.get();
   return str;
 }
+
+// Attempts to show configuration dialogs for |filter| and |pin|. Stores
+// resulting media type in |ptr_type| and returns |kSuccess| when everything
+// goes as planned.
+int DoManualFilterConfiguration(const IBaseFilterPtr& filter,
+                                const IPinPtr& pin,
+                                bool show_pin_dialog,
+                                webmlive::MediaTypePtr* ptr_type) {
+  bool filter_config_ok = false;
+  HRESULT hr = ShowFilterPropertyPage(filter);
+  if (FAILED(hr)) {
+    LOG(WARNING) << "Unable to show filter property page." << HRLOG(hr);
+  } else {
+    filter_config_ok = true;
+  }
+
+  // Try showing the pin property page.
+  bool pin_config_ok = false;
+  if (show_pin_dialog) {
+    hr = ShowPinPropertyPage(pin);
+    if (FAILED(hr)) {
+      LOG(WARNING) << "Unable to show pin property page." << HRLOG(hr);
+    } else {
+      pin_config_ok = true;
+    }
+  }
+
+  // Pass the media type back when either configuration attempt is successful.
+  using webmlive::MediaSourceImpl;
+  if (filter_config_ok || pin_config_ok) {
+    PinFormat formatter(pin);
+    const int status = ptr_type->Attach(formatter.format());
+    if (status) {
+      LOG(WARNING) << "Manual filter config failed: pin has no media type.";
+    } else {
+      LOG(INFO) << "Manual filter configuration successful.";
+      return MediaSourceImpl::kSuccess;
+    }
+  }
+  return MediaSourceImpl::kManualConfigurationFailure;
+}
+
 }  // anonymous namespace
 
 // Converts media time (100 nanosecond ticks) to milliseconds.
@@ -76,6 +121,7 @@ REFERENCE_TIME seconds_to_media_time(double seconds) {
 MediaSourceImpl::MediaSourceImpl()
     : audio_from_video_source_(false),
       media_event_handle_(INVALID_HANDLE_VALUE),
+      ptr_audio_callback_(NULL),
       ptr_video_callback_(NULL) {
 }
 
@@ -83,6 +129,7 @@ MediaSourceImpl::~MediaSourceImpl() {
   // Manually release directshow interfaces to avoid problems related to
   // destruction order of com_ptr_t members.
   audio_source_ = 0;
+  audio_sink_ = 0;
   video_source_ = 0;
   video_sink_ = 0;
   media_event_handle_ = INVALID_HANDLE_VALUE;
@@ -96,8 +143,13 @@ MediaSourceImpl::~MediaSourceImpl() {
 // Builds a DirectShow filter graph that looks like this:
 // video source -> video sink
 int MediaSourceImpl::Init(const WebmEncoderConfig& config,
+                          AudioSamplesCallbackInterface* ptr_audio_callback,
                           VideoFrameCallbackInterface* ptr_video_callback) {
-  if (!ptr_video_callback) {
+  if (!config.disable_audio && !ptr_audio_callback) {
+    LOG(ERROR) << "Null AudioSamplesCallbackInterface.";
+    return kInvalidArg;
+  }
+  if (!config.disable_video && !ptr_video_callback) {
     LOG(ERROR) << "Null VideoFrameCallbackInterface.";
     return kInvalidArg;
   }
@@ -105,6 +157,7 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
     LOG(ERROR) << "Audio and video are disabled.";
     return kInvalidArg;
   }
+  ptr_audio_callback_ = ptr_audio_callback;
   ptr_video_callback_ = ptr_video_callback;
   requested_audio_config_ = config.requested_audio_config;
   requested_video_config_ = config.requested_video_config;
@@ -140,10 +193,28 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
     }
   }
   if (config.disable_audio == false) {
+    if (!config.audio_device_name.empty()) {
+      audio_device_name_ = string_to_wstring(config.audio_device_name);
+    }
+    status = CreateAudioSource();
+    if (status) {
+      LOG(ERROR) << "CreateAudioSource failed: " << status;
+      return WebmEncoder::kNoAudioSource;
+    }
+    status = CreateAudioSink();
+    if (status) {
+      LOG(ERROR) << "CreateAudioSink failed: " << status;
+      return WebmEncoder::kNoAudioSource;
+    }
+    status = ConnectAudioSourceToAudioSink();
+    if (status) {
+      LOG(ERROR) << "ConnectAudioSourceToAudioSink failed: " << status;
+      return WebmEncoder::kAudioSinkError;
+    }
   }
   status = InitGraphControl();
   if (status) {
-    LOG(ERROR) << "ConnectVideoSourceToVideoSink failed: " << status;
+    LOG(ERROR) << "InitGraphControl failed: " << status;
     return WebmEncoder::kEncodeMonitorError;
   }
   return kSuccess;
@@ -311,7 +382,7 @@ int MediaSourceImpl::ConnectVideoSourceToVideoSink() {
       if (hr == S_OK) {
         LOG(INFO) << "Connected with video source pin default format.";
       } else {
-        LOG(ERROR) << "Cannot connect video source to VP8 encoder.";
+        LOG(ERROR) << "Cannot connect video source to video sink.";
         status = kVideoConnectError;
       }
     }
@@ -348,7 +419,7 @@ int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin,
                                           int sub_type,
                                           MediaTypePtr* ptr_type) {
   if (!ptr_type) {
-    LOG(ERROR) << "NULL media type output pointer!";
+    LOG(ERROR) << "NULL media type output pointer (video)!";
     return kInvalidArg;
   }
   if (ui_opts_.manual_video_config) {
@@ -357,44 +428,15 @@ int MediaSourceImpl::ConfigureVideoSource(const IPinPtr& pin,
     // user mess with the dialog repeatedly if/when manual settings disagree
     // with the video sink filter.
     ui_opts_.manual_video_config = false;
-
-    // Try showing |video_source_|'s property page.
-    bool filter_config_ok = false;
-    HRESULT hr = ShowFilterPropertyPage(video_source_);
-    if (FAILED(hr)) {
-      LOG(WARNING) << "Unable to show video source filter property page."
-                   << HRLOG(hr);
-    } else {
-      filter_config_ok = true;
+    const int status =
+        DoManualFilterConfiguration(video_source_, pin, true, ptr_type);
+    if (status == kSuccess) {
+      LOG(INFO) << "Manual video configuration successful.";
+      return kSuccess;
     }
 
-    // Try showing the pin property page. Extremely common video sources (I.E.
-    // Logitech webcams) show vastly different configuration options on the
-    // filter and pin property pages.
-    bool pin_config_ok = false;
-    hr = ShowPinPropertyPage(pin);
-    if (FAILED(hr)) {
-      LOG(WARNING) << "Unable to show video source pin property page."
-                   << HRLOG(hr);
-    } else {
-      pin_config_ok = true;
-    }
-    if (filter_config_ok || pin_config_ok) {
-      PinFormat formatter(pin);
-      const int status = ptr_type->Attach(formatter.format());
-      if (status) {
-        LOG(WARNING) << "Manual video config failed: user config successful, "
-                        "but pin has no media type.";
-
-        // Fall through and try configuring the pin without user intervention.
-      } else {
-        LOG(INFO) << "Manual video configuration successful.";
-        return kSuccess;
-      }
-    }
-
-    // Fall through and use settings in |video_config| when property page
-    // stuff fails.
+    // Fall through and use settings in |requested_video_config_| when property
+    // page stuff fails.
     LOG(WARNING) << "Manual video configuration failed.";
   }
   VideoMediaType video_format;
@@ -475,46 +517,51 @@ int MediaSourceImpl::CreateAudioSource() {
   // TODO(tomfinegan): We assume that the user wants to use the audio feed
   //                   exposed by the video capture source. This behavior
   //                   should be configurable.
-  PinFinder pin_finder;
-  int status = pin_finder.Init(video_source_);
-  if (status) {
-    LOG(ERROR) << "cannot check video source for audio pins!";
-    return WebmEncoder::kInitFailed;
-  }
-  if (pin_finder.FindAudioOutputPin(0)) {
-    // Use the video source filter audio output pin.
-    LOG(INFO) << "Using video source filter audio output pin.";
-    audio_source_ = video_source_;
-    audio_from_video_source_ = true;
-  } else {
-    // The video source doesn't have an audio output pin. Find an audio
-    // capture source.
-    CaptureSourceLoader loader;
-    status = loader.Init(CLSID_AudioInputDeviceCategory);
+  int status;
+  if (video_source_) {
+    PinFinder pin_finder;
+    status = pin_finder.Init(video_source_);
     if (status) {
-      LOG(ERROR) << "no audio source!";
-      return WebmEncoder::kNoAudioSource;
+      LOG(ERROR) << "cannot check video source for audio pins!";
+      return WebmEncoder::kInitFailed;
     }
-    for (int i = 0; i < loader.GetNumSources(); ++i) {
-      LOG(INFO) << "adev" << i << ": "
-                << wstring_to_string(loader.GetSourceName(i).c_str());
-    }
-    if (audio_device_name_.empty()) {
-      audio_source_ = loader.GetSource(0);
-    } else {
-      audio_source_ = loader.GetSource(audio_device_name_);
-    }
-    if (!audio_source_) {
-      LOG(ERROR) << "cannot create audio source!";
-      return WebmEncoder::kNoAudioSource;
-    }
-    const HRESULT hr = graph_builder_->AddFilter(audio_source_,
-                                                 kAudioSourceName);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "cannot add audio source to graph." << HRLOG(hr);
-      return kCannotAddFilter;
+    if (pin_finder.FindAudioOutputPin(0)) {
+      // Use the video source filter audio output pin.
+      LOG(INFO) << "Using video source filter audio output pin.";
+      audio_source_ = video_source_;
+      audio_from_video_source_ = true;
+      return kSuccess;
     }
   }
+
+  // The video source doesn't have an audio output pin. Find an audio
+  // capture source.
+  CaptureSourceLoader loader;
+  status = loader.Init(CLSID_AudioInputDeviceCategory);
+  if (status) {
+    LOG(ERROR) << "no audio source!";
+    return WebmEncoder::kNoAudioSource;
+  }
+  for (int i = 0; i < loader.GetNumSources(); ++i) {
+    LOG(INFO) << "adev" << i << ": "
+              << wstring_to_string(loader.GetSourceName(i).c_str());
+  }
+  if (audio_device_name_.empty()) {
+    audio_source_ = loader.GetSource(0);
+  } else {
+    audio_source_ = loader.GetSource(audio_device_name_);
+  }
+  if (!audio_source_) {
+    LOG(ERROR) << "cannot create audio source!";
+    return WebmEncoder::kNoAudioSource;
+  }
+  const HRESULT hr = graph_builder_->AddFilter(audio_source_,
+                                               kAudioSourceName);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "cannot add audio source to graph." << HRLOG(hr);
+    return kCannotAddFilter;
+  }
+
   return kSuccess;
 }
 
@@ -522,41 +569,31 @@ int MediaSourceImpl::CreateAudioSource() {
 // matching media type, and uses it if successful. Constructs |AudioMediaType|
 // to configure pin with an AM_MEDIA_TYPE matching the user's settings if no
 // match is found. Returns kSuccess upon successful configuration.
-int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin) {
+int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin,
+                                          MediaTypePtr* ptr_type) {
+  if (!ptr_type) {
+    LOG(ERROR) << "NULL media type output pointer (audio)!";
+    return kInvalidArg;
+  }
   if (ui_opts_.manual_audio_config) {
-    bool filter_config_ok = false, pin_config_ok = false;
     // Manual audio configuration is enabled; try showing |audio_source_|'s
     // property page, but only if the audio source is not a pin on
     // |video_source_|. This is done to avoid any potential problems within
     // the source filter that could be created by making filter level
     // configuration changes through the property page after the video pin
-    // has been connected to the VP8 encoder filter.
-    // Unlike with video, only one of the filter and pin property pages are
-    // shown. This is because they're often the same dialog for audio sources.
+    // has been connected to the video sink filter.
     if (!audio_from_video_source_) {
-      HRESULT hr = ShowFilterPropertyPage(audio_source_);
-      if (FAILED(hr)) {
-        LOG(WARNING) << "Unable to show audio source filter property page."
-                     << HRLOG(hr);
-      } else {
-        filter_config_ok = true;
+      const int status =
+          DoManualFilterConfiguration(audio_source_, pin, false, ptr_type);
+      if (status == kSuccess) {
+        LOG(INFO) << "Manual audio configuration successful.";
+        return kSuccess;
       }
-    } else {
-      HRESULT hr = ShowPinPropertyPage(pin);
-      if (FAILED(hr)) {
-        LOG(WARNING) << "Unable to show video source pin property page."
-                     << HRLOG(hr);
-      } else {
-        pin_config_ok = true;
-      }
+
+      // Fall through and use settings in |requested_audio_config_| when
+      // property page stuff fails.
+      LOG(WARNING) << "Manual audio configuration failed.";
     }
-    if (filter_config_ok || pin_config_ok) {
-      LOG(INFO) << "Manual audio configuration successful.";
-      return kSuccess;
-    }
-    // Fall through and use settings in |config_.audio_config| when property
-    // page stuff fails.
-    LOG(WARNING) << "Manual audio configuration failed.";
   }
   PinFormat formatter(pin);
   MediaTypePtr audio_format;
@@ -589,7 +626,122 @@ int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin) {
       return WebmEncoder::kAudioConfigureError;
     }
   }
+  return ptr_type->Attach(formatter.format());
+}
+
+int MediaSourceImpl::CreateAudioSink() {
+  HRESULT status = E_FAIL;
+  const std::string filter_name = wstring_to_string(kAudioSinkName);
+  AudioSinkFilter* const ptr_filter =
+      new (std::nothrow) AudioSinkFilter(filter_name.c_str(),  // NOLINT
+                                         NULL,
+                                         ptr_audio_callback_,
+                                         &status);
+  if (!ptr_filter || FAILED(status)) {
+    delete ptr_filter;
+    LOG(ERROR) << "AudioSinkFilter construction failed" << HRLOG(status);
+    return kAudioSinkCreateError;
+  }
+  audio_sink_ = ptr_filter;
+  status = graph_builder_->AddFilter(audio_sink_, kAudioSinkName);
+  if (FAILED(status)) {
+    LOG(ERROR) << "cannot add audio sink to graph" << HRLOG(status);
+    return kCannotAddFilter;
+  }
   return kSuccess;
+}
+
+int MediaSourceImpl::ConnectAudioSourceToAudioSink() {
+  PinFinder pin_finder;
+  int status = pin_finder.Init(audio_source_);
+  if (status) {
+    LOG(ERROR) << "cannot look for pins on audio source!";
+    return kAudioConnectError;
+  }
+  IPinPtr audio_source_pin = pin_finder.FindAudioOutputPin(0);
+  if (!audio_source_pin) {
+    LOG(ERROR) << "cannot find output pin on audio source!";
+    return kAudioConnectError;
+  }
+  status = pin_finder.Init(audio_sink_);
+  if (status) {
+    LOG(ERROR) << "cannot look for pins on audio sink!";
+    return kAudioConnectError;
+  }
+  IPinPtr sink_input_pin = pin_finder.FindAudioInputPin(0);
+  if (!sink_input_pin) {
+    LOG(ERROR) << "cannot find audio input pin on audio sink filter!";
+    return kAudioConnectError;
+  }
+
+  // Try connecting |audio_source_| to |audio_sink_| using settings
+  // in |requested_audio_config_|.
+  HRESULT hr = E_FAIL;
+  MediaTypePtr accepted_type;
+  status = ConfigureAudioSource(audio_source_pin, &accepted_type);
+  if (status == kSuccess) {
+    LOG(INFO) << "audio source configuration OK.";
+    hr = graph_builder_->ConnectDirect(audio_source_pin, sink_input_pin,
+                                       accepted_type.get());
+    if (hr == S_OK) {
+      LOG(INFO) << "configured source connected.";
+    }
+  }
+
+  if (status || hr != S_OK) {
+    // All previous connection attempts failed. Try one last time using
+    // |audio_source_pin|'s default format.
+    PinFormat formatter(audio_source_pin);
+    status = formatter.set_format(NULL);
+    if (status == kSuccess) {
+      hr = graph_builder_->ConnectDirect(audio_source_pin, sink_input_pin,
+                                         NULL);
+      if (hr == S_OK) {
+        LOG(INFO) << "Connected with audio source pin default format.";
+      } else {
+        LOG(ERROR) << "Cannot connect audio source to audio sink.";
+        status = kAudioConnectError;
+      }
+    }
+  }
+  if (status == kSuccess && hr == S_OK) {
+    AM_MEDIA_TYPE media_type = {0};
+    // Store the actual audio capture settings.
+    hr = audio_source_pin->ConnectionMediaType(&media_type);
+    if (hr == S_OK) {
+      AudioMediaType audio_format;
+      if (audio_format.Init(media_type) == kSuccess) {
+        LOG(INFO) << "ConnectAudioSourceToAudioSink actual settings\n"
+                  << "  block_align=" << audio_format.block_align() << "\n"
+                  << "  bytes_per_second=" << audio_format.bytes_per_second()
+                  << "\n"
+                  << "  channels=" << audio_format.channels() << "\n"
+                  << "  format_tag=" << audio_format.format_tag() << "\n"
+                  << "  sample_rate=" << audio_format.sample_rate() << "\n"
+                  << "  bits_per_sample=" << audio_format.bits_per_sample()
+                  << "\n";
+        if (audio_format.format_tag() == WAVE_FORMAT_EXTENSIBLE) {
+          LOG(INFO) << "  valid_bits_per_sample="
+                    << audio_format.valid_bits_per_sample() << "\n"
+                    << "  channel_mask=" << std::hex
+                    << audio_format.channel_mask() << "\n";
+          actual_audio_config_.valid_bits_per_sample =
+              audio_format.valid_bits_per_sample();
+          actual_audio_config_.channel_mask =
+              audio_format.channel_mask();
+        }
+        actual_audio_config_.block_align = audio_format.block_align();
+        actual_audio_config_.bytes_per_second =
+            audio_format.bytes_per_second();
+        actual_audio_config_.channels = audio_format.channels();
+        actual_audio_config_.format_tag = audio_format.format_tag();
+        actual_audio_config_.sample_rate = audio_format.sample_rate();
+        actual_audio_config_.bits_per_sample = audio_format.bits_per_sample();
+      }
+    }
+    MediaType::FreeMediaTypeData(&media_type);
+  }
+  return status;
 }
 
 // Checks |media_event_handle_| and reads the event from |media_event_| when
@@ -679,8 +831,8 @@ int CaptureSourceLoader::FindAllSources() {
       LOG(WARNING) << "source=" << source_index << " has no name, skipping.";
       continue;
     }
-    LOG(INFO) << "source=" << source_index << " name="
-              << wstring_to_string(name.c_str());
+    VLOG(4) << "source=" << source_index << " name="
+            << wstring_to_string(name.c_str());
     sources_[source_index] = name;
     ++source_index;
   }
