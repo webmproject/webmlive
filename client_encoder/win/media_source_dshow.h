@@ -93,6 +93,9 @@ class MediaSourceImpl {
  public:
   typedef WebmEncoderConfig::UserInterfaceOptions UserInterfaceOptions;
   enum {
+    // Error creating the audio sink filter.
+    kAudioSinkCreateError = -223,
+
     // Error creating the video sink filter.
     kVideoSinkCreateError = -222,
 
@@ -138,6 +141,7 @@ class MediaSourceImpl {
   // Creates video capture graph. Returns |kSuccess| upon success, or a
   // |WebmEncoder| status code upon failure.
   int Init(const WebmEncoderConfig& config,
+           AudioSamplesCallbackInterface* ptr_audio_callback,
            VideoFrameCallbackInterface* ptr_video_callback);
 
   // Runs filter graph. Returns |kSuccess| upon success, or a |WebmEncoder|
@@ -198,7 +202,11 @@ class MediaSourceImpl {
   // Configures the audio capture source.
   int ConfigureAudioSource(const IPinPtr& pin);
 
+  // Creates the audio sink filter instance and adds it to the graph.
+  int CreateAudioSink();
 
+  // Connects the audio source and sink filters.
+  int ConnectAudioSourceToAudioSink();
 
   // Checks graph media event for error or completion.
   int HandleMediaEvent();
@@ -215,6 +223,7 @@ class MediaSourceImpl {
 
   // Directshow filters used in the encoder graph.
   IBaseFilterPtr audio_source_;
+  IBaseFilterPtr audio_sink_;
   IBaseFilterPtr video_source_;
   IBaseFilterPtr video_sink_;
 
@@ -248,6 +257,10 @@ class MediaSourceImpl {
   // Callback interface used by video sink filter to deliver raw frames to
   // |WebmEncoder::EncoderThread|.
   VideoFrameCallbackInterface* ptr_video_callback_;
+
+  // Callback interface used by audio sink filter to deliver audio buffers
+  // to |WebmEncoder::EncoderThread|.
+  AudioSamplesCallbackInterface* ptr_audio_callback_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(MediaSourceImpl);
 };
 
