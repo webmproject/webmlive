@@ -10,6 +10,8 @@
 #include <dvdmedia.h>
 #include <vfwmsgs.h>
 
+#include <cstdlib>
+
 #include "client_encoder/win/dshow_util.h"
 #include "client_encoder/win/media_source_dshow.h"
 #include "client_encoder/win/media_type_dshow.h"

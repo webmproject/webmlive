@@ -93,6 +93,12 @@ class MediaSourceImpl {
  public:
   typedef WebmEncoderConfig::UserInterfaceOptions UserInterfaceOptions;
   enum {
+    // Manual filter configuration failed.
+    kManualConfigurationFailure = -224,
+
+    // Error creating the audio sink filter.
+    kAudioSinkCreateError = -223,
+
     // Error creating the video sink filter.
     kVideoSinkCreateError = -222,
 
@@ -138,6 +144,7 @@ class MediaSourceImpl {
   // Creates video capture graph. Returns |kSuccess| upon success, or a
   // |WebmEncoder| status code upon failure.
   int Init(const WebmEncoderConfig& config,
+           AudioSamplesCallbackInterface* ptr_audio_callback,
            VideoFrameCallbackInterface* ptr_video_callback);
 
   // Runs filter graph. Returns |kSuccess| upon success, or a |WebmEncoder|
@@ -196,9 +203,13 @@ class MediaSourceImpl {
   int CreateAudioSource();
 
   // Configures the audio capture source.
-  int ConfigureAudioSource(const IPinPtr& pin);
+  int ConfigureAudioSource(const IPinPtr& pin, MediaTypePtr* ptr_type);
 
+  // Creates the audio sink filter instance and adds it to the graph.
+  int CreateAudioSink();
 
+  // Connects the audio source and sink filters.
+  int ConnectAudioSourceToAudioSink();
 
   // Checks graph media event for error or completion.
   int HandleMediaEvent();
@@ -213,8 +224,9 @@ class MediaSourceImpl {
   IGraphBuilderPtr graph_builder_;
   ICaptureGraphBuilder2Ptr capture_graph_builder_;
 
-  // Directshow filters used in the encoder graph.
+  // Directshow filters used in the capture graph.
   IBaseFilterPtr audio_source_;
+  IBaseFilterPtr audio_sink_;
   IBaseFilterPtr video_source_;
   IBaseFilterPtr video_sink_;
 
@@ -244,6 +256,10 @@ class MediaSourceImpl {
 
   // Controls display of device configuration dialogs.
   UserInterfaceOptions ui_opts_;
+
+  // Callback interface used by audio sink filter to deliver audio buffers
+  // to |WebmEncoder::EncoderThread|.
+  AudioSamplesCallbackInterface* ptr_audio_callback_;
 
   // Callback interface used by video sink filter to deliver raw frames to
   // |WebmEncoder::EncoderThread|.
