@@ -11,6 +11,8 @@
 #include <mmreg.h>
 #include <vfwmsgs.h>
 
+#include <cstdlib>
+
 #include "client_encoder/win/dshow_util.h"
 #include "client_encoder/win/media_source_dshow.h"
 #include "client_encoder/win/media_type_dshow.h"
@@ -260,9 +262,14 @@ HRESULT AudioSinkFilter::OnSamplesReceived(IMediaSample* ptr_sample) {
     LOG(ERROR) << "OnSamplesReceived cannot get media time(s).";
     return hr;
   }
+
   timestamp = media_time_to_milliseconds(start_time);
   if (hr != VFW_S_NO_STOP_TIME) {
-    duration = media_time_to_milliseconds(end_time) - timestamp;
+    if (timestamp >= 0) {
+      duration = media_time_to_milliseconds(end_time) - timestamp;
+    } else {
+      duration = media_time_to_milliseconds(end_time) + _abs64(timestamp);
+    }
   } else {
     LOG(WARNING) << "OnSamplesReceived sample has no stop time.";
   }
@@ -289,7 +296,7 @@ HRESULT AudioSinkFilter::OnSamplesReceived(IMediaSample* ptr_sample) {
       << "   bits_per_sample=" << config.bits_per_sample << "\n"
       << "   valid_bits_per_sample=" << config.valid_bits_per_sample << "\n"
       << "   channel_mask=0x" << (std::hex) << config.channel_mask << "\n"
-      << "   timestamp(sec)=" << (timestamp / 1000.0) << "\n"
+      << "   timestamp(sec)=" << (std::dec) << (timestamp / 1000.0) << "\n"
       << "   timestamp="      << timestamp << "\n"
       << "   duration(sec)= " << (duration / 1000.0) << "\n"
       << "   duration= "      << duration << "\n"

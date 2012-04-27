@@ -10,6 +10,8 @@
 #include <dvdmedia.h>
 #include <vfwmsgs.h>
 
+#include <cstdlib>
+
 #include "client_encoder/win/dshow_util.h"
 #include "client_encoder/win/media_source_dshow.h"
 #include "client_encoder/win/media_type_dshow.h"
@@ -300,7 +302,11 @@ HRESULT VideoSinkFilter::OnFrameReceived(IMediaSample* ptr_sample) {
   }
   timestamp = media_time_to_milliseconds(start_time);
   if (hr != VFW_S_NO_STOP_TIME) {
-    duration = media_time_to_milliseconds(end_time) - timestamp;
+    if (timestamp >= 0) {
+      duration = media_time_to_milliseconds(end_time) - timestamp;
+    } else {
+      duration = media_time_to_milliseconds(end_time) + _abs64(timestamp);
+    }
   } else {
     LOG(WARNING) << "OnFrameReceived using time per frame for duration.";
     AM_MEDIA_TYPE media_type = {0};
