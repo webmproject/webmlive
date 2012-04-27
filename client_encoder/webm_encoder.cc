@@ -31,6 +31,10 @@ WebmEncoder::~WebmEncoder() {
 // Constructs media source object and calls its |Init| method.
 int WebmEncoder::Init(const WebmEncoderConfig& config,
                       DataSinkInterface* ptr_data_sink) {
+  if (config.disable_audio && config.disable_video) {
+    LOG(ERROR) << "Audio and video are disabled!";
+    return kInvalidArg;
+  }
   if (!ptr_data_sink) {
     LOG(ERROR) << "NULL data sink!";
     return kInvalidArg;
@@ -48,12 +52,6 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
   }
   chunk_buffer_size_ = kDefaultChunkBufferSize;
 
-  // Initialize the video frame queue.
-  if (video_queue_.Init(false)) {
-    LOG(ERROR) << "BufferPool<VideoFrame*> Init failed!";
-    return kInitFailed;
-  }
-
   // Construct and initialize the media source(s).
   ptr_media_source_.reset(new (std::nothrow) MediaSourceImpl());  // NOLINT
   if (!ptr_media_source_) {
@@ -63,14 +61,6 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
   int status = ptr_media_source_->Init(config_, this);
   if (status) {
     LOG(ERROR) << "media source Init failed " << status;
-    return kInitFailed;
-  }
-  config_.actual_video_config = ptr_media_source_->actual_video_config();
-
-  // Initialize the video encoder.
-  status = video_encoder_.Init(config_);
-  if (status) {
-    LOG(ERROR) << "video encoder Init failed " << status;
     return kInitFailed;
   }
 
@@ -86,11 +76,31 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     return kInitFailed;
   }
 
-  // Add the video track.
-  status = ptr_muxer_->AddTrack(config_.actual_video_config);
-  if (status) {
-    LOG(ERROR) << "live muxer AddTrack failed " << status;
-    return kInitFailed;
+  if (config_.disable_video == false) {
+    config_.actual_video_config = ptr_media_source_->actual_video_config();
+
+    // Initialize the video frame pool.
+    if (video_pool_.Init(false)) {
+      LOG(ERROR) << "BufferPool<VideoFrame> Init failed!";
+      return kInitFailed;
+    }
+
+    // Initialize the video encoder.
+    status = video_encoder_.Init(config_);
+    if (status) {
+      LOG(ERROR) << "video encoder Init failed " << status;
+      return kInitFailed;
+    }
+
+    // Add the video track.
+    status = ptr_muxer_->AddTrack(config_.actual_video_config);
+    if (status) {
+      LOG(ERROR) << "live muxer AddTrack failed " << status;
+      return kInitFailed;
+    }
+  }
+
+  if (config_.disable_audio == false) {
   }
 
   initialized_ = true;
@@ -137,14 +147,14 @@ int64 WebmEncoder::encoded_duration() const {
 
 // VideoFrameCallbackInterface
 int WebmEncoder::OnVideoFrameReceived(VideoFrame* ptr_frame) {
-  int status = video_queue_.Commit(ptr_frame);
+  const int status = video_pool_.Commit(ptr_frame);
   if (status) {
     if (status != BufferPool<VideoFrame>::kFull) {
-      LOG(ERROR) << "VideoFrameQueue Push failed! " << status;
+      LOG(ERROR) << "VideoFrame pool Commit failed! " << status;
     }
     return VideoFrameCallbackInterface::kDropped;
   }
-  LOG(INFO) << "OnVideoFrameReceived pushed frame.";
+  LOG(INFO) << "OnVideoFrameReceived committed a frame.";
   return kSuccess;
 }
 
@@ -208,44 +218,14 @@ void WebmEncoder::EncoderThread() {
         LOG(ERROR) << "Media source in bad state, stopping... " << status;
         break;
       }
-
-      // Read a frame for |video_queue_|. Sets |got_frame| to true if a frame
-      // is available.
-      bool got_frame = false;
-      status = video_queue_.Decommit(&raw_frame_);
-      if (status) {
-        if (status != BufferPool<VideoFrame>::kEmpty) {
-          // Really an error; not just an empty queue.
-          LOG(ERROR) << "VideoFrameQueue Pop failed! " << status;
-          break;
-        } else {
-          VLOG(4) << "No frames in VideoFrameQueue";
-        }
-      } else {
-        LOG(INFO) << "Encoder thread read raw frame.";
-        got_frame = true;
-      }
-
-      // Encode a video frame, and pass it to the muxer.
-      if (got_frame) {
-        status = video_encoder_.EncodeFrame(raw_frame_, &vp8_frame_);
+      if (config_.disable_video == false) {
+        status = ReadEncodeAndMuxVideoFrame();
         if (status) {
-          LOG(ERROR) << "Video frame encode failed " << status;
-          break;
-        } else {
-          // Update encoded duration if able to obtain the lock.
-          boost::mutex::scoped_try_lock lock(mutex_);
-          if (lock.owns_lock()) {
-            encoded_duration_ = vp8_frame_.timestamp();
-          }
-        }
-        status = ptr_muxer_->WriteVideoFrame(vp8_frame_);
-        if (status) {
-          LOG(ERROR) << "Video frame mux failed " << status;
+          LOG(ERROR) << "ReadEncodeAndMuxVideoFrame failed, stopping... "
+                     << status;
           break;
         }
       }
-
       if (ptr_data_sink_->Ready()) {
         int32 chunk_length = 0;
         const bool chunk_ready = ptr_muxer_->ChunkReady(&chunk_length);
@@ -300,6 +280,42 @@ void WebmEncoder::EncoderThread() {
     ptr_media_source_->Stop();
   }
   LOG(INFO) << "EncoderThread finished.";
+}
+
+int WebmEncoder::ReadEncodeAndMuxVideoFrame() {
+  // Try reading a video frame from the pool.
+  int status = video_pool_.Decommit(&raw_frame_);
+  if (status) {
+    if (status != BufferPool<VideoFrame>::kEmpty) {
+      // Really an error; not just an empty pool.
+      LOG(ERROR) << "VideoFrame pool Decommit failed! " << status;
+      return kVideoSinkError;
+    }
+    VLOG(4) << "No frames in VideoFrame pool";
+    return kSuccess;
+  }
+
+  VLOG(4) << "Encoder thread read raw frame.";
+
+  // Encode the video frame, and pass it to the muxer.
+  status = video_encoder_.EncodeFrame(raw_frame_, &vp8_frame_);
+  if (status) {
+    LOG(ERROR) << "Video frame encode failed " << status;
+    return kVideoEncoderError;
+  }
+
+  // Update encoded duration if able to obtain the lock.
+  boost::mutex::scoped_try_lock lock(mutex_);
+  if (lock.owns_lock()) {
+    encoded_duration_ = vp8_frame_.timestamp();
+  }
+
+  status = ptr_muxer_->WriteVideoFrame(vp8_frame_);
+  if (status) {
+    LOG(ERROR) << "Video frame mux failed " << status;
+  }
+
+  return status;
 }
 
 }  // namespace webmlive

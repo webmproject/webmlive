@@ -67,6 +67,7 @@ void usage(const char** argv) {
   printf("    --url <target URL>             Target for HTTP Posts.\n");
   printf("    --vdev <video source name>     Video capture device name.\n");
   printf("  Audio source configuration options:\n");
+  printf("    --adisable                     Disable audio capture.\n");
   printf("    --amanual                      Attempt manual configuration.\n");
   printf("    --achannels <channels>         Number of audio channels.\n");
   printf("    --arate <sample rate>          Audio sample rate.\n");
@@ -82,6 +83,7 @@ void usage(const char** argv) {
   printf("    --vorbis_iblock_bias <-15.0-0.0>   Impulse block bias.\n");
   printf("    --vorbis_lowpass_frequency <2-99>  Hard-low pass frequency.\n");
   printf("  Video source configuration options:\n");
+  printf("    --vdisable                         Disable video capture.");
   printf("    --vmanual                          Attempt manual\n");
   printf("                                       configuration.\n");
   printf("    --vwidth <width>                   Width in pixels.\n");
@@ -162,6 +164,8 @@ void parse_command_line(int argc, const char** argv,
                arg_has_value(i, argc, argv)) {
       enc_config.requested_audio_config.channels =
           static_cast<uint16>(strtol(argv[++i], NULL, 10));
+    } else if (!strcmp("--adisable", argv[i])) {
+      enc_config.disable_audio = true;
     } else if (!strcmp("--amanual", argv[i])) {
       enc_config.ui_opts.manual_audio_config = true;
     } else if (!strcmp("--arate", argv[i]) && arg_has_value(i, argc, argv)) {
@@ -179,6 +183,8 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--form_post", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
+    } else if (!strcmp("--vdisable", argv[i])) {
+      enc_config.disable_video = true;
     } else if (!strcmp("--vdev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_device_name = argv[++i];
     } else if (!strcmp("--vmanual", argv[i])) {
