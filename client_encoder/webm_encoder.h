@@ -81,6 +81,9 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   // Default size of |chunk_buffer_|.
   static const int kDefaultChunkBufferSize = 100 * 1024;
   enum {
+    // AV capture implementation unable to setup audio buffer sink.
+    kAudioSinkError = -116,
+
     // AV capture source stopped on its own.
     kAVCaptureStopped = -115,
 
