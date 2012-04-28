@@ -1,0 +1,157 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAKn//0es\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-28T00:22:59Z",
+      "side": 1,
+      "message": "Can channels be \u003c\u003d 0 ?",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//0eo\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-28T00:22:59Z",
+      "side": 1,
+      "message": "Say instead:\n\n  (format_tag \u003d\u003d kAudioFormatPCM \u0026\u0026 ...)",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//0dE\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-28T00:22:59Z",
+      "side": 1,
+      "message": "Can you really have bits_per_sample that is not an integer multiple of 8?\n\nDo you really need to right-shift, instead of simply dividing by 8?",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//0c4\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-28T00:22:59Z",
+      "side": 1,
+      "message": "Can you really have a buffer whose length is not an integer multiple of bytes_per_sample?",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//0cs\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-28T00:22:59Z",
+      "side": 1,
+      "message": "This assumes 16-bit samples.  Yet the code above seems more liberal about how my bytes (indeed, how many bits) are in a sample.  Why the difference?",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//0cY\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-28T00:22:59Z",
+      "side": 1,
+      "message": "Here you assume that bytes/sample matches the representation of type float.  Shouldn\u0027t you at least have a test somewhere, to test whether the bytes_per_sample matches sizeof(float)?",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//0cQ\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-28T00:22:59Z",
+      "side": 1,
+      "message": "if no samples are available, just immediately return kNoSamples.",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//0cE\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-28T00:22:59Z",
+      "side": 1,
+      "message": "What is supposed to happen if ptr_coments \u003d\u003d NULL?",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//0cA\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 292,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-04-28T00:22:59Z",
+      "side": 1,
+      "message": "I would check for count \u003c\u003d 0",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
