@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//zcE\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-30T20:23:28Z",
+      "side": 1,
+      "message": "Added check for 0",
+      "parentUuid": "AAAAKn//0es\u003d",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//0eo\u003d",
         "filename": "client_encoder/vorbis_encoder.cc",
         "patchSetId": 12
@@ -30,6 +48,24 @@
       "writtenOn": "2012-04-28T00:22:59Z",
       "side": 1,
       "message": "Say instead:\n\n  (format_tag \u003d\u003d kAudioFormatPCM \u0026\u0026 ...)",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//zcA\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-30T20:23:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//0eo\u003d",
       "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//zb8\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-30T20:23:28Z",
+      "side": 1,
+      "message": "\u003e Can you really have bits_per_sample that is not an integer multiple of 8?\n\nI am not certain-- I know that it\u0027s possible for the valid bits per sample value. \n\n\u003e Do you really need to right-shift, instead of simply dividing by 8?\n\nChanged the shift to a divide.",
+      "parentUuid": "AAAAKn//0dE\u003d",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//0c4\u003d",
         "filename": "client_encoder/vorbis_encoder.cc",
         "patchSetId": 12
@@ -64,6 +118,24 @@
       "writtenOn": "2012-04-28T00:22:59Z",
       "side": 1,
       "message": "Can you really have a buffer whose length is not an integer multiple of bytes_per_sample?",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//zb4\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-30T20:23:28Z",
+      "side": 1,
+      "message": "I\u0027m not certain-- since I plan to use this code to receive buffers from quicktime (on mac) and pulse/alsa (linux) at some point in the future I think it\u0027s safer to be very defensive here.",
+      "parentUuid": "AAAAKn//0c4\u003d",
       "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//zb0\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-30T20:23:28Z",
+      "side": 1,
+      "message": "VorbisEncoder::Init accepts only 16 bit PCM, but some day (I think) I\u0027ll need to support other formats. It seemed harmless to calculate things this way, even if it\u0027s not necessary at this point.",
+      "parentUuid": "AAAAKn//0cs\u003d",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//0cY\u003d",
         "filename": "client_encoder/vorbis_encoder.cc",
         "patchSetId": 12
@@ -98,6 +188,24 @@
       "writtenOn": "2012-04-28T00:22:59Z",
       "side": 1,
       "message": "Here you assume that bytes/sample matches the representation of type float.  Shouldn\u0027t you at least have a test somewhere, to test whether the bytes_per_sample matches sizeof(float)?",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//zbo\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-30T20:23:28Z",
+      "side": 1,
+      "message": "Added a check in VorbisEncoder::Init.",
+      "parentUuid": "AAAAKn//0cY\u003d",
       "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -121,6 +229,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//zbk\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-30T20:23:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//0cQ\u003d",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//0cE\u003d",
         "filename": "client_encoder/vorbis_encoder.cc",
         "patchSetId": 12
@@ -138,6 +264,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//zbg\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-30T20:23:28Z",
+      "side": 1,
+      "message": "Nothing, though I don\u0027t think that can happen given current usage.",
+      "parentUuid": "AAAAKn//0cE\u003d",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//0cA\u003d",
         "filename": "client_encoder/vorbis_encoder.cc",
         "patchSetId": 12
@@ -149,6 +293,24 @@
       "writtenOn": "2012-04-28T00:22:59Z",
       "side": 1,
       "message": "I would check for count \u003c\u003d 0",
+      "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//zbc\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 292,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-04-30T20:23:28Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//0cA\u003d",
       "revId": "5e102372aa576f03fc10ce6b7c1f7b8e9f421668",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
