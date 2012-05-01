@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAKn//yo0\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 13
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2012-05-01T18:19:56Z",
+      "side": 1,
+      "message": "Match declaration order.",
+      "revId": "420c48b217810430983c42d58f059b66a1d52899",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//ymI\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 13
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2012-05-01T18:19:56Z",
+      "side": 1,
+      "message": "this should be:\nseconds \u003d  sample_count / sample_rate;",
+      "revId": "420c48b217810430983c42d58f059b66a1d52899",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//ynM\u003d",
+        "filename": "client_encoder/vorbis_encoder.h",
+        "patchSetId": 13
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2012-05-01T18:19:56Z",
+      "side": 1,
+      "message": "You could move this to the .cpp file in the namespace as it doesn\u0027t access any data in the class.",
+      "revId": "420c48b217810430983c42d58f059b66a1d52899",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//ymQ\u003d",
+        "filename": "client_encoder/vorbis_encoder.h",
+        "patchSetId": 13
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2012-05-01T18:19:56Z",
+      "side": 1,
+      "message": "const?",
+      "revId": "420c48b217810430983c42d58f059b66a1d52899",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
