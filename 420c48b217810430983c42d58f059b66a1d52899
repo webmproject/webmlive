@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//yX0\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 13
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-01T22:29:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//yo0\u003d",
+      "revId": "420c48b217810430983c42d58f059b66a1d52899",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//ymI\u003d",
         "filename": "client_encoder/vorbis_encoder.cc",
         "patchSetId": 13
@@ -30,6 +48,24 @@
       "writtenOn": "2012-05-01T18:19:56Z",
       "side": 1,
       "message": "this should be:\nseconds \u003d  sample_count / sample_rate;",
+      "revId": "420c48b217810430983c42d58f059b66a1d52899",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//yXs\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 13
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-01T22:29:13Z",
+      "side": 1,
+      "message": "Oops/Fixed/Thanks.",
+      "parentUuid": "AAAAKn//ymI\u003d",
       "revId": "420c48b217810430983c42d58f059b66a1d52899",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//yUY\u003d",
+        "filename": "client_encoder/vorbis_encoder.h",
+        "patchSetId": 13
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-01T22:29:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//ynM\u003d",
+      "revId": "420c48b217810430983c42d58f059b66a1d52899",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//ymQ\u003d",
         "filename": "client_encoder/vorbis_encoder.h",
         "patchSetId": 13
@@ -64,6 +118,24 @@
       "writtenOn": "2012-05-01T18:19:56Z",
       "side": 1,
       "message": "const?",
+      "revId": "420c48b217810430983c42d58f059b66a1d52899",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//yXo\u003d",
+        "filename": "client_encoder/vorbis_encoder.h",
+        "patchSetId": 13
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-01T22:29:13Z",
+      "side": 1,
+      "message": "Can\u0027t without making vorbis_dsp_state and vorbis_block mutable, which I think would be incorrect if libvorbis really is doing something in there...\n\nOtoh, I don\u0027t know what vorbis_analysis_blockout really does under the covers. All I know is that it requires non-const pointers to the libvorbis structs.",
+      "parentUuid": "AAAAKn//ymQ\u003d",
       "revId": "420c48b217810430983c42d58f059b66a1d52899",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
