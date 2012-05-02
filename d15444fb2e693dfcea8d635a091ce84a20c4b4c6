@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//xLM\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 14
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-02T20:00:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//xXQ\u003d",
+      "revId": "d15444fb2e693dfcea8d635a091ce84a20c4b4c6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//xXM\u003d",
         "filename": "client_encoder/vorbis_encoder.cc",
         "patchSetId": 14
@@ -30,6 +48,24 @@
       "writtenOn": "2012-05-02T17:40:53Z",
       "side": 1,
       "message": "check ptr_length",
+      "revId": "d15444fb2e693dfcea8d635a091ce84a20c4b4c6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//xLI\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 14
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-02T20:00:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//xXM\u003d",
       "revId": "d15444fb2e693dfcea8d635a091ce84a20c4b4c6",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//xKc\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 14
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-02T20:00:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//xV8\u003d",
+      "revId": "d15444fb2e693dfcea8d635a091ce84a20c4b4c6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//xVQ\u003d",
         "filename": "client_encoder/vorbis_encoder.h",
         "patchSetId": 14
@@ -64,6 +118,24 @@
       "writtenOn": "2012-05-02T17:40:53Z",
       "side": 1,
       "message": "sort these two",
+      "revId": "d15444fb2e693dfcea8d635a091ce84a20c4b4c6",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//xGE\u003d",
+        "filename": "client_encoder/vorbis_encoder.h",
+        "patchSetId": 14
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-02T20:00:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//xVQ\u003d",
       "revId": "d15444fb2e693dfcea8d635a091ce84a20c4b4c6",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
