@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAKn//xE4\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 16
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-05-02T20:12:40Z",
+      "side": 1,
+      "message": "If you want to prevent this from conflicting with a declaration elsewhere, wrap this declaration in its own anonymous namespace.",
+      "revId": "0bc88705a3043fe6f6a07c2120f2f0ae610504ce",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
