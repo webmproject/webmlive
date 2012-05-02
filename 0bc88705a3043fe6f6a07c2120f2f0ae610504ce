@@ -16,6 +16,24 @@
       "revId": "0bc88705a3043fe6f6a07c2120f2f0ae610504ce",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//xEQ\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 16
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-02T20:16:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//xE4\u003d",
+      "revId": "0bc88705a3043fe6f6a07c2120f2f0ae610504ce",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
