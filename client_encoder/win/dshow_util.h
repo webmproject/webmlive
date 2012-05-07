@@ -10,8 +10,9 @@
 
 #include <ios>
 
+#include "webmdshow/common/odbgstream.hpp"  // NOLINT
+// Above include NOLINT'd because it *must always* come before hrtext.
 #include "webmdshow/common/hrtext.hpp"
-#include "webmdshow/common/odbgstream.hpp"
 
 // Extracts error from the HRESULT, and outputs its hex and decimal values.
 #define HRLOG(X) \
