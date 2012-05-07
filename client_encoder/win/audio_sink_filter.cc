@@ -115,8 +115,6 @@ HRESULT AudioSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
   actual_config_.bytes_per_second = format.bytes_per_second();
   actual_config_.block_align = format.block_align();
   actual_config_.bits_per_sample = format.bits_per_sample();
-  actual_config_.valid_bits_per_sample = format.valid_bits_per_sample();
-  actual_config_.channel_mask = format.channel_mask();
 
   LOG(INFO)
       << "CheckMediaType actual audio settings\n"
@@ -125,10 +123,16 @@ HRESULT AudioSinkPin::CheckMediaType(const CMediaType* ptr_media_type) {
       << "   sample_rate=" << actual_config_.sample_rate << "\n"
       << "   bytes_per_second=" << actual_config_.bytes_per_second << "\n"
       << "   block_align=" << actual_config_.block_align << "\n"
-      << "   bits_per_sample=" << actual_config_.bits_per_sample << "\n"
-      << "   valid_bits_per_sample="
-      << actual_config_.valid_bits_per_sample << "\n"
-      << "   channel_mask=0x" << (std::hex) << actual_config_.channel_mask;
+      << "   bits_per_sample=" << actual_config_.bits_per_sample << "\n";
+
+  if (format.format_tag() == WAVE_FORMAT_EXTENSIBLE) {
+    actual_config_.valid_bits_per_sample = format.valid_bits_per_sample();
+    actual_config_.channel_mask = format.channel_mask();
+    LOG(INFO)
+        << "   valid_bits_per_sample="
+        << actual_config_.valid_bits_per_sample << "\n"
+        << "   channel_mask=0x" << (std::hex) << actual_config_.channel_mask;
+  }
   return S_OK;
 }
 
