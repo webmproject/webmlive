@@ -62,6 +62,15 @@ class BufferPool {
   // to |inactive_buffers_|.
   void Flush();
 
+  // Returns timestamp of buffer available in next call to |Decommit()|.
+  // Returns |kEmpty| when there are no buffers to read in |active_buffers_|.
+  // Returns |kInvalidArg| when |ptr_timestamp| is NULL.
+  int ActiveBufferTime(int64* ptr_timestamp);
+
+  // Drops front buffer from |active_buffers_| by moving it back into
+  // |inactive_buffers_|.
+  void DropActiveBuffer();
+
  private:
   // Moves or copies |ptr_source| to |ptr_target| using |Type::Swap| or
   // |Type::Clone| based on presence of non-NULL buffer pointer in
