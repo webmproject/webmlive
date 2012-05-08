@@ -19,6 +19,7 @@ namespace webmlive {
 // Buffer pooling object used to pass data between threads. In order to be
 // managed by this class Buffer objects must implement the following methods:
 //   uint8* buffer() const;
+//   int64 timestamp() const;
 //   int Clone(Type*);
 //   int Swap(Type*);
 template <class Type>
@@ -61,6 +62,16 @@ class BufferPool {
   // Drops all queued buffer objects by moving them all from |active_buffers_|
   // to |inactive_buffers_|.
   void Flush();
+
+  // Writes timestamp of buffer available in next call to |Decommit()| to
+  // |ptr_timestamp| and returns |kSuccess|. Returns |kEmpty| when there are no
+  // buffers to read in |active_buffers_|. Returns |kInvalidArg| when
+  // |ptr_timestamp| is NULL.
+  int ActiveBufferTimestamp(int64* ptr_timestamp);
+
+  // Drops front buffer from |active_buffers_| by moving it back into
+  // |inactive_buffers_|.
+  void DropActiveBuffer();
 
  private:
   // Moves or copies |ptr_source| to |ptr_target| using |Type::Swap| or
