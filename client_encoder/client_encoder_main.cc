@@ -76,7 +76,6 @@ void usage(const char** argv) {
   printf("    --vorbis_bitrate <kbps>            Average bitrate.\n");
   printf("    --vorbis_minimum_bitrate <kbps>    Minimum bitrate.\n");
   printf("    --vorbis_maximum_bitrate <kbps>    Maximum bitrate.\n");
-  printf("    --vorbis_disable_coupling          Disable channel coupling.\n");
   printf("    --vorbis_disable_vbr               Disable VBR mode when");
   printf("                                       specifying only an average");
   printf("                                       bitrate.\n");
@@ -205,8 +204,6 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vorbis_maximum_bitrate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vorbis_config.maximum_bitrate = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vorbis_disable_coupling", argv[i])) {
-      enc_config.vorbis_config.channel_coupling = false;
     } else if (!strcmp("--vorbis_disable_vbr", argv[i])) {
       enc_config.vorbis_config.bitrate_based_quality = false;
     } else if (!strcmp("--vorbis_iblock_bias", argv[i]) &&
