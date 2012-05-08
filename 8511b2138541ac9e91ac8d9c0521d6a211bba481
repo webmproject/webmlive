@@ -16,6 +16,24 @@
       "revId": "8511b2138541ac9e91ac8d9c0521d6a211bba481",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//q+c\u003d",
+        "filename": "client_encoder/vpx_encoder.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-08T23:43:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//rEI\u003d",
+      "revId": "8511b2138541ac9e91ac8d9c0521d6a211bba481",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
