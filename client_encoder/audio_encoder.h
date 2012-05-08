@@ -119,7 +119,6 @@ struct VorbisConfig {
         minimum_bitrate(kUseDefault),
         maximum_bitrate(kUseDefault),
         bitrate_based_quality(true),
-        channel_coupling(true),
         impulse_block_bias(kUseDefault),
         lowpass_frequency(kUseDefault) {}
 
@@ -141,9 +140,6 @@ struct VorbisConfig {
   // Note: The flag is ignored when minimum and maximum bitrates are not
   //       |kUseDefault| or -1.
   bool bitrate_based_quality;
-
-  // Enables/disables channel coupling. Ignored when input audio is not stereo.
-  bool channel_coupling;
 
   // Impulse block bias. Valid range is -15.0 to 0.0.
   double impulse_block_bias;
