@@ -168,7 +168,7 @@ class VideoFrameCallbackInterface {
 
 struct VpxConfig {
   // Special value that means use the default value for the current option.
-  const static int kUseDefault = -200;
+  static const int kUseDefault = -200;
   VpxConfig()
       : keyframe_interval(1000),
         bitrate(500),
@@ -234,6 +234,13 @@ class VideoEncoder {
   ~VideoEncoder();
   int32 Init(const WebmEncoderConfig& config);
   int32 EncodeFrame(const VideoFrame& raw_frame, VideoFrame* ptr_vp8_frame);
+
+  // Accessors.
+  int64 frames_in() const;
+  int64 frames_out() const;
+  int64 last_keyframe_time() const;
+  int64 last_timestamp() const;
+
  private:
   boost::scoped_ptr<VpxEncoder> ptr_vpx_encoder_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoEncoder);

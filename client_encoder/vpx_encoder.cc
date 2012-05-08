@@ -185,6 +185,7 @@ int VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
       break;
     }
   }
+  last_timestamp_ = ptr_vp8_frame->timestamp();
   return kSuccess;
 }
 
