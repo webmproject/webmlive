@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -287,6 +287,22 @@ int VideoEncoder::EncodeFrame(const VideoFrame& raw_frame,
     return kEncoderError;
   }
   return ptr_vpx_encoder_->EncodeFrame(raw_frame, ptr_vp8_frame);
+}
+
+int64 VideoEncoder::frames_in() const {
+  return ptr_vpx_encoder_ ? ptr_vpx_encoder_->frames_in() : 0;
+}
+
+int64 VideoEncoder::frames_out() const {
+  return ptr_vpx_encoder_ ? ptr_vpx_encoder_->frames_out() : 0;
+}
+
+int64 VideoEncoder::last_keyframe_time() const {
+  return ptr_vpx_encoder_ ? ptr_vpx_encoder_->last_keyframe_time() : 0;
+}
+
+int64 VideoEncoder::last_timestamp() const {
+  return ptr_vpx_encoder_ ? ptr_vpx_encoder_->last_timestamp() : 0;
 }
 
 }  // namespace webmlive

@@ -54,6 +54,7 @@ class VpxEncoder {
   int64 frames_in() const { return frames_in_; }
   int64 frames_out() const { return frames_out_; }
   int64 last_keyframe_time() const { return last_keyframe_time_; }
+  int64 last_timestamp() const { return last_timestamp_; }
 
  private:
   // Utility function for passing values to libvpx's vpx_codec_control
@@ -77,6 +78,9 @@ class VpxEncoder {
 
   // libvpx VP8 configuration structure.
   vpx_codec_ctx_t vp8_context_;
+
+  // Timestamp of most recent compressed frame.
+  int64 last_timestamp_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VpxEncoder);
 };
 

@@ -22,7 +22,8 @@ namespace webmlive {
 VpxEncoder::VpxEncoder()
     : frames_in_(0),
       frames_out_(0),
-      last_keyframe_time_(0) {
+      last_keyframe_time_(0),
+      last_timestamp_(0) {
   memset(&vp8_context_, 0, sizeof(vp8_context_));
 }
 
@@ -185,6 +186,7 @@ int VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
       break;
     }
   }
+  last_timestamp_ = ptr_vp8_frame->timestamp();
   return kSuccess;
 }
 
