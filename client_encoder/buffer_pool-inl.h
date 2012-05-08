@@ -131,6 +131,29 @@ inline int BufferPool<Type>::Exchange(Type* ptr_source, Type* ptr_target) {
   return kSuccess;
 }
 
+template <class Type>
+inline int BufferPool<Type>::ActiveBufferTime(int64* ptr_timestamp) {
+  if (!ptr_timestamp) {
+    return kInvalidArg;
+  }
+  int status = kEmpty;
+  boost::mutex::scoped_lock lock(mutex_);
+  if (!active_buffers_.empty()) {
+    *ptr_timestamp = active_buffers_.front()->timestamp();
+    status = kSuccess;
+  }
+  return status;
+}
+
+template <class Type>
+inline void BufferPool<Type>::DropActiveBuffer() {
+  boost::mutex::scoped_lock lock(mutex_);
+  if (!active_buffers_.empty()) {
+    inactive_buffers_.push(active_buffers_.front());
+    active_buffers_.pop();
+  }
+}
+
 }  // namespace webmlive
 
 #endif  // CLIENT_ENCODER_BUFFER_POOL_INL_H_
