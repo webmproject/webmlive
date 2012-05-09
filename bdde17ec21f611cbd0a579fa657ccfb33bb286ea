@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAKn//q2I\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 26
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-05-09T01:25:03Z",
+      "side": 1,
+      "message": "Neither of these is terribly efficient.  You want to use an STL algorithm (std::copy?) to do this, something like:\n\nptr_packet \u003d \u0026packet;\nptr_packet_end \u003d ptr_packet + sizeof(packet);\n\nstd::copy(v.end(), ptr_packet, ptr_packet_end);\n\nYou could also call vector::reserve in advance of the copy, since you know how much data you\u0027ve have apriori.",
+      "revId": "bdde17ec21f611cbd0a579fa657ccfb33bb286ea",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//q5Q\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.cc",
+        "patchSetId": 26
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-05-09T01:25:03Z",
+      "side": 1,
+      "message": "It\u0027s not good enough to simply test for WAVE_FORMAT_EXTENSIBLE, since that\u0027s just a different kind of container for WFX info.  You need to check the subtype GUID.",
+      "revId": "bdde17ec21f611cbd0a579fa657ccfb33bb286ea",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
