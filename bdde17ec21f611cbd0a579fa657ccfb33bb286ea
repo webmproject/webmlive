@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//nhw\u003d",
+        "filename": "client_encoder/vorbis_encoder.cc",
+        "patchSetId": 26
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-11T17:58:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//q2I\u003d",
+      "revId": "bdde17ec21f611cbd0a579fa657ccfb33bb286ea",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//q5Q\u003d",
         "filename": "client_encoder/win/audio_sink_filter.cc",
         "patchSetId": 26
