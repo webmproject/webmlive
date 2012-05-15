@@ -73,6 +73,8 @@ class BufferPool {
   // |inactive_buffers_|.
   void DropActiveBuffer();
 
+  bool IsEmpty() const;
+
  private:
   // Moves or copies |ptr_source| to |ptr_target| using |Type::Swap| or
   // |Type::Clone| based on presence of non-NULL buffer pointer in
@@ -80,7 +82,7 @@ class BufferPool {
   int Exchange(Type* ptr_source, Type* ptr_target);
 
   bool allow_growth_;
-  boost::mutex mutex_;
+  mutable boost::mutex mutex_;
   std::queue<Type*> inactive_buffers_;
   std::queue<Type*> active_buffers_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(BufferPool);
