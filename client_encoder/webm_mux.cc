@@ -128,13 +128,16 @@ void WebmMuxWriter::ElementStartNotify(uint64 element_id, int64) {
 // LiveWebmMuxer
 //
 
-LiveWebmMuxer::LiveWebmMuxer() : audio_track_num_(0), video_track_num_(0) {
+LiveWebmMuxer::LiveWebmMuxer()
+    : audio_track_num_(0),
+      video_track_num_(0),
+      muxer_time_(0) {
 }
 
 LiveWebmMuxer::~LiveWebmMuxer() {
 }
 
-int32 LiveWebmMuxer::Init(int32 cluster_duration_milliseconds) {
+int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds) {
   if (cluster_duration_milliseconds < 1) {
     LOG(ERROR) << "bad cluster duration, must be greater than 1 millisecond.";
     return kInvalidArg;
@@ -177,16 +180,82 @@ int32 LiveWebmMuxer::Init(int32 cluster_duration_milliseconds) {
   }
   ptr_segment_info->set_timecode_scale(kTimecodeScale);
 
-  // TODO(tomfinegan): need constants for app and version
-  ptr_segment_info->set_writing_app("webmlive v2");
+  // Set writing application name.
+  std::string app_name = kClientName;
+  app_name += " v";
+  app_name += kClientVersion;
+  ptr_segment_info->set_writing_app(app_name.c_str());
   return kSuccess;
 }
 
-int32 LiveWebmMuxer::AddTrack(const AudioConfig&) {
-  return kNotImplemented;
+int LiveWebmMuxer::AddTrack(const AudioConfig& audio_config,
+                            const VorbisCodecPrivate& codec_private) {
+  if (audio_track_num_ != 0) {
+    LOG(ERROR) << "Cannot add audio track: it already exists.";
+    return kAudioTrackAlreadyExists;
+  }
+  const VorbisCodecPrivate& vcp = codec_private;
+
+  // Perform minimal private data validation.
+  if (!vcp.ptr_ident || !vcp.ptr_comments || !vcp.ptr_setup) {
+    LOG(ERROR) << "Cannot add audio track: NULL private data contents.";
+    return kAudioPrivateDataInvalid;
+  }
+  if (vcp.ident_length > 255 || vcp.comments_length > 255) {
+    LOG(ERROR) << "Cannot add audio track: over maximum ident/comment length.";
+    return kAudioPrivateDataInvalid;
+  }
+  const int data_length =
+      vcp.ident_length + vcp.comments_length + vcp.setup_length;
+
+  // Calculate total bytes of storage required for the private data chunk.
+  // 1 byte to store header count (total headers - 1 = 2).
+  // 1 byte each for ident and comment length values.
+  // The length of setup data is implied by the total length.
+  const int header_length = 1 + 1 + 1 + data_length;
+  boost::scoped_array<uint8> private_data;
+  private_data.reset(new (std::nothrow) uint8[header_length]);
+  if (!private_data) {
+    LOG(ERROR) << "Cannot allocate private data block";
+    return kNoMemory;
+  }
+  uint8* ptr_private_data = private_data.get();
+
+  // Write header count. As above, number of headers - 1.
+  *ptr_private_data++ = 2;
+
+  // Write ident length, comment length.
+  *ptr_private_data++ = static_cast<uint8>(vcp.ident_length);
+  *ptr_private_data++ = static_cast<uint8>(vcp.comments_length);
+
+  // Write the data blocks.
+  memcpy(ptr_private_data, vcp.ptr_ident, vcp.ident_length);
+  ptr_private_data += vcp.ident_length;
+  memcpy(ptr_private_data, vcp.ptr_comments, vcp.comments_length);
+  ptr_private_data += vcp.comments_length;
+  memcpy(ptr_private_data, vcp.ptr_setup, vcp.setup_length);
+
+  audio_track_num_ = ptr_segment_->AddAudioTrack(audio_config.sample_rate,
+                                                 audio_config.channels);
+  if (!audio_track_num_) {
+    LOG(ERROR) << "cannot AddAudioTrack on segment.";
+    return kVideoTrackError;
+  }
+  mkvmuxer::AudioTrack* const ptr_audio_track =
+      static_cast<mkvmuxer::AudioTrack*>(
+          ptr_segment_->GetTrackByNumber(audio_track_num_));
+  if (!ptr_audio_track) {
+    LOG(ERROR) << "Unable to access audio track.";
+    return kAudioTrackError;
+  }
+  if (!ptr_audio_track->SetCodecPrivate(private_data.get(), header_length)) {
+    LOG(ERROR) << "Unable to write audio track codec private data.";
+    return kAudioTrackError;
+  }
+  return kSuccess;
 }
 
-int32 LiveWebmMuxer::AddTrack(const VideoConfig& video_config) {
+int LiveWebmMuxer::AddTrack(const VideoConfig& video_config) {
   if (video_track_num_ != 0) {
     LOG(ERROR) << "Cannot add video track: it already exists.";
     return kVideoTrackAlreadyExists;
@@ -200,7 +269,7 @@ int32 LiveWebmMuxer::AddTrack(const VideoConfig& video_config) {
   return kSuccess;
 }
 
-int32 LiveWebmMuxer::Finalize() {
+int LiveWebmMuxer::Finalize() {
   if (!ptr_segment_->Finalize()) {
     LOG(ERROR) << "libwebm mkvmuxer Finalize failed.";
     return kMuxerError;
@@ -219,7 +288,7 @@ int32 LiveWebmMuxer::Finalize() {
   return kSuccess;
 }
 
-int32 LiveWebmMuxer::WriteVideoFrame(const VideoFrame& vp8_frame) {
+int LiveWebmMuxer::WriteVideoFrame(const VideoFrame& vp8_frame) {
   if (video_track_num_ == 0) {
     LOG(ERROR) << "Cannot WriteVideoFrame without a video track.";
     return kNoVideoTrack;
@@ -238,9 +307,37 @@ int32 LiveWebmMuxer::WriteVideoFrame(const VideoFrame& vp8_frame) {
                               video_track_num_,
                               timecode,
                               vp8_frame.keyframe())) {
-    LOG(ERROR) << "AddFrame failed.";
+    LOG(ERROR) << "AddFrame (video) failed.";
     return kVideoWriteError;
   }
+  muxer_time_ = vp8_frame.timestamp();
+  return kSuccess;
+}
+
+int LiveWebmMuxer::WriteAudioBuffer(const AudioBuffer& vorbis_buffer) {
+  if (audio_track_num_ == 0) {
+    LOG(ERROR) << "Cannot WriteAudioBuffer without an audio track.";
+    return kNoAudioTrack;
+  }
+  if (!vorbis_buffer.buffer()) {
+    LOG(ERROR) << "cannot write empty audio buffer.";
+    return kInvalidArg;
+  }
+  if (vorbis_buffer.config().format_tag != kAudioFormatVorbis) {
+    LOG(ERROR) << "cannot write non-Vorbis audio buffer.";
+    return kInvalidArg;
+  }
+  const int64 timecode =
+      milliseconds_to_timecode_ticks(vorbis_buffer.timestamp());
+  if (!ptr_segment_->AddFrame(vorbis_buffer.buffer(),
+                              vorbis_buffer.buffer_length(),
+                              audio_track_num_,
+                              timecode,
+                              true)) {
+    LOG(ERROR) << "AddFrame (audio) failed.";
+    return kAudioWriteError;
+  }
+  muxer_time_ = vorbis_buffer.timestamp();
   return kSuccess;
 }
 
@@ -259,7 +356,7 @@ bool LiveWebmMuxer::ChunkReady(int32* ptr_chunk_length) {
 
 // Copies the buffered chunk data into |ptr_buf|, erases it from |buffer_|, and
 // calls |WebmMuxWriter::ResetChunkEnd()| to zero the chunk end position.
-int32 LiveWebmMuxer::ReadChunk(int32 buffer_capacity, uint8* ptr_buf) {
+int LiveWebmMuxer::ReadChunk(int32 buffer_capacity, uint8* ptr_buf) {
   if (!ptr_buf) {
     LOG(ERROR) << "NULL buffer pointer.";
     return kInvalidArg;
