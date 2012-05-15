@@ -80,7 +80,7 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     config_.actual_video_config = ptr_media_source_->actual_video_config();
 
     // Initialize the video frame pool.
-    if (video_pool_.Init(false)) {
+    if (video_pool_.Init(false, BufferPool<VideoFrame>::kDefaultBufferCount)) {
       LOG(ERROR) << "BufferPool<VideoFrame> Init failed!";
       return kInitFailed;
     }

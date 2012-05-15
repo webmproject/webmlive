@@ -32,12 +32,15 @@ inline BufferPool<Type>::~BufferPool() {
 
 // Obtains lock and populates |inactive_buffers_| with |Type| pointers.
 template <class Type>
-inline int BufferPool<Type>::Init(bool allow_growth) {
+inline int BufferPool<Type>::Init(bool allow_growth, int num_buffers) {
+  if (num_buffers <= 0) {
+    return kInvalidArg;
+  }
   boost::mutex::scoped_lock lock(mutex_);
   if (!inactive_buffers_.empty() || !active_buffers_.empty()) {
     return kAlreadyInitialized;
   }
-  for (int i = 0; i < kDefaultBufferCount; ++i) {
+  for (int i = 0; i < num_buffers; ++i) {
     Type* const ptr_buffer = new (std::nothrow) Type;  // NOLINT
     if (!ptr_buffer) {
       return kNoMemory;
