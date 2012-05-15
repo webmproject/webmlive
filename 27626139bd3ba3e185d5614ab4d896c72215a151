@@ -19,6 +19,23 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//k7Q\u003d",
+        "filename": "client_encoder/win/media_source_dshow.cc",
+        "patchSetId": 25
+      },
+      "lineNbr": 638,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2012-05-15T21:13:47Z",
+      "side": 1,
+      "message": "nit: Could you have an Init function to return status?",
+      "revId": "27626139bd3ba3e185d5614ab4d896c72215a151",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//lEk\u003d",
         "filename": "client_encoder/win/media_source_dshow.h",
         "patchSetId": 25
