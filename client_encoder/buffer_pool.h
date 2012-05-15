@@ -45,9 +45,11 @@ class BufferPool {
   BufferPool() : allow_growth_(false) {}
   ~BufferPool();
 
-  // Allocates |kDefaultBufferCount| buffer objects, pushes them into
-  // |inactive_buffers_|, and returns |kSuccess|.
-  int Init(bool allow_growth);
+  // Allocates |num_buffers| buffer objects, pushes them into
+  // |inactive_buffers_|, and returns |kSuccess|. Returns |kInvalidArg| when
+  // |num_buffers| is <= 0. Returns |kAlreadyInitialized| when |Init()| has
+  // already been called.
+  int Init(bool allow_growth, int num_buffers);
 
   // Grabs a buffer object pointer from |inactive_buffers_|, copies the data
   // from |ptr_buffer|, and pushes it into |active_buffers_|. Returns |kSuccess|
