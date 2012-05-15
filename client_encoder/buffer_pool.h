@@ -27,16 +27,18 @@ class BufferPool {
  public:
   enum {
     // |Init()| called more than once.
-    kAlreadyInitialized = -6,
+    kAlreadyInitialized = -4,
     // |Push| called before |Init|.
-    kNoBuffers = -5,
-    // No buffer objects waiting in |active_buffers_|.
-    kEmpty = -4,
-    // No buffer objects available in |inactive_buffers_|.
-    kFull = -3,
+    kNoBuffers = -3,
     kNoMemory = -2,
     kInvalidArg = -1,
     kSuccess = 0,
+
+    // No buffer objects waiting in |active_buffers_|.
+    kEmpty = 1,
+
+    // No buffer objects available in |inactive_buffers_|.
+    kFull = 2,
   };
 
   static const int32 kDefaultBufferCount = 4;
