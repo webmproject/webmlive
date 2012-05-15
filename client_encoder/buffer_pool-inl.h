@@ -154,6 +154,12 @@ inline void BufferPool<Type>::DropActiveBuffer() {
   }
 }
 
+template <class Type>
+inline bool BufferPool<Type>::IsEmpty() const {
+  boost::mutex::scoped_lock lock(mutex_);
+  return active_buffers_.empty();
+}
+
 }  // namespace webmlive
 
 #endif  // CLIENT_ENCODER_BUFFER_POOL_INL_H_
