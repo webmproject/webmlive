@@ -33,6 +33,23 @@
       "revId": "27626139bd3ba3e185d5614ab4d896c72215a151",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//lCQ\u003d",
+        "filename": "client_encoder/win/video_sink_filter.cc",
+        "patchSetId": 25
+      },
+      "lineNbr": 308,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-05-15T19:04:30Z",
+      "side": 1,
+      "message": "ditto here on the abs",
+      "revId": "27626139bd3ba3e185d5614ab4d896c72215a151",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
