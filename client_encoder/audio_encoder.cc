@@ -28,8 +28,8 @@ int AudioBuffer::Init(const AudioConfig& config,
                       int64 duration,
                       const uint8* ptr_data,
                       int32 data_length) {
-  if (timestamp < 0 || duration < 0) {
-    LOG(ERROR) << "AudioBuffer cannot Init with invalid time values.";
+  if (duration < 0) {
+    LOG(ERROR) << "AudioBuffer duration cannot be less than 0.";
     return kInvalidArg;
   }
   if (!ptr_data || data_length <= 0) {
