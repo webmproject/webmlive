@@ -73,8 +73,9 @@ class AudioBuffer {
   // must have non-NULL buffers.
   void Swap(AudioBuffer* ptr_buffer);
 
-  // Accessors.
+  // Accessors/Mutators.
   int64 timestamp() const { return timestamp_; }
+  void set_timestamp(int64 timestamp) { timestamp_ = timestamp; }
   int64 duration() const { return duration_; }
   uint8* buffer() const { return buffer_.get(); }
   int32 buffer_length() const { return buffer_length_; }

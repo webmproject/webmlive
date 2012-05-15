@@ -116,12 +116,13 @@ class VideoFrame {
   // must have non-NULL buffers.
   void Swap(VideoFrame* ptr_frame);
 
-  // Accessors.
+  // Accessors/Mutators.
   bool keyframe() const { return keyframe_; }
   int32 width() const { return config_.width; }
   int32 height() const { return config_.height; }
   int32 stride() const { return config_.stride; }
   int64 timestamp() const { return timestamp_; }
+  void set_timestamp(int64 timestamp) { timestamp_ = timestamp; }
   int64 duration() const { return duration_; }
   uint8* buffer() const { return buffer_.get(); }
   int32 buffer_length() const { return buffer_length_; }
