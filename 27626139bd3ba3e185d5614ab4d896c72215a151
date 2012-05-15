@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//k7A\u003d",
+        "filename": "client_encoder/win/audio_sink_filter.cc",
+        "patchSetId": 25
+      },
+      "lineNbr": 271,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-15T21:34:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//lE0\u003d",
+      "revId": "27626139bd3ba3e185d5614ab4d896c72215a151",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//k7Q\u003d",
         "filename": "client_encoder/win/media_source_dshow.cc",
         "patchSetId": 25
@@ -30,6 +48,24 @@
       "writtenOn": "2012-05-15T21:13:47Z",
       "side": 1,
       "message": "nit: Could you have an Init function to return status?",
+      "revId": "27626139bd3ba3e185d5614ab4d896c72215a151",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//k6M\u003d",
+        "filename": "client_encoder/win/media_source_dshow.cc",
+        "patchSetId": 25
+      },
+      "lineNbr": 638,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-15T21:34:49Z",
+      "side": 1,
+      "message": "Not really. The dshow baseclasses force this implementation. The CBaseFilter and CBaseInputPin constructors both require HRESULT pointer args. See the constructor call in the initializer lists for AudioSinkFilter/VideoSinkFilter (ditto for the pin classes).",
+      "parentUuid": "AAAAKn//k7Q\u003d",
       "revId": "27626139bd3ba3e185d5614ab4d896c72215a151",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAKn//k68\u003d",
+        "filename": "client_encoder/win/media_source_dshow.h",
+        "patchSetId": 25
+      },
+      "lineNbr": 266,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-15T21:34:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//lEk\u003d",
+      "revId": "27626139bd3ba3e185d5614ab4d896c72215a151",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//lCQ\u003d",
         "filename": "client_encoder/win/video_sink_filter.cc",
         "patchSetId": 25
@@ -64,6 +118,24 @@
       "writtenOn": "2012-05-15T19:04:30Z",
       "side": 1,
       "message": "ditto here on the abs",
+      "revId": "27626139bd3ba3e185d5614ab4d896c72215a151",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAKn//k64\u003d",
+        "filename": "client_encoder/win/video_sink_filter.cc",
+        "patchSetId": 25
+      },
+      "lineNbr": 308,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-15T21:34:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//lCQ\u003d",
       "revId": "27626139bd3ba3e185d5614ab4d896c72215a151",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
