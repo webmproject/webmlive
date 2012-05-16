@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)..&quot;;&quot;$(ProjectDir)..\third_party&quot;;&quot;$(ProjectDir)..\third_party\boost\include&quot;;&quot;$(DIRECTSHOW_BASECLASSES)&quot;;&quot;$(DIRECTSHOW_BASECLASSES)\..&quot;;&quot;$(ProjectDir)..\third_party\libogg&quot;;&quot;$(ProjectDir)..\third_party\libvorbis&quot;;&quot;$(ProjectDir)..\third_party\libvpx\vpx&quot;;&quot;$(ProjectDir)..\third_party\libyuv\include&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;BOOST_NO_EXCEPTIONS"
+				PreprocessorDefinitions="WIN32;_DEBUG;BOOST_NO_EXCEPTIONS;CURL_STATICLIB"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
@@ -93,8 +93,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy third party DLLs to OutDir"
-				CommandLine="IF NOT EXIST &quot;$(OutDir)\libcurl.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libcurl.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\libeay32.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libeay32.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\libidn-11.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libidn-11.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\librtmp.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\librtmp.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\libssh2.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libssh2.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\libssl32.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libssl32.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\zlib1.dll&quot; copy &quot;$(ProjectDir)..\third_party\zlib\win\x86\zlib1.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -124,7 +124,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)..&quot;;&quot;$(ProjectDir)..\third_party&quot;;&quot;$(ProjectDir)..\third_party\boost\include&quot;;&quot;$(DIRECTSHOW_BASECLASSES)&quot;;&quot;$(DIRECTSHOW_BASECLASSES)\..&quot;;&quot;$(ProjectDir)..\third_party\libogg&quot;;&quot;$(ProjectDir)..\third_party\libvorbis&quot;;&quot;$(ProjectDir)..\third_party\libvpx\vpx&quot;;&quot;$(ProjectDir)..\third_party\libyuv\include&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;BOOST_NO_EXCEPTIONS"
+				PreprocessorDefinitions="WIN32;NDEBUG;BOOST_NO_EXCEPTIONS;CURL_STATICLIB"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -175,8 +175,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy third party DLLs to OutDir"
-				CommandLine="IF NOT EXIST &quot;$(OutDir)\libcurl.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libcurl.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\libeay32.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libeay32.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\libidn-11.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libidn-11.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\librtmp.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\librtmp.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\libssh2.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libssh2.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\libssl32.dll&quot; copy &quot;$(ProjectDir)..\third_party\curl\win\x86\libssl32.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;IF NOT EXIST &quot;$(OutDir)\zlib1.dll&quot; copy &quot;$(ProjectDir)..\third_party\zlib\win\x86\zlib1.dll&quot; &quot;$(OutDir)&quot;&#x0D;&#x0A;"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>

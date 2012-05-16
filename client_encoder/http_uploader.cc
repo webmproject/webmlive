@@ -17,7 +17,6 @@
 #include "boost/thread/thread.hpp"
 #include "client_encoder/buffer_util.h"
 #include "curl/curl.h"
-#include "curl/types.h"
 #include "curl/easy.h"
 #include "glog/logging.h"
 #include "libwebm/mkvparser.hpp"

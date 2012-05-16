@@ -14,9 +14,9 @@
 //
 // Note: since boost (at least appears to) link libs in this way, we still
 // must specfify a path to boost libs in the vcproj file linker settings.
-#pragma comment(lib, "../third_party/curl/win/x86/libcurldll.a")
 
 #ifdef _DEBUG
+#pragma comment(lib, "../third_party/curl/win/x86/debug/libcurl.lib")
 #pragma comment(lib, "../third_party/glog/win/x86/debug/libglog_static.lib")
 #pragma comment(lib, "../third_party/libwebm/win/x86/debug/libwebm.lib")
 #pragma comment(lib, "../third_party/libogg/win/x86/debug/libogg_static.lib")
@@ -24,6 +24,7 @@
 #pragma comment(lib, "../third_party/libvpx/win/x86/debug/vpxmtd.lib")
 #pragma comment(lib, "../third_party/libyuv/win/x86/debug/libyuv.lib")
 #else
+#pragma comment(lib, "../third_party/curl/win/x86/release/libcurl.lib")
 #pragma comment(lib, "../third_party/glog/win/x86/release/libglog_static.lib")
 #pragma comment(lib, "../third_party/libwebm/win/x86/release/libwebm.lib")
 #pragma comment(lib, "../third_party/libogg/win/x86/release/libogg_static.lib")
@@ -37,3 +38,4 @@
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "strmiids.lib")
 #pragma comment(lib, "winmm.lib")
+#pragma comment(lib, "ws2_32.lib")
