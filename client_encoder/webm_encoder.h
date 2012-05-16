@@ -20,8 +20,10 @@
 #include "client_encoder/client_encoder_base.h"
 #include "client_encoder/data_sink.h"
 #include "client_encoder/video_encoder.h"
+#include "client_encoder/vorbis_encoder.h"
 
 namespace webmlive {
+class VorbisEncoder;
 // All timestamps are in milliseconds.
 const int kTimebase = 1000;
 
@@ -76,7 +78,8 @@ class LiveWebmMuxer;
 
 // Top level WebM encoder class. Manages capture from A/V input devices, VP8
 // encoding, Vorbis encoding, and muxing into a WebM stream.
-class WebmEncoder : public VideoFrameCallbackInterface {
+class WebmEncoder : public AudioSamplesCallbackInterface,
+                    public VideoFrameCallbackInterface {
  public:
   // Default size of |chunk_buffer_|.
   static const int kDefaultChunkBufferSize = 100 * 1024;
@@ -158,11 +161,17 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   static WebmEncoderConfig DefaultConfig();
   WebmEncoderConfig config() const { return config_; }
 
+  // AudioSamplesCallbackInterface methods
+  // Method used by MediaSourceImpl to push audio buffers into |EncoderThread|.
+  virtual int OnSamplesReceived(AudioBuffer* ptr_buffer);
+
   // VideoFrameCallbackInterface methods
   // Method used by MediaSourceImpl to push video frames into |EncoderThread|.
   virtual int OnVideoFrameReceived(VideoFrame* ptr_frame);
 
  private:
+  typedef int (WebmEncoder::*EncoderLoopFunc)();
+
   // Returns true when user wants the encode thread to stop.
   bool StopRequested();
 
@@ -173,9 +182,16 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   // Encoding thread function.
   void EncoderThread();
 
-  // Reads a video frame from |video_pool_|, encodes it, and muxes the
-  // resulting encoded frame. Returns |kSuccess| when successful.
-  int ReadEncodeAndMuxVideoFrame();
+  // Audio/Video |EncoderLoopFunc|s. Called by |EncoderThread()| via
+  // |ptr_encode_func_|. All loop functions return |kSuccess| when the encode
+  // pass succeeds.
+  int EncodeAudioOnly();
+  int AVEncode();
+  int EncodeVideoFrame();
+  
+  // Waits for input samples from |ptr_media_source_| and sets
+  // |timestamp_offset_| when .
+  int SetTimestampOffset();
 
   // Set to true when |Init()| is successful.
   bool initialized_;
@@ -219,8 +235,28 @@ class WebmEncoder : public VideoFrameCallbackInterface {
   // Encoded duration in milliseconds.
   int64 encoded_duration_;
 
+  // Buffer object used to push |AudioBuffer|s from |MediaSourceImpl| into
+  // |EncoderThread|.
+  BufferPool<AudioBuffer> audio_pool_;
+
+  // Most recent uncompressed audio buffer from |audio_pool_|.
+  AudioBuffer raw_audio_buffer_;
+
+  // Most recent vorbis audio buffer from |vorbis_encoder_|.
+  AudioBuffer vorbis_audio_buffer_;
+
+  // Vorbis encoder object.
+  VorbisEncoder vorbis_encoder_;
+
   // Encoder configuration.
   WebmEncoderConfig config_;
+
+  // Encoder loop function pointer;
+  EncoderLoopFunc ptr_encode_func_;
+
+  // Timestamp adjustment value. Expressed in milliseconds. Used to change
+  // input buffer timestamps when a stream starts with a timestamp < 0.
+  int64 timestamp_offset_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmEncoder);
 };
 

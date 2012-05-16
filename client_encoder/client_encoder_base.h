@@ -14,6 +14,9 @@
 #  define _WIN32_WINNT 0x0501  // WinXP
 #endif
 
+// Disable the max macro defined in the windows headers.
+#define NOMINMAX
+
 #include <windows.h>
 #ifdef ERROR
 #  undef ERROR  // unused by webmlive/collides with glog.
