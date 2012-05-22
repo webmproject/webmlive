@@ -89,6 +89,10 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
                    VpxConfig::kUseDefault)) {
       return VideoEncoder::kCodecError;
   }
+  if (CodecControl(VP8E_SET_NOISE_SENSITIVITY, config_.noise_sensitivity,
+                   VpxConfig::kUseDefault)) {
+      return VideoEncoder::kCodecError;
+  }
   return kSuccess;
 }
 
@@ -211,6 +215,9 @@ int VpxEncoder::CodecControl(int control_id, T val, T default_val) {
         status = vpx_codec_control(&vp8_context_, VP8E_SET_TOKEN_PARTITIONS,
                                    static_cast<vp8e_token_partitions>(val));
         break;
+      case VP8E_SET_NOISE_SENSITIVITY:
+        status = vpx_codec_control(&vp8_context_, VP8E_SET_NOISE_SENSITIVITY,
+                                   val);
       default:
         LOG(ERROR) << "unknown control id in VpxEncoder::CodecControl.";
         return kEncoderError;
