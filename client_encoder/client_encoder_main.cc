@@ -95,6 +95,9 @@ void usage(const char** argv) {
   printf("                                            keyframes.\n");
   printf("    --vpx_min_q <min q value>          Quantizer minimum.\n");
   printf("    --vpx_max_q <max q value>          Quantizer maximum.\n");
+  printf("    --vpx_noise_sensitivity <0-1>      Blurs adjacent frames to\n");
+  printf("                                       reduce the noise level of\n");
+  printf("                                       input video.\n");
   printf("    --vpx_static_threshold <threshold> Static threshold.\n");
   printf("    --vpx_speed <speed value>          Speed.\n");
   printf("    --vpx_threads <num threads>        Number of encode threads.\n");
@@ -227,6 +230,9 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vpx_max_q", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.max_quantizer = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vpx_noise_sensitivity", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.noise_sensitivity = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_speed", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.speed = strtol(argv[++i], NULL, 10);

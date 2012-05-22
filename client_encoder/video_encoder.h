@@ -180,7 +180,8 @@ struct VpxConfig {
         static_threshold(kUseDefault),
         thread_count(kUseDefault),
         token_partitions(kUseDefault),
-        undershoot(kUseDefault) {}
+        undershoot(kUseDefault),
+        noise_sensitivity(kUseDefault) {}
 
   // Time between keyframes, in milliseconds.
   int keyframe_interval;
@@ -211,6 +212,10 @@ struct VpxConfig {
 
   // Percentage to undershoot the requested datarate.
   int undershoot;
+
+  // Reduces the noise level of uncompressed video before processing by
+  // blurring the pixels of adjacent frames together.
+  int noise_sensitivity;
 };
 
 // Forward declaration of |VpxEncoder| class for use in |VideoEncoder|. The
