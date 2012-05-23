@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAK3///xE\u003d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-23T20:17:40Z",
+      "side": 1,
+      "message": "I\u0027m aware-- eider actually (appears) to default to the temporal denoiser. From configure:\n\n...\n --disable-temporal-denoising    enable temporal denoising and disable the spatial denoiser\n...\n\n    All boolean options can be negated. The default value is the opposite\n    of that shown above. If the option --disable-foo is listed, then\n    the default value for foo is enabled.",
+      "parentUuid": "AAAAKn//fMk\u003d",
+      "revId": "9350c793786ce55f7e22dd64c8c1b5637b927a87",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//fMo\u003d",
         "filename": "client_encoder/video_encoder.h",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2012-05-22T18:42:22Z",
       "side": 1,
       "message": "no space before \u0027(\u0027",
+      "revId": "9350c793786ce55f7e22dd64c8c1b5637b927a87",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAK3///wM\u003d",
+        "filename": "client_encoder/video_encoder.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-05-23T20:17:40Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAKn//fMo\u003d",
       "revId": "9350c793786ce55f7e22dd64c8c1b5637b927a87",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
