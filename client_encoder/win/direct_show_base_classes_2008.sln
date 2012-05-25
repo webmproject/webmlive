@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "direct_show_base_classes", "direct_show_base_classes_2008.vcproj", "{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}.Debug|Win32.Build.0 = Debug|Win32
+		{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}.Release|Win32.ActiveCfg = Release|Win32
+		{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+EndGlobal

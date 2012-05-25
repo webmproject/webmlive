@@ -1,0 +1,33 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "(win)", "win", "{D478BC8A-7035-FD4F-920E-4938A590AA87}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client_encoder", "client_encoder_2008.vcproj", "{561B9A86-F657-7CFB-2FDF-64C475817752}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F} = {6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "direct_show_base_classes", "win\direct_show_base_classes_2008.vcproj", "{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{561B9A86-F657-7CFB-2FDF-64C475817752}.Debug|Win32.ActiveCfg = Debug|Win32
+		{561B9A86-F657-7CFB-2FDF-64C475817752}.Debug|Win32.Build.0 = Debug|Win32
+		{561B9A86-F657-7CFB-2FDF-64C475817752}.Release|Win32.ActiveCfg = Release|Win32
+		{561B9A86-F657-7CFB-2FDF-64C475817752}.Release|Win32.Build.0 = Release|Win32
+		{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}.Debug|Win32.Build.0 = Debug|Win32
+		{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}.Release|Win32.ActiveCfg = Release|Win32
+		{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6F57DF75-5DBD-8A57-9623-C6AE3CA3B02F} = {D478BC8A-7035-FD4F-920E-4938A590AA87}
+	EndGlobalSection
+EndGlobal
