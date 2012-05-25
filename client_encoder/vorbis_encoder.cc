@@ -8,6 +8,7 @@
 #include "client_encoder/vorbis_encoder.h"
 
 #include <cstring>
+#include <iterator>
 #include <new>
 #include <string>
 
