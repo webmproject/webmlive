@@ -185,6 +185,8 @@ int VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
       }
       if (is_keyframe) {
         last_keyframe_time_ = ptr_vp8_frame->timestamp();
+        LOG(INFO) << "keyframe @ " << last_keyframe_time_ / 1000.0 << "sec ("
+                  << last_keyframe_time_ << "ms)";
       }
       ++frames_out_;
       break;
