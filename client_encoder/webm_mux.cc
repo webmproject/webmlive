@@ -118,9 +118,11 @@ int32 WebmMuxWriter::Write(const void* ptr_buffer, uint32 buffer_length) {
   return kSuccess;
 }
 
-void WebmMuxWriter::ElementStartNotify(uint64 element_id, int64) {
+void WebmMuxWriter::ElementStartNotify(uint64 element_id, int64 position) {
   if (element_id == mkvmuxer::kMkvCluster) {
     chunk_end_ = bytes_buffered_;
+    VLOG(1) << "chunk_end_=" << chunk_end_;
+    VLOG(1) << "position=" << position;
   }
 }
 
