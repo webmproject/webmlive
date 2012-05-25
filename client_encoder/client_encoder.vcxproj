@@ -1,0 +1,407 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8408F263-901F-4C53-AAEC-4163E38A6504}</ProjectGuid>
+    <RootNamespace>client_encoder</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="environment.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="environment.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\exe\webmlive\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)..\..\obj\webmlive\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\exe\webmlive\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\obj\webmlive\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include;$(DIRECTSHOW_BASECLASSES);$(DIRECTSHOW_BASECLASSES)\..;$(ProjectDir)..\third_party\libogg;$(ProjectDir)..\third_party\libvorbis;$(ProjectDir)..\third_party\libvpx\vpx;$(ProjectDir)..\third_party\libyuv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;BOOST_NO_EXCEPTIONS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4995;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\third_party\boost\win\x86\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..;$(ProjectDir)..\third_party;$(ProjectDir)..\third_party\boost\include;$(DIRECTSHOW_BASECLASSES);$(DIRECTSHOW_BASECLASSES)\..;$(ProjectDir)..\third_party\libogg;$(ProjectDir)..\third_party\libvorbis;$(ProjectDir)..\third_party\libvpx\vpx;$(ProjectDir)..\third_party\libyuv\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;BOOST_NO_EXCEPTIONS;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4995;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\third_party\boost\win\x86\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="audio_encoder.cc" />
+    <ClCompile Include="buffer_util.cc" />
+    <ClCompile Include="client_encoder_main.cc" />
+    <ClCompile Include="http_uploader.cc" />
+    <ClCompile Include="video_encoder.cc" />
+    <ClCompile Include="vorbis_encoder.cc" />
+    <ClCompile Include="vpx_encoder.cc" />
+    <ClCompile Include="webm_buffer_parser.cc" />
+    <ClCompile Include="webm_encoder.cc" />
+    <ClCompile Include="webm_mux.cc" />
+    <ClCompile Include="win\audio_sink_filter.cc" />
+    <ClCompile Include="win\build_config_win.cc" />
+    <ClCompile Include="win\dshow_util.cc" />
+    <ClCompile Include="win\media_source_dshow.cc" />
+    <ClCompile Include="win\media_type_dshow.cc" />
+    <ClCompile Include="win\video_sink_filter.cc" />
+    <ClCompile Include="win\webm_guids.cc" />
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\amextra.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\amfilter.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\amvideo.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\arithutil.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\combase.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\cprop.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\ctlutil.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\ddmm.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\dllentry.cpp" />
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\dllsetup.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\mtype.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\outputq.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\perflog.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\pstream.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\pullpin.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\refclock.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\renbase.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\schedule.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\seekpt.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\source.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\strmctl.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\sysclock.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\transfrm.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\transip.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\videoctl.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\vtrans.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\winctrl.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\winutil.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\wxdebug.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\wxlist.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\wxutil.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</TreatWarningAsError>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\third_party\glog\logging.h" />
+    <ClInclude Include="audio_encoder.h" />
+    <ClInclude Include="basictypes.h" />
+    <ClInclude Include="buffer_pool-inl.h" />
+    <ClInclude Include="buffer_pool.h" />
+    <ClInclude Include="buffer_util.h" />
+    <ClInclude Include="client_encoder_base.h" />
+    <ClInclude Include="data_sink.h" />
+    <ClInclude Include="http_uploader.h" />
+    <ClInclude Include="video_encoder.h" />
+    <ClInclude Include="vorbis_encoder.h" />
+    <ClInclude Include="vpx_encoder.h" />
+    <ClInclude Include="webm_buffer_parser.h" />
+    <ClInclude Include="webm_encoder.h" />
+    <ClInclude Include="webm_mux.h" />
+    <ClInclude Include="win\audio_sink_filter.h" />
+    <ClInclude Include="win\dshow_util.h" />
+    <ClInclude Include="win\media_source_dshow.h" />
+    <ClInclude Include="win\media_type_dshow.h" />
+    <ClInclude Include="win\video_sink_filter.h" />
+    <ClInclude Include="win\webm_guids.h" />
+    <ClInclude Include="..\third_party\libwebm\mkvmuxer.hpp" />
+    <ClInclude Include="..\third_party\libwebm\mkvparser.hpp" />
+    <ClInclude Include="..\third_party\libwebm\mkvreader.hpp" />
+    <ClInclude Include="..\third_party\libwebm\mkvwriter.hpp" />
+    <ClInclude Include="..\third_party\libwebm\webmids.hpp" />
+    <ClInclude Include="..\third_party\webmdshow\IDL\vp8encoderidl.h" />
+    <ClInclude Include="..\third_party\webmdshow\IDL\webmmuxidl.h" />
+    <ClInclude Include="..\third_party\oggdsf\IVorbisEncodeSettings.h" />
+    <ClInclude Include="..\third_party\oggdsf\VorbisEncodeSettings.h" />
+    <ClInclude Include="..\third_party\oggdsf\VorbisTypes.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\amextra.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\amfilter.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\cache.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\checkbmi.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\combase.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\cprop.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\ctlutil.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\ddmm.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\dllsetup.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\dxmperf.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\fourcc.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\measure.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\msgthrd.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\mtype.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\outputq.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\perflog.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\perfstruct.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\pstream.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\pullpin.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\refclock.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\reftime.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\renbase.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\schedule.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\seekpt.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\source.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\streams.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\strmctl.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\sysclock.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\transfrm.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\transip.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\videoctl.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\vtrans.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\winctrl.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\winutil.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\wxdebug.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\wxlist.h" />
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\wxutil.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vp8.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vp8cx.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vp8dx.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vp8e.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_codec.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_codec_impl_bottom.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_codec_impl_top.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_decoder.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_decoder_compat.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_encoder.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_image.h" />
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_integer.h" />
+    <ClInclude Include="..\third_party\libogg\ogg\ogg.h" />
+    <ClInclude Include="..\third_party\libogg\ogg\os_types.h" />
+    <ClInclude Include="..\third_party\libvorbis\vorbis\codec.h" />
+    <ClInclude Include="..\third_party\libvorbis\vorbis\vorbisenc.h" />
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\basic_types.h" />
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\compare.h" />
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\convert.h" />
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\cpu_id.h" />
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\format_conversion.h" />
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\planar_functions.h" />
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\rotate.h" />
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\scale.h" />
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\video_common.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

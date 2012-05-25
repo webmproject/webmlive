@@ -1,0 +1,469 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="sources">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="sources\win">
+      <UniqueIdentifier>{7cf49cb5-b794-4796-8e4a-ecc7369f4671}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{e8191d99-2f49-407c-a953-8a2ed1d51430}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\libwebm">
+      <UniqueIdentifier>{e1f5bfde-04b9-430a-a979-a74d5562a28e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\webmdshow">
+      <UniqueIdentifier>{3250c07d-bc27-4fa9-80d9-835c0e0c5936}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\oggdsf">
+      <UniqueIdentifier>{d95c466f-b65e-4916-afee-83d99b008731}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\baseclasses">
+      <UniqueIdentifier>{cb8228a9-643c-4f39-8224-26db16c42d16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\libvpx">
+      <UniqueIdentifier>{a1df41e2-f057-4f7c-a002-50f087f75dbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\libogg">
+      <UniqueIdentifier>{5c198f7e-9d2d-49f5-8a58-6b45756f64a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\libvorbis">
+      <UniqueIdentifier>{41655463-700d-4011-94dc-d61ef5c7bbdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\libyuv">
+      <UniqueIdentifier>{d8e5ba47-c6ba-4be0-8af4-8ca109858cc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\glog">
+      <UniqueIdentifier>{b8eddbd9-990b-4c2a-adbe-3b6d76a700be}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="audio_encoder.cc">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="buffer_util.cc">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="client_encoder_main.cc">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="http_uploader.cc">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="video_encoder.cc">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="vorbis_encoder.cc">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="vpx_encoder.cc">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="webm_buffer_parser.cc">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="webm_encoder.cc">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="webm_mux.cc">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="win\audio_sink_filter.cc">
+      <Filter>sources\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\build_config_win.cc">
+      <Filter>sources\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\dshow_util.cc">
+      <Filter>sources\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\media_source_dshow.cc">
+      <Filter>sources\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\media_type_dshow.cc">
+      <Filter>sources\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\video_sink_filter.cc">
+      <Filter>sources\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\webm_guids.cc">
+      <Filter>sources\win</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\amextra.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\amfilter.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\amvideo.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\arithutil.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\combase.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\cprop.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\ctlutil.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\ddmm.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\dllentry.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\dllsetup.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\mtype.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\outputq.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\perflog.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\pstream.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\pullpin.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\refclock.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\renbase.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\schedule.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\seekpt.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\source.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\strmctl.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\sysclock.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\transfrm.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\transip.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\videoctl.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\vtrans.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\winctrl.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\winutil.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\wxdebug.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\wxlist.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+    <ClCompile Include="$(DIRECTSHOW_BASECLASSES)\wxutil.cpp">
+      <Filter>third_party\baseclasses</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="audio_encoder.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="basictypes.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="buffer_pool-inl.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="buffer_pool.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="buffer_util.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="client_encoder_base.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="data_sink.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="http_uploader.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="video_encoder.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="vorbis_encoder.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="vpx_encoder.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="webm_buffer_parser.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="webm_encoder.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="webm_mux.h">
+      <Filter>sources</Filter>
+    </ClInclude>
+    <ClInclude Include="win\audio_sink_filter.h">
+      <Filter>sources\win</Filter>
+    </ClInclude>
+    <ClInclude Include="win\dshow_util.h">
+      <Filter>sources\win</Filter>
+    </ClInclude>
+    <ClInclude Include="win\media_source_dshow.h">
+      <Filter>sources\win</Filter>
+    </ClInclude>
+    <ClInclude Include="win\media_type_dshow.h">
+      <Filter>sources\win</Filter>
+    </ClInclude>
+    <ClInclude Include="win\video_sink_filter.h">
+      <Filter>sources\win</Filter>
+    </ClInclude>
+    <ClInclude Include="win\webm_guids.h">
+      <Filter>sources\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libwebm\mkvmuxer.hpp">
+      <Filter>third_party\libwebm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libwebm\mkvparser.hpp">
+      <Filter>third_party\libwebm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libwebm\mkvreader.hpp">
+      <Filter>third_party\libwebm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libwebm\mkvwriter.hpp">
+      <Filter>third_party\libwebm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libwebm\webmids.hpp">
+      <Filter>third_party\libwebm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\webmdshow\IDL\vp8encoderidl.h">
+      <Filter>third_party\webmdshow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\webmdshow\IDL\webmmuxidl.h">
+      <Filter>third_party\webmdshow</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\oggdsf\IVorbisEncodeSettings.h">
+      <Filter>third_party\oggdsf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\oggdsf\VorbisEncodeSettings.h">
+      <Filter>third_party\oggdsf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\oggdsf\VorbisTypes.h">
+      <Filter>third_party\oggdsf</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\amextra.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\amfilter.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\cache.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\checkbmi.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\combase.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\cprop.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\ctlutil.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\ddmm.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\dllsetup.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\dxmperf.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\fourcc.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\measure.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\msgthrd.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\mtype.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\outputq.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\perflog.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\perfstruct.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\pstream.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\pullpin.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\refclock.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\reftime.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\renbase.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\schedule.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\seekpt.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\source.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\streams.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\strmctl.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\sysclock.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\transfrm.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\transip.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\videoctl.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\vtrans.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\winctrl.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\winutil.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\wxdebug.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\wxlist.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="$(DIRECTSHOW_BASECLASSES)\wxutil.h">
+      <Filter>third_party\baseclasses</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vp8.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vp8cx.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vp8dx.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vp8e.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_codec.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_codec_impl_bottom.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_codec_impl_top.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_decoder.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_decoder_compat.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_encoder.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_image.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvpx\vpx\vpx_integer.h">
+      <Filter>third_party\libvpx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libogg\ogg\ogg.h">
+      <Filter>third_party\libogg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libogg\ogg\os_types.h">
+      <Filter>third_party\libogg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvorbis\vorbis\codec.h">
+      <Filter>third_party\libvorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libvorbis\vorbis\vorbisenc.h">
+      <Filter>third_party\libvorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\basic_types.h">
+      <Filter>third_party\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\compare.h">
+      <Filter>third_party\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\convert.h">
+      <Filter>third_party\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\cpu_id.h">
+      <Filter>third_party\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\format_conversion.h">
+      <Filter>third_party\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\planar_functions.h">
+      <Filter>third_party\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\rotate.h">
+      <Filter>third_party\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\scale.h">
+      <Filter>third_party\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\libyuv\include\libyuv\video_common.h">
+      <Filter>third_party\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third_party\glog\logging.h">
+      <Filter>third_party\glog</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
