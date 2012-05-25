@@ -5,3 +5,5 @@
 *.pdb
 *.webm
 *.user
+ipch/
+*.sdf
