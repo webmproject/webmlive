@@ -2,6 +2,91 @@
   "comments": [
     {
       "key": {
+        "uuid": "AAAAK3//5xo\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-05-30T21:54:51Z",
+      "side": 1,
+      "message": "you\u0027ve got some variable shadowing between here and 113",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAK3//5xk\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 222,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-05-30T21:54:51Z",
+      "side": 1,
+      "message": "const",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAK3//5xY\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-05-30T21:54:51Z",
+      "side": 1,
+      "message": "Might get heavy? should this be a vlog?",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAK3//5xQ\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-05-30T21:54:51Z",
+      "side": 1,
+      "message": "non-const should probably be pointers",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAK3//5xM\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 461,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-05-30T21:54:51Z",
+      "side": 1,
+      "message": "const int",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAK3//7l0\u003d",
         "filename": "client_encoder/webm_encoder.cc",
         "patchSetId": 12
