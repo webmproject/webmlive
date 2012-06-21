@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "AAAALH//6oo\u003d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-06-21T23:18:27Z",
+      "side": 1,
+      "message": "I\u0027m going to leave this as-is, and revisit if libvpx ever allows use of the old denoiser in combination with the new one.",
+      "parentUuid": "AAAAK3///n0\u003d",
+      "revId": "9350c793786ce55f7e22dd64c8c1b5637b927a87",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAKn//fMo\u003d",
         "filename": "client_encoder/video_encoder.h",
         "patchSetId": 1
