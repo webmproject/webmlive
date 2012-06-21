@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAALH//6pE\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-06-21T23:24:48Z",
+      "side": 1,
+      "message": "The two num_buffers are never in the same scope... I didn\u0027t think it would be an issue unless they were.",
+      "parentUuid": "AAAAK3//5xo\u003d",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAK3//5xk\u003d",
         "filename": "client_encoder/webm_encoder.cc",
         "patchSetId": 12
@@ -30,6 +48,24 @@
       "writtenOn": "2012-05-30T21:54:51Z",
       "side": 1,
       "message": "const",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAALH//6n8\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 222,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-06-21T23:24:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAK3//5xk\u003d",
       "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAALH//6n4\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 420,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-06-21T23:24:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAK3//5xY\u003d",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAK3//5xQ\u003d",
         "filename": "client_encoder/webm_encoder.cc",
         "patchSetId": 12
@@ -64,6 +118,24 @@
       "writtenOn": "2012-05-30T21:54:51Z",
       "side": 1,
       "message": "non-const should probably be pointers",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAALH//6nM\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-06-21T23:24:48Z",
+      "side": 1,
+      "message": "Going to leave this as-is-- I think making local refs that are only there for brevity\u0027s sake pointers is going too far. :)",
+      "parentUuid": "AAAAK3//5xQ\u003d",
       "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAALH//6nA\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 461,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-06-21T23:24:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAK3//5xM\u003d",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAK3//7l0\u003d",
         "filename": "client_encoder/webm_encoder.cc",
         "patchSetId": 12
@@ -98,6 +188,24 @@
       "writtenOn": "2012-05-29T15:33:59Z",
       "side": 1,
       "message": "Add todo about potential non-monotonically written audio.",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAALH//6mw\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 573,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-06-21T23:24:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAK3//7l0\u003d",
       "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
