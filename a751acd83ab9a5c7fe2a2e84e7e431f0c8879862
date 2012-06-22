@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAALH//55E\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 14
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-06-22T17:05:20Z",
+      "side": 1,
+      "message": "Do you also need to vet the sign of timestamp_offset?",
+      "revId": "a751acd83ab9a5c7fe2a2e84e7e431f0c8879862",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAALH//54Y\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 14
+      },
+      "lineNbr": 629,
+      "author": {
+        "id": 1002833
+      },
+      "writtenOn": "2012-06-22T17:05:20Z",
+      "side": 1,
+      "message": "These 2 boolean conditions mean you have 4 possibilities.  This if-stmt has only 3 branches.  Is this the intent?  Suppose the audio and video timestamps are both \u003e 0, then what is the value of the timestamp_offset?",
+      "revId": "a751acd83ab9a5c7fe2a2e84e7e431f0c8879862",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
