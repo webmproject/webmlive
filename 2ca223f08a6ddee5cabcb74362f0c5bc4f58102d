@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "AAAAMX///5s\u003d",
+        "filename": "client_encoder/client_encoder.gyp",
+        "patchSetId": 4
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2012-07-24T23:37:00Z",
+      "side": 1,
+      "message": "indent seems to be 2 in a random sampling of chrome",
+      "revId": "2ca223f08a6ddee5cabcb74362f0c5bc4f58102d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAALn//38Q\u003d",
         "filename": "client_encoder/win/direct_show_base_classes.gyp",
         "patchSetId": 4
