@@ -51,6 +51,24 @@
       "revId": "2ca223f08a6ddee5cabcb74362f0c5bc4f58102d",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAPn//+Ig\u003d",
+        "filename": "client_encoder/win/direct_show_base_classes.gyp",
+        "patchSetId": 4
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-08-23T17:40:42Z",
+      "side": 1,
+      "message": "The funny thing is that strmbase.lib is in the SDK, but the baseclasses headers appear not to be.",
+      "parentUuid": "AAAAPn//+JA\u003d",
+      "revId": "2ca223f08a6ddee5cabcb74362f0c5bc4f58102d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
