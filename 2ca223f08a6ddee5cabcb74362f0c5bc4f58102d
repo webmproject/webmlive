@@ -33,6 +33,24 @@
       "revId": "2ca223f08a6ddee5cabcb74362f0c5bc4f58102d",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAPn//+JA\u003d",
+        "filename": "client_encoder/win/direct_show_base_classes.gyp",
+        "patchSetId": 4
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2012-08-23T17:36:36Z",
+      "side": 1,
+      "message": "I don\u0027t plan on supporting anything older than the win7.1 SDK, and I can\u0027t find baseclasses in the win 8 SDK. This point is moot.",
+      "parentUuid": "AAAALn//38Q\u003d",
+      "revId": "2ca223f08a6ddee5cabcb74362f0c5bc4f58102d",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
