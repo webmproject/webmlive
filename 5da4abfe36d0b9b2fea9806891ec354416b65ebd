@@ -23,6 +23,16 @@ Verified+1: Tom Finegan <tomfinegan@google.com>
 Code-Review+2: Frank Galligan <fgalligan@google.com>
 Code-Review+1: James Zern <jzern@google.com>
 Submitted-by: Tom Finegan <tomfinegan@google.com>
+Submitted-at: Mon, 19 Dec 2011 14:08:58 -0700
+Reviewed-on: https://gerrit.chromium.org/gerrit/12983
+Project: webm/webmlive
+Branch: refs/heads/v2
+
+Code-Review+2: Tom Finegan <tomfinegan@google.com>
+Verified+1: Tom Finegan <tomfinegan@google.com>
+Code-Review+2: Frank Galligan <fgalligan@google.com>
+Code-Review+1: James Zern <jzern@google.com>
+Submitted-by: Tom Finegan <tomfinegan@google.com>
 Submitted-at: Mon, 19 Dec 2011 13:08:58 -0800
 Reviewed-on: https://gerrit.chromium.org/gerrit/12983
 Project: webm/webmlive

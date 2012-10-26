@@ -20,6 +20,15 @@ Code-Review+2: Tom Finegan <tomfinegan@google.com>
 Verified+1: Tom Finegan <tomfinegan@google.com>
 Code-Review+1: James Zern <jzern@google.com>
 Submitted-by: Tom Finegan <tomfinegan@google.com>
+Submitted-at: Thu, 22 Dec 2011 08:24:36 -0700
+Reviewed-on: https://gerrit.chromium.org/gerrit/13262
+Project: webm/webmlive
+Branch: refs/heads/v2
+
+Code-Review+2: Tom Finegan <tomfinegan@google.com>
+Verified+1: Tom Finegan <tomfinegan@google.com>
+Code-Review+1: James Zern <jzern@google.com>
+Submitted-by: Tom Finegan <tomfinegan@google.com>
 Submitted-at: Thu, 22 Dec 2011 07:24:36 -0800
 Reviewed-on: https://gerrit.chromium.org/gerrit/13262
 Project: webm/webmlive
