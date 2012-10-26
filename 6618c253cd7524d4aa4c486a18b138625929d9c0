@@ -38,6 +38,15 @@ Code-Review+2: Tom Finegan <tomfinegan@google.com>
 Verified+1: Tom Finegan <tomfinegan@google.com>
 Code-Review+2: Frank Galligan <fgalligan@google.com>
 Submitted-by: Tom Finegan <tomfinegan@google.com>
+Submitted-at: Wed, 21 Dec 2011 09:50:28 -0700
+Reviewed-on: https://gerrit.chromium.org/gerrit/13261
+Project: webm/webmlive
+Branch: refs/heads/v2
+
+Code-Review+2: Tom Finegan <tomfinegan@google.com>
+Verified+1: Tom Finegan <tomfinegan@google.com>
+Code-Review+2: Frank Galligan <fgalligan@google.com>
+Submitted-by: Tom Finegan <tomfinegan@google.com>
 Submitted-at: Wed, 21 Dec 2011 08:50:28 -0800
 Reviewed-on: https://gerrit.chromium.org/gerrit/13261
 Project: webm/webmlive
