@@ -25,6 +25,14 @@ Branch: refs/heads/v2
 Code-Review+2: Tom Finegan <tomfinegan@google.com>
 Verified+1: Tom Finegan <tomfinegan@google.com>
 Submitted-by: Tom Finegan <tomfinegan@google.com>
+Submitted-at: Tue, 13 Dec 2011 16:31:59 -0700
+Reviewed-on: https://gerrit.chromium.org/gerrit/12878
+Project: webm/webmlive
+Branch: refs/heads/v2
+
+Code-Review+2: Tom Finegan <tomfinegan@google.com>
+Verified+1: Tom Finegan <tomfinegan@google.com>
+Submitted-by: Tom Finegan <tomfinegan@google.com>
 Submitted-at: Tue, 13 Dec 2011 15:31:59 -0800
 Reviewed-on: https://gerrit.chromium.org/gerrit/12878
 Project: webm/webmlive
