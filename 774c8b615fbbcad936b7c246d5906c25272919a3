@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAc3//1+I\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2013-08-23T01:14:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAALH//6pE\u003d",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAK3//5xk\u003d",
         "filename": "client_encoder/webm_encoder.cc",
         "patchSetId": 12
@@ -136,6 +154,24 @@
       "side": 1,
       "message": "Going to leave this as-is-- I think making local refs that are only there for brevity\u0027s sake pointers is going too far. :)",
       "parentUuid": "AAAAK3//5xQ\u003d",
+      "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAc3//1+A\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 12
+      },
+      "lineNbr": 457,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2013-08-23T01:14:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAALH//6nM\u003d",
       "revId": "774c8b615fbbcad936b7c246d5906c25272919a3",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
