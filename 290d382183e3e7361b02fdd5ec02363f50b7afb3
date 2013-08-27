@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdH///z4\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 15
+      },
+      "lineNbr": 395,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2013-08-27T22:54:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAc3//1T0\u003d",
+      "revId": "290d382183e3e7361b02fdd5ec02363f50b7afb3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAc3//1Tk\u003d",
         "filename": "client_encoder/webm_encoder.cc",
         "patchSetId": 15
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdH///0A\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 15
+      },
+      "lineNbr": 431,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2013-08-27T22:54:45Z",
+      "side": 1,
+      "message": "Done, but used EncodeAudioBuffer to be consistent with naming used elsewhere in webmlive.",
+      "parentUuid": "AAAAc3//1Tk\u003d",
+      "revId": "290d382183e3e7361b02fdd5ec02363f50b7afb3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAc3//1To\u003d",
         "filename": "client_encoder/webm_encoder.cc",
         "patchSetId": 15
@@ -47,6 +83,24 @@
       "writtenOn": "2013-08-23T15:59:40Z",
       "side": 1,
       "message": "You could refactor this as EncodeAudioFrame()",
+      "revId": "290d382183e3e7361b02fdd5ec02363f50b7afb3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdH///z8\u003d",
+        "filename": "client_encoder/webm_encoder.cc",
+        "patchSetId": 15
+      },
+      "lineNbr": 502,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2013-08-27T22:54:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAc3//1To\u003d",
       "revId": "290d382183e3e7361b02fdd5ec02363f50b7afb3",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
