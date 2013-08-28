@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAc3//1B4\u003d",
+        "filename": "tools/generate_msvc_projects.bat",
+        "patchSetId": 3
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2013-08-28T17:54:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAPn//9yw\u003d",
+      "revId": "690f8dcbb8595dfcbc998330e50c7ced45a0681e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAPn//9ww\u003d",
         "filename": "tools/generate_msvc_projects.bat",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2012-08-23T21:01:13Z",
       "side": 1,
       "message": "you could do a for /f and parse each line of the file while appending (\u003e\u003e) the new, but if you\u0027re ok with the perl dependency then this is simpler.",
+      "revId": "690f8dcbb8595dfcbc998330e50c7ced45a0681e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAc3//1Bs\u003d",
+        "filename": "tools/generate_msvc_projects.bat",
+        "patchSetId": 3
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2013-08-28T17:54:13Z",
+      "side": 1,
+      "message": "I am ok with a perl dependency... at least for the short term. Maybe I\u0027ll do something with this later. I don\u0027t think it\u0027s that big a deal.",
+      "parentUuid": "AAAAPn//9ww\u003d",
       "revId": "690f8dcbb8595dfcbc998330e50c7ced45a0681e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAc3//0+U\u003d",
+        "filename": "tools/generate_msvc_projects.bat",
+        "patchSetId": 3
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2013-08-28T17:54:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAPn//9yg\u003d",
+      "revId": "690f8dcbb8595dfcbc998330e50c7ced45a0681e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAPn//9wg\u003d",
         "filename": "tools/generate_msvc_projects.bat",
         "patchSetId": 3
@@ -64,6 +118,24 @@
       "writtenOn": "2012-08-23T21:01:13Z",
       "side": 1,
       "message": "why not just exit /B 1 or so?",
+      "revId": "690f8dcbb8595dfcbc998330e50c7ced45a0681e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAc3//0+c\u003d",
+        "filename": "tools/generate_msvc_projects.bat",
+        "patchSetId": 3
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2013-08-28T17:54:13Z",
+      "side": 1,
+      "message": "Doesn\u0027t actually terminate the script.",
+      "parentUuid": "AAAAPn//9wg\u003d",
       "revId": "690f8dcbb8595dfcbc998330e50c7ced45a0681e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
