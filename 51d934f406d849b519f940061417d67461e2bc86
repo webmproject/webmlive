@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdH///w8\u003d",
+        "filename": "client_encoder/client_encoder.gyp",
+        "patchSetId": 5
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2013-08-28T05:39:11Z",
+      "side": 1,
+      "message": "does this map differently? I thought 3 was edit \u0026 continue...",
+      "revId": "51d934f406d849b519f940061417d67461e2bc86",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
