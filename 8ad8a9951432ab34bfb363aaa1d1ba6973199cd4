@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdH///w0\u003d",
+        "filename": "tools/generate_msvc_projects.bat",
+        "patchSetId": 4
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2013-08-28T05:44:30Z",
+      "side": 1,
+      "message": "copyrighting build files probably isn\u0027t necessary",
+      "revId": "8ad8a9951432ab34bfb363aaa1d1ba6973199cd4",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdH///ww\u003d",
+        "filename": "tools/generate_msvc_projects.bat",
+        "patchSetId": 4
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2013-08-28T05:44:30Z",
+      "side": 1,
+      "message": "exit with an error code?",
+      "revId": "8ad8a9951432ab34bfb363aaa1d1ba6973199cd4",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdH///ws\u003d",
+        "filename": "tools/generate_msvc_projects.bat",
+        "patchSetId": 4
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2013-08-28T05:44:30Z",
+      "side": 1,
+      "message": "you should probably check for perl early on",
+      "revId": "8ad8a9951432ab34bfb363aaa1d1ba6973199cd4",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdH///wo\u003d",
+        "filename": "tools/generate_msvc_projects.bat",
+        "patchSetId": 4
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2013-08-28T05:44:30Z",
+      "side": 1,
+      "message": "why not just exit with an error code?",
+      "revId": "8ad8a9951432ab34bfb363aaa1d1ba6973199cd4",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
