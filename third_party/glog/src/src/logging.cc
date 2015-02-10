@@ -66,6 +66,10 @@
 # include "stacktrace.h"
 #endif
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1800)
+#include <algorithm>
+#endif
+
 using std::string;
 using std::vector;
 using std::setw;
