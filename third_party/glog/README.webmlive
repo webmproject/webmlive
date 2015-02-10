@@ -1,0 +1,9 @@
+google-glog
+
+Logging library.
+
+Version: 0.3.3
+URL: https://google-glog.googlecode.com/files/glog-0.3.3.tar.gz
+
+Local changes (with git hash of change):
+- vs2013 compatibility fixes: b75a442a1c5586ddbcad5aa8697b9ddfab869b11
