@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef ENCODER_WIN_MEDIA_TYPE_DSHOW_H_
-#define ENCODER_WIN_MEDIA_TYPE_DSHOW_H_
+#ifndef WEBMLIVE_ENCODER_WIN_MEDIA_TYPE_DSHOW_H_
+#define WEBMLIVE_ENCODER_WIN_MEDIA_TYPE_DSHOW_H_
 
 #include <dshow.h>
 #include <dvdmedia.h>
@@ -229,4 +229,4 @@ class MediaTypePtr {
 
 }  // namespace webmlive
 
-#endif  // ENCODER_WIN_MEDIA_TYPE_DSHOW_H_
+#endif  // WEBMLIVE_ENCODER_WIN_MEDIA_TYPE_DSHOW_H_

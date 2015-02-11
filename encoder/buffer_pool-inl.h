@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef ENCODER_BUFFER_POOL_INL_H_
-#define ENCODER_BUFFER_POOL_INL_H_
+#ifndef WEBMLIVE_ENCODER_BUFFER_POOL_INL_H_
+#define WEBMLIVE_ENCODER_BUFFER_POOL_INL_H_
 
 #include <queue>
 
@@ -165,4 +165,4 @@ inline bool BufferPool<Type>::IsEmpty() const {
 
 }  // namespace webmlive
 
-#endif  // ENCODER_BUFFER_POOL_INL_H_
+#endif  // WEBMLIVE_ENCODER_BUFFER_POOL_INL_H_

@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef ENCODER_DATA_SINK_H_
-#define ENCODER_DATA_SINK_H_
+#ifndef WEBMLIVE_ENCODER_DATA_SINK_H_
+#define WEBMLIVE_ENCODER_DATA_SINK_H_
 
 #include "encoder/basictypes.h"
 
@@ -26,4 +26,4 @@ class DataSinkInterface {
 
 }  // namespace webmlive
 
-#endif  // ENCODER_DATA_SINK_H_
+#endif  // WEBMLIVE_ENCODER_DATA_SINK_H_

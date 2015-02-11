@@ -6,8 +6,8 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#ifndef ENCODER_VPX_ENCODER_H_
-#define ENCODER_VPX_ENCODER_H_
+#ifndef WEBMLIVE_ENCODER_VPX_ENCODER_H_
+#define WEBMLIVE_ENCODER_VPX_ENCODER_H_
 
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
@@ -86,4 +86,4 @@ class VpxEncoder {
 
 }  // namespace webmlive
 
-#endif  // ENCODER_VPX_ENCODER_H_
+#endif  // WEBMLIVE_ENCODER_VPX_ENCODER_H_

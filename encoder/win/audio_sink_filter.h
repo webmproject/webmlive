@@ -9,8 +9,8 @@
 // Defines the video sink filter used to obtain raw frames from user input
 // devices available via DirectShow. Based on WebRTC's CaptureInputPin and
 // CaptureSinkFilter.
-#ifndef ENCODER_WIN_AUDIO_SINK_FILTER_H_
-#define ENCODER_WIN_AUDIO_SINK_FILTER_H_
+#ifndef WEBMLIVE_ENCODER_WIN_AUDIO_SINK_FILTER_H_
+#define WEBMLIVE_ENCODER_WIN_AUDIO_SINK_FILTER_H_
 
 // Wrap include of streams.h with include guard used in the file: including the
 // file twice results in the output "STREAMS.H included TWICE" for debug
@@ -155,4 +155,4 @@ class AudioSinkFilter : public CBaseFilter {
 
 }  // namespace webmlive
 
-#endif  // ENCODER_WIN_AUDIO_SINK_FILTER_H_
+#endif  // WEBMLIVE_ENCODER_WIN_AUDIO_SINK_FILTER_H_

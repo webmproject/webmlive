@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef ENCODER_ENCODER_BASE_H_
-#define ENCODER_ENCODER_BASE_H_
+#ifndef WEBMLIVE_ENCODER_ENCODER_BASE_H_
+#define WEBMLIVE_ENCODER_ENCODER_BASE_H_
 
 #if _WIN32
 
@@ -32,4 +32,4 @@ static const char* kClientVersion = "0.0.2.0";
 
 }  // namespace webmlive
 
-#endif  // ENCODER_ENCODER_BASE_H_
+#endif  // WEBMLIVE_ENCODER_ENCODER_BASE_H_
