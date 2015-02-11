@@ -16,6 +16,24 @@
       "revId": "22b4c54c34a68c07201e695318f57bebad7c7e0b",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//HOs\u003d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-02-11T19:38:15Z",
+      "side": 1,
+      "message": "I added brief build instructions to README.webmlive. I\u0027ll create a top-level one when I get the big bad CMakeLists.txt that actually builds the app working-- not quite sure how everything will fit together yet.",
+      "parentUuid": "AAAAdn//HR0\u003d",
+      "revId": "22b4c54c34a68c07201e695318f57bebad7c7e0b",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
