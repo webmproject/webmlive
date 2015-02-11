@@ -5,5 +5,18 @@ Logging library.
 Version: 0.3.3
 URL: https://google-glog.googlecode.com/files/glog-0.3.3.tar.gz
 
+
+Building
+CMake v2.8 or higher is required. To create project files, run the command:
+$ cmake path/to/webmlive/third_party/glog -G <generator>
+
+CMake will generate project (or makefiles, depending on the generator).
+
+The CMakeLists.txt for google-glog was written for use with Visual Studio 12.
+For example, to use VS2013 use "Visual Studio 12" with the -G parameter passed
+to cmake:
+$ cmake path/to/webmlive/third_party/glog -G "Visual Studio 12"
+
+
 Local changes (with git hash of change):
 - vs2013 compatibility fixes: b75a442a1c5586ddbcad5aa8697b9ddfab869b11
