@@ -5,15 +5,15 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef CLIENT_ENCODER_BUFFER_UTIL_H_
-#define CLIENT_ENCODER_BUFFER_UTIL_H_
+#ifndef ENCODER_BUFFER_UTIL_H_
+#define ENCODER_BUFFER_UTIL_H_
 
 #include <vector>
 
 #include "boost/scoped_ptr.hpp"
 #include "boost/thread/mutex.hpp"
-#include "client_encoder/basictypes.h"
-#include "client_encoder/client_encoder_base.h"
+#include "encoder/basictypes.h"
+#include "encoder/encoder_base.h"
 
 namespace webmlive {
 
@@ -108,4 +108,4 @@ class WebmChunkBuffer {
 
 }  // namespace webmlive
 
-#endif  // CLIENT_ENCODER_BUFFER_UTIL_H_
+#endif  // ENCODER_BUFFER_UTIL_H_

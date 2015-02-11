@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef CLIENT_ENCODER_WEBM_ENCODER_H_
-#define CLIENT_ENCODER_WEBM_ENCODER_H_
+#ifndef ENCODER_WEBM_ENCODER_H_
+#define ENCODER_WEBM_ENCODER_H_
 
 #include <string>
 
@@ -14,13 +14,13 @@
 #include "boost/scoped_ptr.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/thread.hpp"
-#include "client_encoder/audio_encoder.h"
-#include "client_encoder/basictypes.h"
-#include "client_encoder/buffer_pool.h"
-#include "client_encoder/client_encoder_base.h"
-#include "client_encoder/data_sink.h"
-#include "client_encoder/video_encoder.h"
-#include "client_encoder/vorbis_encoder.h"
+#include "encoder/audio_encoder.h"
+#include "encoder/basictypes.h"
+#include "encoder/buffer_pool.h"
+#include "encoder/encoder_base.h"
+#include "encoder/data_sink.h"
+#include "encoder/video_encoder.h"
+#include "encoder/vorbis_encoder.h"
 
 namespace webmlive {
 // All timestamps are in milliseconds.
@@ -269,5 +269,5 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
 
 }  // namespace webmlive
 
-#endif  // CLIENT_ENCODER_WEBM_ENCODER_H_
+#endif  // ENCODER_WEBM_ENCODER_H_
 

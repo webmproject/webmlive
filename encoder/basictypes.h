@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef CLIENT_ENCODER_BASICTYPES_H_
-#define CLIENT_ENCODER_BASICTYPES_H_
+#ifndef ENCODER_BASICTYPES_H_
+#define ENCODER_BASICTYPES_H_
 
 typedef signed char         schar;
 typedef signed char         int8;
@@ -28,4 +28,4 @@ typedef unsigned long long  uint64;  // NOLINT
   TypeName(const TypeName&);                        \
   void operator=(const TypeName&)
 
-#endif  // CLIENT_ENCODER_BASICTYPES_H_
+#endif  // ENCODER_BASICTYPES_H_

@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef CLIENT_ENCODER_WIN_MEDIA_SOURCE_DSHOW_H_
-#define CLIENT_ENCODER_WIN_MEDIA_SOURCE_DSHOW_H_
+#ifndef ENCODER_WIN_MEDIA_SOURCE_DSHOW_H_
+#define ENCODER_WIN_MEDIA_SOURCE_DSHOW_H_
 
 #include <comdef.h>
 #include <dshow.h>
@@ -16,9 +16,9 @@
 
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/thread.hpp"
-#include "client_encoder/basictypes.h"
-#include "client_encoder/client_encoder_base.h"
-#include "client_encoder/webm_encoder.h"
+#include "encoder/basictypes.h"
+#include "encoder/encoder_base.h"
+#include "encoder/webm_encoder.h"
 
 namespace webmlive {
 // A slightly more brief version of the com_ptr_t definition macro.
@@ -472,4 +472,4 @@ HRESULT ShowPropertyPage(IUnknown* ptr_iunknown);
 
 }  // namespace webmlive
 
-#endif  // CLIENT_ENCODER_WIN_MEDIA_SOURCE_DSHOW_H_
+#endif  // ENCODER_WIN_MEDIA_SOURCE_DSHOW_H_

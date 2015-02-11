@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef CLIENT_ENCODER_WIN_WEBM_GUIDS_H_
-#define CLIENT_ENCODER_WIN_WEBM_GUIDS_H_
+#ifndef ENCODER_WIN_WEBM_GUIDS_H_
+#define ENCODER_WIN_WEBM_GUIDS_H_
 
 #include <objbase.h>
 
@@ -19,4 +19,4 @@ extern const GUID MEDIASUBTYPE_VP80;
 
 }  // namespace webmlive
 
-#endif  // CLIENT_ENCODER_WIN_WEBM_GUIDS_H_
+#endif  // ENCODER_WIN_WEBM_GUIDS_H_

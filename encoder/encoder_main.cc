@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "client_encoder/client_encoder_base.h"
+#include "encoder/encoder_base.h"
 
 #include <conio.h>
 #include <stdio.h>
@@ -15,9 +15,9 @@
 #include <vector>
 
 #include "boost/scoped_array.hpp"
-#include "client_encoder/buffer_util.h"
-#include "client_encoder/http_uploader.h"
-#include "client_encoder/webm_encoder.h"
+#include "encoder/buffer_util.h"
+#include "encoder/http_uploader.h"
+#include "encoder/webm_encoder.h"
 #include "glog/logging.h"
 
 namespace {

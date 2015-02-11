@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "client_encoder/http_uploader.h"
+#include "encoder/http_uploader.h"
 
 #include <ctime>
 #include <queue>
@@ -15,7 +15,7 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/condition.hpp"
 #include "boost/thread/thread.hpp"
-#include "client_encoder/buffer_util.h"
+#include "encoder/buffer_util.h"
 #include "curl/curl.h"
 #include "curl/easy.h"
 #include "glog/logging.h"

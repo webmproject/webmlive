@@ -5,17 +5,17 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "client_encoder/webm_encoder.h"
+#include "encoder/webm_encoder.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
 
-#include "client_encoder/buffer_pool-inl.h"
-#include "client_encoder/webm_mux.h"
+#include "encoder/buffer_pool-inl.h"
+#include "encoder/webm_mux.h"
 #ifdef _WIN32
-#include "client_encoder/win/media_source_dshow.h"
+#include "encoder/win/media_source_dshow.h"
 #endif
 #include "glog/logging.h"
 

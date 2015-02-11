@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "client_encoder/video_encoder.h"
+#include "encoder/video_encoder.h"
 
 #include <new>
 
@@ -20,7 +20,7 @@
 // vp8.h and vp8cx.h (included by vpx_encoder.h).
 #pragma warning(disable:4505)
 #endif
-#include "client_encoder/vpx_encoder.h"
+#include "encoder/vpx_encoder.h"
 
 namespace webmlive {
 

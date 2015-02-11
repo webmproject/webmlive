@@ -5,15 +5,15 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef CLIENT_ENCODER_WEBM_MUX_H_
-#define CLIENT_ENCODER_WEBM_MUX_H_
+#ifndef ENCODER_WEBM_MUX_H_
+#define ENCODER_WEBM_MUX_H_
 
 #include <vector>
 
 #include "boost/scoped_ptr.hpp"
-#include "client_encoder/basictypes.h"
-#include "client_encoder/client_encoder_base.h"
-#include "client_encoder/webm_encoder.h"
+#include "encoder/basictypes.h"
+#include "encoder/encoder_base.h"
+#include "encoder/webm_encoder.h"
 
 // Forward declarations of libwebm muxer types used by |LiveWebmMuxer|.
 namespace mkvmuxer {
@@ -181,4 +181,4 @@ class LiveWebmMuxer {
 
 }  // namespace webmlive
 
-#endif  // CLIENT_ENCODER_WEBM_MUX_H_
+#endif  // ENCODER_WEBM_MUX_H_

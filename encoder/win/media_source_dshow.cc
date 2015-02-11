@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "client_encoder/win/media_source_dshow.h"
+#include "encoder/win/media_source_dshow.h"
 
 #include <initguid.h>  // MUST be included before VorbisTypes.h to avoid
                        // undefined external error for
@@ -16,13 +16,13 @@
 #include <sstream>
 
 #include "boost/scoped_array.hpp"
-#include "client_encoder/video_encoder.h"
-#include "client_encoder/webm_encoder.h"
-#include "client_encoder/win/audio_sink_filter.h"
-#include "client_encoder/win/dshow_util.h"
-#include "client_encoder/win/media_type_dshow.h"
-#include "client_encoder/win/video_sink_filter.h"
-#include "client_encoder/win/webm_guids.h"
+#include "encoder/video_encoder.h"
+#include "encoder/webm_encoder.h"
+#include "encoder/win/audio_sink_filter.h"
+#include "encoder/win/dshow_util.h"
+#include "encoder/win/media_type_dshow.h"
+#include "encoder/win/video_sink_filter.h"
+#include "encoder/win/webm_guids.h"
 #include "glog/logging.h"
 
 namespace webmlive {

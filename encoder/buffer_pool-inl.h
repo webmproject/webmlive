@@ -5,15 +5,15 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef CLIENT_ENCODER_BUFFER_POOL_INL_H_
-#define CLIENT_ENCODER_BUFFER_POOL_INL_H_
+#ifndef ENCODER_BUFFER_POOL_INL_H_
+#define ENCODER_BUFFER_POOL_INL_H_
 
 #include <queue>
 
 #include "boost/thread/mutex.hpp"
-#include "client_encoder/basictypes.h"
-#include "client_encoder/buffer_pool.h"
-#include "client_encoder/client_encoder_base.h"
+#include "encoder/basictypes.h"
+#include "encoder/buffer_pool.h"
+#include "encoder/encoder_base.h"
 
 namespace webmlive {
 
@@ -165,4 +165,4 @@ inline bool BufferPool<Type>::IsEmpty() const {
 
 }  // namespace webmlive
 
-#endif  // CLIENT_ENCODER_BUFFER_POOL_INL_H_
+#endif  // ENCODER_BUFFER_POOL_INL_H_

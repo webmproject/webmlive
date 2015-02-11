@@ -6,7 +6,7 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include "client_encoder/webm_mux.h"
+#include "encoder/webm_mux.h"
 
 #include <new>
 #include <vector>

@@ -5,14 +5,14 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef CLIENT_ENCODER_VORBIS_ENCODER_H_
-#define CLIENT_ENCODER_VORBIS_ENCODER_H_
+#ifndef ENCODER_VORBIS_ENCODER_H_
+#define ENCODER_VORBIS_ENCODER_H_
 
 #include <vector>
 
 #include "boost/scoped_array.hpp"
-#include "client_encoder/audio_encoder.h"
-#include "client_encoder/basictypes.h"
+#include "encoder/audio_encoder.h"
+#include "encoder/basictypes.h"
 #include "libvorbis/vorbis/codec.h"
 #include "libvorbis/vorbis/vorbisenc.h"
 
@@ -124,4 +124,4 @@ class VorbisEncoder {
 
 }  // namespace webmlive
 
-#endif  // CLIENT_ENCODER_VORBIS_ENCODER_H_
+#endif  // ENCODER_VORBIS_ENCODER_H_

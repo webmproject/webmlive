@@ -12,9 +12,9 @@
 // vp8.h and vp8cx.h (included by vpx_encoder.h).
 #pragma warning(disable:4505)
 #endif
-#include "client_encoder/vpx_encoder.h"
+#include "encoder/vpx_encoder.h"
 
-#include "client_encoder/webm_encoder.h"
+#include "encoder/webm_encoder.h"
 #include "glog/logging.h"
 
 namespace webmlive {
