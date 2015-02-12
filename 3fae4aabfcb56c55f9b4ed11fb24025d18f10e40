@@ -16,6 +16,24 @@
       "revId": "3fae4aabfcb56c55f9b4ed11fb24025d18f10e40",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//G9g\u003d",
+        "filename": "build/msvc_runtime.cmake",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-02-12T23:41:09Z",
+      "side": 1,
+      "message": "I don\u0027t actually have a reason other than \"2.8 is what was on my machine when I started working on these files and this quiets a warning, YMMV\".",
+      "parentUuid": "AAAAdn//G94\u003d",
+      "revId": "3fae4aabfcb56c55f9b4ed11fb24025d18f10e40",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
