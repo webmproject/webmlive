@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//HAc\u003d",
+        "filename": "third_party/update_libvpx.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-02-12T20:47:27Z",
+      "side": 1,
+      "message": "trailing whitespace",
+      "revId": "1292d3d6b7976b95e6f81db0097f247d2333d98c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
