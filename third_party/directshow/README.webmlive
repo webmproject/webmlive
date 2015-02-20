@@ -1,0 +1,16 @@
+Directshow Baseclasses
+Microsoft sample code.
+
+Version: Windows v7.1 SDK
+
+Building
+CMake v2.8.11 or higher is required. To create project files, run the command:
+$ cmake path/to/webmlive/third_party/directshow
+
+CMake will generate project (or makefiles, depending on the generator). CMake
+will attempt to find the latest version of Microsoft Visual Studio installed
+on the system.
+
+The CMakeLists.txt for the base classes was written for use with Visual Studio
+12.
+
