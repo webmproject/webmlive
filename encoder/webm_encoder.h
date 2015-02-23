@@ -8,12 +8,10 @@
 #ifndef WEBMLIVE_ENCODER_WEBM_ENCODER_H_
 #define WEBMLIVE_ENCODER_WEBM_ENCODER_H_
 
+#include <memory>
 #include <string>
+#include <thread>
 
-#include "boost/scoped_array.hpp"
-#include "boost/scoped_ptr.hpp"
-#include "boost/shared_ptr.hpp"
-#include "boost/thread/thread.hpp"
 #include "encoder/audio_encoder.h"
 #include "encoder/basictypes.h"
 #include "encoder/buffer_pool.h"
@@ -208,20 +206,20 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   bool stop_;
 
   // Temporary storage for chunks about to be passed to |ptr_data_sink_|.
-  boost::scoped_array<uint8> chunk_buffer_;
+  std::unique_ptr<uint8> chunk_buffer_;
   int32 chunk_buffer_size_;
 
   // Pointer to platform specific audio/video source object implementation.
-  boost::scoped_ptr<MediaSourceImpl> ptr_media_source_;
+  std::unique_ptr<MediaSourceImpl> ptr_media_source_;
 
   // Pointer to live WebM muxer.
-  boost::scoped_ptr<LiveWebmMuxer> ptr_muxer_;
+  std::unique_ptr<LiveWebmMuxer> ptr_muxer_;
 
   // Mutex providing synchronization between user interface and encoder thread.
-  mutable boost::mutex mutex_;
+  mutable std::mutex mutex_;
 
   // Encoder thread object.
-  boost::shared_ptr<boost::thread> encode_thread_;
+  std::shared_ptr<std::thread> encode_thread_;
 
   // Data sink to which WebM chunks are written.
   DataSinkInterface* ptr_data_sink_;

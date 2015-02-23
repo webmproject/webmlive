@@ -13,9 +13,9 @@
                        // DEFINE_GUID macro.
 #include <vfwmsgs.h>
 
+#include <memory>
 #include <sstream>
 
-#include "boost/scoped_array.hpp"
 #include "encoder/video_encoder.h"
 #include "encoder/webm_encoder.h"
 #include "encoder/win/audio_sink_filter.h"
@@ -46,8 +46,7 @@ std::wstring string_to_wstring(const std::string& str) {
 std::string wstring_to_string(const std::wstring& wstr) {
   // Conversion buffer for |wcstombs| calls.
   const size_t buf_size = wstr.length() + 1;
-  boost::scoped_array<char> temp_str(
-      new (std::nothrow) char[buf_size]);  // NOLINT
+  std::unique_ptr<char> temp_str(new (std::nothrow) char[buf_size]);  // NOLINT
   if (!temp_str) {
     LOG(ERROR) << "can't convert wstring of length=" << wstr.length();
     return std::string("<empty>");

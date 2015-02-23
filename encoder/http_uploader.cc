@@ -7,14 +7,17 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "encoder/http_uploader.h"
 
+#include <cassert>
 #include <ctime>
+#include <condition_variable>
+#include <functional>
+#include <memory>
+#include <mutex>
 #include <queue>
 #include <string>
+#include <thread>
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
-#include "boost/thread/condition.hpp"
-#include "boost/thread/thread.hpp"
 #include "encoder/buffer_util.h"
 #include "curl/curl.h"
 #include "curl/easy.h"
@@ -136,14 +139,14 @@ class HttpUploaderImpl {
 
   // Condition variable used to wake |UploadThread| when a user code passes a
   // buffer to |UploadBuffer|.
-  boost::condition_variable buffer_ready_;
+  std::condition_variable buffer_ready_;
 
   // Mutex for synchronization of public method calls with |UploadThread|
   // activity. Mutable so |UploadComplete()| can be a const method.
-  mutable boost::mutex mutex_;
+  mutable std::mutex mutex_;
 
   // Thread object.
-  boost::shared_ptr<boost::thread> upload_thread_;
+  std::shared_ptr<std::thread> upload_thread_;
 
   // Uploader start time.  Reset when via |ResetStatts| when |Init| is called.
   clock_t start_ticks_;
@@ -273,7 +276,7 @@ HttpUploaderImpl::~HttpUploaderImpl() {
 // Obtain lock on |mutex_| and return value of |upload_complete_|.
 bool HttpUploaderImpl::UploadComplete() const {
   bool complete = false;
-  boost::mutex::scoped_try_lock lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
   if (lock.owns_lock()) {
     complete = upload_complete_;
   }
@@ -328,7 +331,7 @@ int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats) {
     LOG(ERROR) << "NULL ptr_stats";
     return HttpUploader::kInvalidArg;
   }
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   ptr_stats->bytes_per_second = stats_.bytes_per_second;
   ptr_stats->bytes_sent_current = stats_.bytes_sent_current;
   ptr_stats->total_bytes_uploaded = stats_.total_bytes_uploaded;
@@ -338,9 +341,9 @@ int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats) {
 // Run |UploadThread| using |boost::thread|.
 int HttpUploaderImpl::Run() {
   assert(!upload_thread_);
-  using boost::bind;
-  using boost::shared_ptr;
-  using boost::thread;
+  using std::bind;
+  using std::shared_ptr;
+  using std::thread;
   using std::nothrow;
   upload_thread_ = shared_ptr<thread>(
       new (nothrow) thread(bind(&HttpUploaderImpl::UploadThread,  // NOLINT
@@ -355,7 +358,7 @@ int HttpUploaderImpl::Run() {
 // variable.
 int HttpUploaderImpl::UploadBuffer(const uint8* ptr_buf, int32 length) {
   int status = HttpUploader::kUploadInProgress;
-  boost::mutex::scoped_try_lock lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
   if (lock.owns_lock() && !upload_buffer_.IsLocked()) {
     if (!url_queue_.empty()) {
       target_url_ = url_queue_.front();
@@ -402,15 +405,15 @@ int HttpUploaderImpl::Stop() {
     // Wake up the upload thread
     buffer_ready_.notify_one();
   }
-  boost::mutex::scoped_lock lock(mutex_);
+  mutex_.lock();
   stop_ = true;
-  lock.unlock();
+  mutex_.unlock();
   upload_thread_->join();
   return kSuccess;
 }
 
 void HttpUploaderImpl::EnqueueTargetUrl(const std::string& target_url) {
-  boost::mutex::scoped_lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   url_queue_.push(target_url);
 }
 
@@ -418,7 +421,7 @@ void HttpUploaderImpl::EnqueueTargetUrl(const std::string& target_url) {
 // obtained.  Returns false if unable to obtain the lock.
 bool HttpUploaderImpl::StopRequested() {
   bool stop_requested = false;
-  boost::mutex::scoped_try_lock lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
   if (lock.owns_lock()) {
     stop_requested = stop_;
   }
@@ -607,7 +610,7 @@ int HttpUploaderImpl::Upload() {
   if (err != CURLE_OK) {
     LOG_CURL_ERR(err, "curl_easy_getinfo CURLINFO_SIZE_UPLOAD failed.");
   } else {
-    boost::mutex::scoped_lock lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     stats_.bytes_sent_current = 0;
     stats_.total_bytes_uploaded += static_cast<int64>(bytes_uploaded);
   }
@@ -617,7 +620,7 @@ int HttpUploaderImpl::Upload() {
 
 // Idle the upload thread while awaiting user data.
 int HttpUploaderImpl::WaitForUserData() {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_, std::adopt_lock);
   buffer_ready_.wait(lock);  // Unlock |mutex_| and idle the thread while we
                              // wait for the next chunk of user data.
   return kSuccess;
@@ -638,7 +641,7 @@ int HttpUploaderImpl::ProgressCallback(void* ptr_this,
     LOG(ERROR) << "stop requested.";
     return kProgressCallbackStopRequest;
   }
-  boost::mutex::scoped_lock lock(ptr_uploader_->mutex_);
+  std::lock_guard<std::mutex> lock(ptr_uploader_->mutex_);
   HttpUploaderStats& stats = ptr_uploader_->stats_;
   stats.bytes_sent_current = static_cast<int64>(upload_current);
   double ticks_elapsed = clock() - ptr_uploader_->start_ticks_;
@@ -671,7 +674,7 @@ size_t HttpUploaderImpl::WriteCallback(char* buffer, size_t size,
 
 // Reset uploaded byte count, and store upload start time.
 void HttpUploaderImpl::ResetStats() {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   stats_.bytes_per_second = 0;
   stats_.bytes_sent_current = 0;
   stats_.total_bytes_uploaded = 0;
@@ -695,7 +698,7 @@ void HttpUploaderImpl::UploadThread() {
       // TODO(tomfinegan): Report upload failure, and provide access to
       //                   response code and data.
     } else {
-      boost::mutex::scoped_lock lock(mutex_);
+      std::lock_guard<std::mutex> lock(mutex_);
       LOG(INFO) << "unlocking upload buffer...";
       status = upload_buffer_.Unlock();
       if (status) {

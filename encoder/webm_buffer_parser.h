@@ -8,10 +8,10 @@
 #ifndef WEBMLIVE_ENCODER_WEBM_BUFFER_PARSER_H_
 #define WEBMLIVE_ENCODER_WEBM_BUFFER_PARSER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "boost/scoped_ptr.hpp"
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
 
@@ -66,11 +66,11 @@ class WebmBufferParser {
   // libwebm's mkvparser.
   const mkvparser::Cluster* ptr_cluster_;
   // Pointer to libwebm segment; needed for cluster parsing operations.
-  boost::scoped_ptr<mkvparser::Segment> segment_;
+  std::unique_ptr<mkvparser::Segment> segment_;
   // Buffer object that implements the IMkvReader interface required by
   // libwebm's mkvparser using a window into the |buf| argument passed to
   // |Parse|.
-  boost::scoped_ptr<WebmBufferReader> reader_;
+  std::unique_ptr<WebmBufferReader> reader_;
   // Bytes read in partially parsed cluster.
   int64 cluster_parse_offset_;
   // Sum of parsed element lengths.  Used to update |parser_| window.

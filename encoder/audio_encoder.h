@@ -8,8 +8,8 @@
 #ifndef WEBMLIVE_ENCODER_AUDIO_ENCODER_H_
 #define WEBMLIVE_ENCODER_AUDIO_ENCODER_H_
 
-#include "boost/scoped_array.hpp"
-#include "boost/scoped_ptr.hpp"
+#include <memory>
+
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
 
@@ -85,7 +85,7 @@ class AudioBuffer {
  private:
   int64 timestamp_;
   int64 duration_;
-  boost::scoped_array<uint8> buffer_;
+  std::unique_ptr<uint8> buffer_;
   int32 buffer_capacity_;
   int32 buffer_length_;
   AudioConfig config_;

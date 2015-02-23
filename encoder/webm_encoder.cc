@@ -8,6 +8,8 @@
 #include "encoder/webm_encoder.h"
 
 #include <algorithm>
+#include <chrono>
+#include <functional>
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
@@ -190,9 +192,9 @@ int WebmEncoder::Run() {
     return kRunFailed;
   }
 
-  using boost::bind;
-  using boost::shared_ptr;
-  using boost::thread;
+  using std::bind;
+  using std::shared_ptr;
+  using std::thread;
   using std::nothrow;
   encode_thread_ = shared_ptr<thread>(
       new (nothrow) thread(bind(&WebmEncoder::EncoderThread,  // NOLINT
@@ -205,15 +207,15 @@ int WebmEncoder::Run() {
 // |EncoderThread| to finish.
 void WebmEncoder::Stop() {
   CHECK(encode_thread_);
-  boost::mutex::scoped_lock lock(mutex_);
+  mutex_.lock();
   stop_ = true;
-  lock.unlock();
+  mutex_.unlock();
   encode_thread_->join();
 }
 
 // Returns encoded duration in seconds.
 int64 WebmEncoder::encoded_duration() const {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   return encoded_duration_;
 }
 
@@ -246,7 +248,7 @@ int WebmEncoder::OnVideoFrameReceived(VideoFrame* ptr_frame) {
 // the lock.
 bool WebmEncoder::StopRequested() {
   bool stop_requested = false;
-  boost::mutex::scoped_try_lock lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
   if (lock.owns_lock()) {
     stop_requested = stop_;
   }
@@ -350,10 +352,8 @@ void WebmEncoder::EncoderThread() {
         if (ptr_muxer_->ChunkReady(&chunk_length)) {
           LOG(INFO) << "mkvmuxer Finalize produced a chunk.";
 
-          while (!ptr_data_sink_->Ready()) {
-            boost::this_thread::sleep(boost::get_system_time() +
-                                      boost::posix_time::milliseconds(1));
-          }
+          while (!ptr_data_sink_->Ready())
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
           if (ReadChunkFromMuxer(chunk_length)) {
             const bool sink_write_ok =
@@ -399,7 +399,7 @@ int WebmEncoder::EncodeAudioOnly() {
     LOG(INFO) << "muxed (audio) " << vorbis_audio_buffer_.timestamp() / 1000.0;
 
     // Update encoded duration if able to obtain the lock.
-    boost::mutex::scoped_try_lock lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
     if (lock.owns_lock()) {
       encoded_duration_ = vb->timestamp();
     }
@@ -533,7 +533,7 @@ int WebmEncoder::EncodeVideoFrame() {
   }
 
   // Update encoded duration if able to obtain the lock.
-  boost::mutex::scoped_try_lock lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
   if (lock.owns_lock()) {
     encoded_duration_ = std::max(vp8_frame_.timestamp(), encoded_duration_);
   }
@@ -592,8 +592,7 @@ int WebmEncoder::WaitForSamples() {
     if (got_audio && got_video) {
       break;
     }
-    boost::this_thread::sleep(boost::get_system_time() +
-                              boost::posix_time::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 
   int64 first_audio_timestamp = 0;
