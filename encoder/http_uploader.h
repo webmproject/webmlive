@@ -9,10 +9,10 @@
 #define WEBMLIVE_ENCODER_HTTP_UPLOADER_H_
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <string>
 
-#include "boost/scoped_ptr.hpp"
 #include "encoder/basictypes.h"
 #include "encoder/data_sink.h"
 #include "encoder/encoder_base.h"
@@ -134,7 +134,7 @@ class HttpUploader : public DataSinkInterface {
 
  private:
   // Pointer to uploader implementation.
-  boost::scoped_ptr<HttpUploaderImpl> ptr_uploader_;
+  std::unique_ptr<HttpUploaderImpl> ptr_uploader_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(HttpUploader);
 };
 

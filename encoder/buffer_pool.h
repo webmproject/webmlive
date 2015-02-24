@@ -8,9 +8,9 @@
 #ifndef WEBMLIVE_ENCODER_BUFFER_POOL_H_
 #define WEBMLIVE_ENCODER_BUFFER_POOL_H_
 
+#include <mutex>
 #include <queue>
 
-#include "boost/thread/mutex.hpp"
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
 
@@ -87,7 +87,7 @@ class BufferPool {
   int Exchange(Type* ptr_source, Type* ptr_target);
 
   bool allow_growth_;
-  mutable boost::mutex mutex_;
+  mutable std::mutex mutex_;
   std::queue<Type*> inactive_buffers_;
   std::queue<Type*> active_buffers_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(BufferPool);

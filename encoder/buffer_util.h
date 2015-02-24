@@ -8,10 +8,10 @@
 #ifndef WEBMLIVE_ENCODER_BUFFER_UTIL_H_
 #define WEBMLIVE_ENCODER_BUFFER_UTIL_H_
 
+#include <memory>
+#include <mutex>
 #include <vector>
 
-#include "boost/scoped_ptr.hpp"
-#include "boost/thread/mutex.hpp"
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
 
@@ -53,7 +53,7 @@ class LockableBuffer {
   // Lock status.
   bool locked_;
   // Mutex protecting lock status.
-  boost::mutex mutex_;
+  std::mutex mutex_;
   // Internal buffer.
   std::vector<uint8> buffer_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(LockableBuffer);
@@ -98,7 +98,7 @@ class WebmChunkBuffer {
  private:
   typedef std::vector<uint8> Buffer;
   // WebM data parser.
-  boost::scoped_ptr<WebmBufferParser> parser_;
+  std::unique_ptr<WebmBufferParser> parser_;
   // Length of the buffered chunk, or 0 if one is not buffered.
   int32 chunk_length_;
   // Data buffer.

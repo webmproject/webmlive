@@ -12,10 +12,10 @@
 #include <dshow.h>
 
 #include <map>
+#include <memory>
 #include <string>
+#include <thread>
 
-#include "boost/shared_ptr.hpp"
-#include "boost/thread/thread.hpp"
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
 #include "encoder/webm_encoder.h"

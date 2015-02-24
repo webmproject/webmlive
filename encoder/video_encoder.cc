@@ -120,7 +120,7 @@ int VideoFrame::Init(const VideoConfig& config,
       }
       buffer_capacity_ = data_length;
     }
-    memcpy(&buffer_[0], ptr_data, data_length);
+    memcpy(buffer_.get(), ptr_data, data_length);
     buffer_length_ = data_length;
     config_ = config;
   }
@@ -142,7 +142,7 @@ int VideoFrame::Clone(VideoFrame* ptr_frame) const {
       LOG(ERROR) << "VideoFrame Clone cannot allocate buffer.";
       return kNoMemory;
     }
-    memcpy(&ptr_frame->buffer_[0], &buffer_[0], buffer_length_);
+    memcpy(ptr_frame->buffer_.get(), buffer_.get(), buffer_length_);
   }
   ptr_frame->buffer_capacity_ = buffer_capacity_;
   ptr_frame->buffer_length_ = buffer_length_;

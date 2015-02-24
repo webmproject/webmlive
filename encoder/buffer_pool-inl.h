@@ -8,9 +8,9 @@
 #ifndef WEBMLIVE_ENCODER_BUFFER_POOL_INL_H_
 #define WEBMLIVE_ENCODER_BUFFER_POOL_INL_H_
 
+#include <mutex>
 #include <queue>
 
-#include "boost/thread/mutex.hpp"
 #include "encoder/basictypes.h"
 #include "encoder/buffer_pool.h"
 #include "encoder/encoder_base.h"
@@ -19,7 +19,7 @@ namespace webmlive {
 
 template <class Type>
 inline BufferPool<Type>::~BufferPool() {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   while (!inactive_buffers_.empty()) {
     delete inactive_buffers_.front();
     inactive_buffers_.pop();
@@ -36,7 +36,7 @@ inline int BufferPool<Type>::Init(bool allow_growth, int num_buffers) {
   if (num_buffers <= 0) {
     return kInvalidArg;
   }
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (!inactive_buffers_.empty() || !active_buffers_.empty()) {
     return kAlreadyInitialized;
   }
@@ -59,7 +59,7 @@ inline int BufferPool<Type>::Commit(Type* ptr_buffer) {
   if (!ptr_buffer || !ptr_buffer->buffer()) {
     return kInvalidArg;
   }
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (inactive_buffers_.empty()) {
     if (allow_growth_) {
       Type* const ptr_buffer = new (std::nothrow) Type;  // NOLINT
@@ -92,7 +92,7 @@ inline int BufferPool<Type>::Decommit(Type* ptr_buffer) {
   if (!ptr_buffer) {
     return kInvalidArg;
   }
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (active_buffers_.empty()) {
     return kEmpty;
   }
@@ -111,7 +111,7 @@ inline int BufferPool<Type>::Decommit(Type* ptr_buffer) {
 
 template <class Type>
 inline void BufferPool<Type>::Flush() {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   while (!active_buffers_.empty()) {
     inactive_buffers_.push(active_buffers_.front());
     active_buffers_.pop();
@@ -140,7 +140,7 @@ inline int BufferPool<Type>::ActiveBufferTimestamp(int64* ptr_timestamp) {
     return kInvalidArg;
   }
   int status = kEmpty;
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (!active_buffers_.empty()) {
     *ptr_timestamp = active_buffers_.front()->timestamp();
     status = kSuccess;
@@ -150,7 +150,7 @@ inline int BufferPool<Type>::ActiveBufferTimestamp(int64* ptr_timestamp) {
 
 template <class Type>
 inline void BufferPool<Type>::DropActiveBuffer() {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (!active_buffers_.empty()) {
     inactive_buffers_.push(active_buffers_.front());
     active_buffers_.pop();
@@ -159,7 +159,7 @@ inline void BufferPool<Type>::DropActiveBuffer() {
 
 template <class Type>
 inline bool BufferPool<Type>::IsEmpty() const {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   return active_buffers_.empty();
 }
 
