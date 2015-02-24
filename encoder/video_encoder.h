@@ -8,11 +8,10 @@
 #ifndef WEBMLIVE_ENCODER_VIDEO_ENCODER_H_
 #define WEBMLIVE_ENCODER_VIDEO_ENCODER_H_
 
+#include <memory>
+#include <mutex>
 #include <queue>
 
-#include "boost/scoped_array.hpp"
-#include "boost/scoped_ptr.hpp"
-#include "boost/thread/mutex.hpp"
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
 
@@ -141,7 +140,7 @@ class VideoFrame {
   bool keyframe_;
   int64 timestamp_;
   int64 duration_;
-  boost::scoped_array<uint8> buffer_;
+  std::unique_ptr<uint8[]> buffer_;
   int32 buffer_capacity_;
   int32 buffer_length_;
   VideoConfig config_;
@@ -248,7 +247,7 @@ class VideoEncoder {
   int64 last_timestamp() const;
 
  private:
-  boost::scoped_ptr<VpxEncoder> ptr_vpx_encoder_;
+  std::unique_ptr<VpxEncoder> ptr_vpx_encoder_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(VideoEncoder);
 };
 

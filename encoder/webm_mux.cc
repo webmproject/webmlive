@@ -15,6 +15,10 @@
 #include "libwebm/mkvmuxer.hpp"
 #include "libwebm/webmids.hpp"
 
+namespace {
+const int kAutoAssignTrackNum = 0;
+}  // namespace
+
 namespace webmlive {
 
 template <typename T>
@@ -215,7 +219,7 @@ int LiveWebmMuxer::AddTrack(const AudioConfig& audio_config,
   // 1 byte each for ident and comment length values.
   // The length of setup data is implied by the total length.
   const int header_length = 1 + 1 + 1 + data_length;
-  boost::scoped_array<uint8> private_data;
+  std::unique_ptr<uint8[]> private_data;
   private_data.reset(new (std::nothrow) uint8[header_length]);
   if (!private_data) {
     LOG(ERROR) << "Cannot allocate private data block";
@@ -238,7 +242,8 @@ int LiveWebmMuxer::AddTrack(const AudioConfig& audio_config,
   memcpy(ptr_private_data, vcp.ptr_setup, vcp.setup_length);
 
   audio_track_num_ = ptr_segment_->AddAudioTrack(audio_config.sample_rate,
-                                                 audio_config.channels);
+                                                 audio_config.channels,
+                                                 kAutoAssignTrackNum);
   if (!audio_track_num_) {
     LOG(ERROR) << "cannot AddAudioTrack on segment.";
     return kVideoTrackError;
@@ -263,7 +268,8 @@ int LiveWebmMuxer::AddTrack(const VideoConfig& video_config) {
     return kVideoTrackAlreadyExists;
   }
   video_track_num_ = ptr_segment_->AddVideoTrack(video_config.width,
-                                                 video_config.height);
+                                                 video_config.height,
+                                                 kAutoAssignTrackNum);
   if (!video_track_num_) {
     LOG(ERROR) << "cannot AddVideoTrack on segment.";
     return kVideoTrackError;

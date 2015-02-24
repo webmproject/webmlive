@@ -8,9 +8,9 @@
 #ifndef WEBMLIVE_ENCODER_WEBM_MUX_H_
 #define WEBMLIVE_ENCODER_WEBM_MUX_H_
 
+#include <memory>
 #include <vector>
 
-#include "boost/scoped_ptr.hpp"
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
 #include "encoder/webm_encoder.h"
@@ -169,8 +169,8 @@ class LiveWebmMuxer {
   int64 muxer_time() const { return muxer_time_; }
 
  private:
-  boost::scoped_ptr<WebmMuxWriter> ptr_writer_;
-  boost::scoped_ptr<mkvmuxer::Segment> ptr_segment_;
+  std::unique_ptr<WebmMuxWriter> ptr_writer_;
+  std::unique_ptr<mkvmuxer::Segment> ptr_segment_;
   uint64 audio_track_num_;
   uint64 video_track_num_;
   WriteBuffer buffer_;

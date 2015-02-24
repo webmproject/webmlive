@@ -8,10 +8,10 @@
 #include "encoder/vorbis_encoder.h"
 
 #include <cstring>
+#include <memory>
 #include <new>
 #include <string>
 
-#include "boost/shared_ptr.hpp"
 #include "glog/logging.h"
 
 namespace {
@@ -23,7 +23,7 @@ bool ValidOggPacket(const ogg_packet& packet) {
 // Stores payload data from |packet| in |ptr_storage|. Returns |kSuccess| after
 // successful allocation of storage and copy of ogg_packet data.
 int StorePacketPayload(const ogg_packet& packet,
-                       boost::scoped_array<uint8>* ptr_storage,
+                       std::unique_ptr<uint8[]>* ptr_storage,
                        int32* ptr_length) {
   using namespace webmlive;
   if (!ptr_storage || !ptr_length) {
@@ -39,7 +39,7 @@ int StorePacketPayload(const ogg_packet& packet,
     LOG(ERROR) << "cannot StoreHeaderPacket, no memory.";
     return VorbisEncoder::kNoMemory;
   }
-  //memcpy(ptr_storage->get(), packet.packet, packet.bytes);
+
   std::copy(packet.packet, packet.packet + packet.bytes, ptr_storage->get());
   *ptr_length = packet.bytes;
   return VorbisEncoder::kSuccess;
@@ -348,10 +348,10 @@ int64 VorbisEncoder::time_encoded() const {
 int VorbisEncoder::GenerateHeaders() {
   vorbis_comment comments = {0};
   vorbis_comment_init(&comments);
-  // Abuse |boost::shared_ptr| to avoid repeating the call to
+  // Abuse |std::shared_ptr| to avoid repeating the call to
   // |vorbis_comment_clear| for every failure in this method.
-  boost::shared_ptr<vorbis_comment> comments_auto_clear(&comments,
-                                                        ClearVorbisComments);
+  std::shared_ptr<vorbis_comment> comments_auto_clear(&comments,
+                                                      ClearVorbisComments);
 
   // Add app name and version to vorbis comments.
   std::string encoder_id = kClientName;

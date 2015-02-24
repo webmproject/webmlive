@@ -8,9 +8,9 @@
 #ifndef WEBMLIVE_ENCODER_VORBIS_ENCODER_H_
 #define WEBMLIVE_ENCODER_VORBIS_ENCODER_H_
 
+#include <memory>
 #include <vector>
 
-#include "boost/scoped_array.hpp"
 #include "encoder/audio_encoder.h"
 #include "encoder/basictypes.h"
 #include "libvorbis/vorbis/codec.h"
@@ -110,9 +110,9 @@ class VorbisEncoder {
   AudioConfig audio_config_;
   VorbisConfig vorbis_config_;
 
-  boost::scoped_array<uint8> ident_header_;
-  boost::scoped_array<uint8> comments_header_;
-  boost::scoped_array<uint8> setup_header_;
+  std::unique_ptr<uint8[]> ident_header_;
+  std::unique_ptr<uint8[]> comments_header_;
+  std::unique_ptr<uint8[]> setup_header_;
 
   std::vector<uint8> ogg_packets_;
   std::vector<uint8> vorbis_samples_;

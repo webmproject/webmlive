@@ -11,10 +11,10 @@
 #include <stdio.h>
 #include <tchar.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "boost/scoped_array.hpp"
 #include "encoder/buffer_util.h"
 #include "encoder/http_uploader.h"
 #include "encoder/webm_encoder.h"
@@ -379,11 +379,4 @@ int main(int argc, const char** argv) {
   int exit_code = client_main(&config);
   google::ShutdownGoogleLogging();
   return exit_code;
-}
-
-// We build with BOOST_NO_EXCEPTIONS defined; boost will call this function
-// instead of throwing.  We must stop execution here.
-void boost::throw_exception(const std::exception& e) {
-  LOG(FATAL) << "boost threw! e.what=" << e.what();
-  exit(EXIT_FAILURE);
 }

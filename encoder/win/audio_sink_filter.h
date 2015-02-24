@@ -12,6 +12,8 @@
 #ifndef WEBMLIVE_ENCODER_WIN_AUDIO_SINK_FILTER_H_
 #define WEBMLIVE_ENCODER_WIN_AUDIO_SINK_FILTER_H_
 
+#include <memory>
+
 // Wrap include of streams.h with include guard used in the file: including the
 // file twice results in the output "STREAMS.H included TWICE" for debug
 // builds.
@@ -26,8 +28,6 @@
 #include "baseclasses/streams.h"
 #pragma warning(pop)
 #endif  // __STREAMS__
-#include "boost/scoped_array.hpp"
-#include "boost/scoped_ptr.hpp"
 #include "encoder/audio_encoder.h"
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
@@ -142,7 +142,7 @@ class AudioSinkFilter : public CBaseFilter {
   HRESULT OnSamplesReceived(IMediaSample* ptr_sample);
 
   mutable CCritSec filter_lock_;
-  boost::scoped_ptr<AudioSinkPin> sink_pin_;
+  std::unique_ptr<AudioSinkPin> sink_pin_;
   AudioBuffer sample_buffer_;
   AudioSamplesCallbackInterface* ptr_samples_callback_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(AudioSinkFilter);

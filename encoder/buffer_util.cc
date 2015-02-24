@@ -7,6 +7,9 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "encoder/buffer_util.h"
 
+#include <mutex>
+#include <thread>
+
 #include "encoder/webm_buffer_parser.h"
 #include "glog/logging.h"
 
@@ -21,7 +24,7 @@ LockableBuffer::~LockableBuffer() {
 // Attempts to obtain lock on |mutex_|. Returns value of |locked_| if the lock
 // is obtained, assumes locked and returns true otherwise.
 bool LockableBuffer::IsLocked() {
-  boost::mutex::scoped_try_lock lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
   if (lock.owns_lock()) {
     return locked_;
   }
@@ -34,7 +37,7 @@ int LockableBuffer::Init(const uint8* const ptr_data, int32 length) {
   if (IsLocked()) {
     return kLocked;
   }
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   if (!ptr_data || length <= 0) {
     LOG(ERROR) << "invalid arg(s).";
     return kInvalidArg;
@@ -61,7 +64,7 @@ int LockableBuffer::GetBuffer(uint8** ptr_buffer, int32* ptr_length) {
 
 // Obtains lock on |mutex_| and sets |locked_| to true.
 int LockableBuffer::Lock() {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   int status = kSuccess;
   if (locked_) {
     status = kLocked;
@@ -72,7 +75,7 @@ int LockableBuffer::Lock() {
 
 // Obtains lock on |mutex_| and sets |locked_| to false.
 int LockableBuffer::Unlock() {
-  boost::mutex::scoped_lock lock(mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   int status = kSuccess;
   if (!locked_) {
     status = kNotLocked;
