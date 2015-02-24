@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//GZQ\u003d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-02-24T01:30:43Z",
+      "side": 1,
+      "message": "is there a note in the README about C++11 / minimum visual studio version?",
+      "revId": "119ee31aecf894f0591e646ce43731b6e619b505",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//GZI\u003d",
+        "filename": "encoder/audio_encoder.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-02-24T01:30:43Z",
+      "side": 1,
+      "message": "wouldn\u0027t this be std::unique_ptr\u003cuint8[]\u003e now?",
+      "revId": "119ee31aecf894f0591e646ce43731b6e619b505",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//GZE\u003d",
+        "filename": "encoder/vorbis_encoder.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-02-24T01:30:43Z",
+      "side": 1,
+      "message": "\u003cuint8[]\u003e ?",
+      "revId": "119ee31aecf894f0591e646ce43731b6e619b505",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//GZA\u003d",
+        "filename": "encoder/webm_encoder.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 209,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-02-24T01:30:43Z",
+      "side": 1,
+      "message": "uint8[] ?",
+      "revId": "119ee31aecf894f0591e646ce43731b6e619b505",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//GY8\u003d",
+        "filename": "encoder/webm_mux.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 222,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-02-24T01:30:43Z",
+      "side": 1,
+      "message": "uint8[]?",
+      "revId": "119ee31aecf894f0591e646ce43731b6e619b505",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//GY4\u003d",
+        "filename": "encoder/win/media_source_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-02-24T01:30:43Z",
+      "side": 1,
+      "message": "char[] ?",
+      "revId": "119ee31aecf894f0591e646ce43731b6e619b505",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
