@@ -124,6 +124,7 @@
 /* Puts following code inside the Google namespace */
 #define _START_GOOGLE_NAMESPACE_ namespace google {
 
+#if 0
 /* Always the empty-string on non-windows systems. On windows, should be
    "__declspec(dllexport)". This way, when we compile the dll, we export our
    functions/classes. It's safe to define this here because config.h is only
@@ -133,4 +134,7 @@
 # define GOOGLE_GLOG_IS_A_DLL  1   /* not set if you're statically linking */
 # define GOOGLE_GLOG_DLL_DECL  __declspec(dllexport)
 # define GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS  __declspec(dllimport)
+#endif
+#else
+#define GOOGLE_GLOG_DLL_DECL
 #endif
