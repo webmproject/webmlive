@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//FwU\u003d",
+        "filename": "third_party/glog/src/src/windows/glog/logging.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-02T23:55:10Z",
+      "side": 1,
+      "message": "More annoying: Getting this completely wrong and forcing downstream users to clean up your messes. \u003e:|",
+      "revId": "07e53b6ba61275eb30d5bebd6ca3bada30182bb3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
