@@ -95,6 +95,20 @@ install_libcurl() {
   vlog "Installing includes..."
   mkdir -p "${target_dir}"
   cp -rp "${THIRD_PARTY}/${WORK_DIR}/${LIBCURL}/include/" "${target_dir}"
+
+  # Install curlbuild.h from the cmake generation dir for each target.
+  local curlbuild_file
+  local curlbuild_path
+  local curlbuild_target_dir
+  local generation_dir
+  for (( i = 0; i < ${#CMAKE_GENERATION_DIRS[@]}; ++i )); do
+    generation_dir="${CMAKE_GENERATION_DIRS[$i]}"
+    curlbuild_path="${THIRD_PARTY}/${WORK_DIR}/${generation_dir}/include/curl"
+    curlbuild_file="${curlbuild_path}/curlbuild.h"
+    curlbuild_target_dir="${target_dir}/${LIBCURL_TARGET_CURLBUILD_DIRS[$i]}"
+    mkdir -p "${curlbuild_target_dir}"
+    cp -p "${curlbuild_file}" "${curlbuild_target_dir}"
+  done
   vlog "Done."
 
   # CMake generated vcxproj files place PDB files in config-named subdirs of
@@ -187,6 +201,8 @@ readonly CMAKE_BUILD_DIRS=(${CMAKE_PROJECT_DIRS[0]}/${CMAKE_BUILD_CONFIGS[0]}
                            ${CMAKE_PROJECT_DIRS[1]}/${CMAKE_BUILD_CONFIGS[1]})
 readonly LIBCURL="libcurl"
 readonly LIBCURL_GIT_URL="https://github.com/bagder/curl.git"
+readonly LIBCURL_TARGET_CURLBUILD_DIRS=(include/curl/win/x64
+                                        include/curl/win/x86)
 readonly LIBCURL_TARGET_LIB_DIRS=(win/x64/debug
                                   win/x64/release
                                   win/x86/debug
@@ -207,6 +223,7 @@ cat << EOF
   CMAKE_PROJECT_DIRS=${CMAKE_PROJECT_DIRS[@]}
   LIBCURL=${LIBCURL}
   LIBCURL_GIT_URL=${LIBCURL_GIT_URL}
+  LIBCURL_TARGET_CURLBUILD_DIRS=${LIBCURL_TARGET_CURLBUILD_DIRS[@]}
   LIBCURL_TARGET_LIB_DIRS=${LIBCURL_TARGET_LIB_DIRS[@]}
   THIRD_PARTY=${THIRD_PARTY}
   WORK_DIR=${WORK_DIR}
