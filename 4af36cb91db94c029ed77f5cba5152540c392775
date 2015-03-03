@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//FuA\u003d",
+        "filename": "encoder/CMakeLists.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-03-03T03:31:14Z",
+      "side": 1,
+      "message": "this looks weird, just an \u0027else\u0027 right? i.e., should \u003d\u003d 4 in this case",
+      "revId": "4af36cb91db94c029ed77f5cba5152540c392775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Ft8\u003d",
+        "filename": "encoder/CMakeLists.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-03-03T03:31:14Z",
+      "side": 1,
+      "message": "should be redundant with the error above; was this meant to be x86? or is this like the TODOs in that the base app could in theory be ported?",
+      "revId": "4af36cb91db94c029ed77f5cba5152540c392775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
