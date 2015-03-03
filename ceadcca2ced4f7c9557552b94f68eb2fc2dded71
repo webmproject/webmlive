@@ -16,6 +16,24 @@
       "revId": "ceadcca2ced4f7c9557552b94f68eb2fc2dded71",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Fok\u003d",
+        "filename": "third_party/libcurl/include/curl/win/x64/curlbuild.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-03T18:55:34Z",
+      "side": 1,
+      "message": "fucking boo.\nDone.",
+      "parentUuid": "AAAAdn//FuU\u003d",
+      "revId": "ceadcca2ced4f7c9557552b94f68eb2fc2dded71",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
