@@ -22,5 +22,9 @@ $ cmake path/to/webmlive/third_party/glog -G "Visual Studio 12"
 
 
 Local changes (with git hash of change):
-- vs2013 compatibility fixes: b75a442a1c5586ddbcad5aa8697b9ddfab869b11
-- clean up (missing DLL export): 11e652a71d38cbc179360c526420267e31baddab
+- vs2013 compatibility fixes:
+  b75a442a1c5586ddbcad5aa8697b9ddfab869b11
+- clean up (missing DLL export):
+  11e652a71d38cbc179360c526420267e31baddab
+- remove DLL exports (thus allowing static linking to glog):
+  0f48f5c87b01298f728ecdaef95fdd9a5e3efe5c
