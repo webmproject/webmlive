@@ -80,7 +80,11 @@ void MediaType::FreeMediaType(AM_MEDIA_TYPE* ptr_media_type) {
 void MediaType::FreeMediaTypeData(AM_MEDIA_TYPE* ptr_media_type) {
   if (ptr_media_type) {
     if (ptr_media_type->cbFormat != 0) {
-      CoTaskMemFree(ptr_media_type->pbFormat);
+      // Avoid CoTaskMemFree() on pbFormat within ksproxy.ax based video media
+      // types. Freeing this memory leads to heap corruption crashes when using
+      // certain webcams.
+      if (ptr_media_type->formattype != CLSID_KsDataTypeHandlerVideo)
+        CoTaskMemFree(ptr_media_type->pbFormat);
       ptr_media_type->cbFormat = 0;
       ptr_media_type->formattype = GUID_NULL;
       ptr_media_type->pbFormat = NULL;

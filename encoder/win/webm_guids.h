@@ -14,6 +14,7 @@ namespace webmlive {
 
 extern const CLSID CLSID_AudioSinkFilter;
 extern const CLSID CLSID_VideoSinkFilter;
+extern const CLSID CLSID_KsDataTypeHandlerVideo;
 extern const GUID MEDIASUBTYPE_I420;
 extern const GUID MEDIASUBTYPE_VP80;
 

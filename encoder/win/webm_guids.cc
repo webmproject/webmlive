@@ -23,6 +23,14 @@ const CLSID webmlive::CLSID_VideoSinkFilter =  {
   { 0x95, 0xf1, 0x7e, 0xe, 0x3c, 0x14, 0x7, 0xe6 }
 };
 
+// {D0DBABEA-71A5-40fb-95F1-7E0E3C1407E6}
+const CLSID webmlive::CLSID_KsDataTypeHandlerVideo = {
+  0x05589f80,
+  0xc356,
+  0x11ce,
+  { 0xbf, 0x01, 0x00, 0xaa, 0x00, 0x55, 0x59, 0x5a }
+};
+
 // 30385056-0000-0010-8000-00AA00389B71 'VP80'
 const GUID webmlive::MEDIASUBTYPE_VP80 = {
   0x30385056,
