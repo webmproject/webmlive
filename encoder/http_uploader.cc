@@ -255,6 +255,8 @@ HttpUploaderImpl::HttpUploaderImpl()
       ptr_headers_(NULL),
       stop_(false),
       upload_complete_(true) {
+  mutex_.lock();
+  mutex_.unlock();
 }
 
 HttpUploaderImpl::~HttpUploaderImpl() {
@@ -331,6 +333,7 @@ int HttpUploaderImpl::GetStats(HttpUploaderStats* ptr_stats) {
     LOG(ERROR) << "NULL ptr_stats";
     return HttpUploader::kInvalidArg;
   }
+
   std::lock_guard<std::mutex> lock(mutex_);
   ptr_stats->bytes_per_second = stats_.bytes_per_second;
   ptr_stats->bytes_sent_current = stats_.bytes_sent_current;
@@ -620,7 +623,7 @@ int HttpUploaderImpl::Upload() {
 
 // Idle the upload thread while awaiting user data.
 int HttpUploaderImpl::WaitForUserData() {
-  std::unique_lock<std::mutex> lock(mutex_, std::adopt_lock);
+  std::unique_lock<std::mutex> lock(mutex_);
   buffer_ready_.wait(lock);  // Unlock |mutex_| and idle the thread while we
                              // wait for the next chunk of user data.
   return kSuccess;
