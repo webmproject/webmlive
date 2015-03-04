@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//FS8\u003d",
+        "filename": "encoder/CMakeLists.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-04T17:02:54Z",
+      "side": 1,
+      "message": "Agreed-- cmake\u0027s syntax is a little strange for if/else/endif. It\u0027s always a repeat of the condition from the first if (not sure if there\u0027s and elseif that actually departs from this rule).",
+      "parentUuid": "AAAAdn//FuA\u003d",
+      "revId": "4af36cb91db94c029ed77f5cba5152540c392775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//Ft8\u003d",
         "filename": "encoder/CMakeLists.txt",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2015-03-03T03:31:14Z",
       "side": 1,
       "message": "should be redundant with the error above; was this meant to be x86? or is this like the TODOs in that the base app could in theory be ported?",
+      "revId": "4af36cb91db94c029ed77f5cba5152540c392775",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//FS4\u003d",
+        "filename": "encoder/CMakeLists.txt",
+        "patchSetId": 4
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-04T17:02:54Z",
+      "side": 1,
+      "message": "The latter. If I ever get around to porting this thing...",
+      "parentUuid": "AAAAdn//Ft8\u003d",
       "revId": "4af36cb91db94c029ed77f5cba5152540c392775",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
