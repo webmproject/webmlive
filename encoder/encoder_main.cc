@@ -31,6 +31,8 @@ enum {
 const std::string kAgentQueryFragment = "&agent=p";
 const std::string kMetadataQueryFragment = "&metadata=1";
 const std::string kWebmItagQueryFragment = "&itag=43";
+const std::string kCodecVP8 = "vp8";
+const std::string kCodecVP9 = "vp9";
 typedef std::vector<std::string> StringVector;
 
 struct WebmEncoderClientConfig {
@@ -53,8 +55,6 @@ void usage(const char** argv) {
   printf("    The URL parameter is always required. If no query string is\n");
   printf("    present in the URL, the stream_id and stream_name are also\n");
   printf("    required.\n");
-  printf("    The stream_id and stream_name params are required when the\n");
-  printf("    URL lacks a query string.\n");
   printf("  General Options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
@@ -90,6 +90,7 @@ void usage(const char** argv) {
   printf("    --vframe_rate <width>              Frames per second.\n");
   printf("  VPX Encoder options:\n");
   printf("    --vpx_bitrate <kbps>               Video bitrate.\n");
+  printf("    --vpx_codec <codec>                Video codec, vp8 or vp9.\n");
   printf("    --vpx_decimate <decimate factor>   FPS reduction factor.\n");
   printf("    --vpx_keyframe_interval <milliseconds>  Time between\n");
   printf("                                            keyframes.\n");
@@ -221,6 +222,15 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vpx_bitrate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.bitrate = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vpx_codec", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      std::string vpx_codec_value = argv[++i];
+      if (vpx_codec_value == kCodecVP8)
+        enc_config.vpx_config.codec = webmlive::kVideoFormatVP8;
+      else if (vpx_codec_value == kCodecVP9)
+        enc_config.vpx_config.codec = webmlive::kVideoFormatVP9;
+      else
+        LOG(ERROR) << "Invalid --vpx_codec value: " << vpx_codec_value;
     } else if (!strcmp("--vpx_decimate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.decimate = strtol(argv[++i], NULL, 10);
@@ -304,7 +314,7 @@ int start_uploader(WebmEncoderClientConfig* ptr_config,
   return status;
 }
 
-int client_main(WebmEncoderClientConfig* ptr_config) {
+int encoder_main(WebmEncoderClientConfig* ptr_config) {
   webmlive::WebmEncoderConfig& enc_config = ptr_config->enc_config;
   webmlive::HttpUploader uploader;
 
@@ -376,7 +386,7 @@ int main(int argc, const char** argv) {
   }
 
   LOG(INFO) << "url: " << config.target_url.c_str();
-  int exit_code = client_main(&config);
+  int exit_code = encoder_main(&config);
   google::ShutdownGoogleLogging();
   return exit_code;
 }

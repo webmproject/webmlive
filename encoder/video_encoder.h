@@ -27,6 +27,7 @@ enum VideoFormat {
   kVideoFormatRGB = 6,
   kVideoFormatRGBA = 7,
   kVideoFormatCount = 8,
+  kVideoFormatVP9 = 9,
 };
 
 // YUV bit count constants.
@@ -172,6 +173,7 @@ struct VpxConfig {
   VpxConfig()
       : keyframe_interval(1000),
         bitrate(500),
+        codec(kVideoFormatVP8),
         decimate(kUseDefault),
         min_quantizer(10),
         max_quantizer(46),
@@ -187,6 +189,9 @@ struct VpxConfig {
 
   // Video bitrate, in kilobits.
   int bitrate;
+
+  // Video codec, kVideoFormatVP8 or kVideoFormatVP9.
+  VideoFormat codec;
 
   // Video frame rate decimation factor.
   int decimate;
