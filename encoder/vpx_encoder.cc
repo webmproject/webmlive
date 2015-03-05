@@ -24,19 +24,26 @@ VpxEncoder::VpxEncoder()
       frames_out_(0),
       last_keyframe_time_(0),
       last_timestamp_(0) {
-  memset(&vp8_context_, 0, sizeof(vp8_context_));
+  memset(&vpx_context_, 0, sizeof(vpx_context_));
 }
 
 VpxEncoder::~VpxEncoder() {
-  vpx_codec_destroy(&vp8_context_);
+  vpx_codec_destroy(&vpx_context_);
 }
 
 // Populates libvpx configuration structure with user values, and initializes
-// the library for VP8 encoding.
+// the library for VPx encoding.
 int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
   vpx_codec_enc_cfg_t libvpx_config = {0};
-  vpx_codec_err_t status = vpx_codec_enc_config_default(vpx_codec_vp8_cx(),
-                                                        &libvpx_config, 0);
+  vpx_codec_err_t status = VPX_CODEC_INVALID_PARAM;
+
+  if (user_config.vpx_config.codec == kVideoFormatVP8) {
+     status = vpx_codec_enc_config_default(vpx_codec_vp8_cx(),
+                                           &libvpx_config, 0);
+  } else if (user_config.vpx_config.codec == kVideoFormatVP9) {
+    status = vpx_codec_enc_config_default(vpx_codec_vp9_cx(),
+                                          &libvpx_config, 0);
+  }
   if (status) {
     LOG(ERROR) << "vpx_codec_enc_config_default failed: "
                << vpx_codec_err_to_string(status);
@@ -69,7 +76,7 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
 
   // Configure the codec library.
   status =
-      vpx_codec_enc_init(&vp8_context_, vpx_codec_vp8_cx(), &libvpx_config, 0);
+    vpx_codec_enc_init(&vpx_context_, vpx_codec_vp8_cx(), &libvpx_config, 0);
   if (status) {
     LOG(ERROR) << "vpx_codec_enc_init failed: "
                << vpx_codec_err_to_string(status);
@@ -97,12 +104,12 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
 }
 
 // Encodes |ptr_raw_frame| using libvpx and stores the resulting VP8 frame in
-// |ptr_vp8_frame|. First checks if |ptr_raw_frame| should be dropped due to
+// |ptr_vpx_frame|. First checks if |ptr_raw_frame| should be dropped due to
 // decimation, and then checks if it's time to force a keyframe before finally
 // wrapping the data from |ptr_raw_frame| in a vpx_img_t struct and passing it
 // to libvpx.
 int VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
-                            VideoFrame* ptr_vp8_frame) {
+                            VideoFrame* ptr_vpx_frame) {
   if (!raw_frame.buffer()) {
     LOG(ERROR) << "NULL raw VideoFrame buffer!";
     return kInvalidArg;
@@ -147,7 +154,7 @@ int VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
 
   // Pass |ptr_raw_frame|'s data to libvpx.
   const vpx_codec_err_t vpx_status =
-      vpx_codec_encode(&vp8_context_, ptr_vpx_image, raw_frame.timestamp(),
+      vpx_codec_encode(&vpx_context_, ptr_vpx_image, raw_frame.timestamp(),
                        duration, flags, VPX_DL_REALTIME);
   if (vpx_status) {
     LOG(ERROR) << "EncodeFrame vpx_codec_encode failed: "
@@ -160,31 +167,31 @@ int VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
   vpx_codec_iter_t iter = NULL;
   for (;;) {
     const vpx_codec_cx_pkt_t* pkt =
-        vpx_codec_get_cx_data(&vp8_context_, &iter);
+        vpx_codec_get_cx_data(&vpx_context_, &iter);
     if (!pkt) {
       break;
     }
     const bool compressed_frame_packet = pkt->kind == VPX_CODEC_CX_FRAME_PKT;
 
-    // Copy the compressed data to |ptr_vp8_frame|.
+    // Copy the compressed data to |ptr_vpx_frame|.
     if (compressed_frame_packet) {
       const bool is_keyframe = !!(pkt->data.frame.flags & VPX_FRAME_IS_KEY);
-      uint8* const ptr_vp8_frame_buf =
+      uint8* const ptr_vpx_frame_buf =
           reinterpret_cast<uint8*>(pkt->data.frame.buf);
-      VideoConfig vp8_config = raw_frame.config();
-      vp8_config.format = kVideoFormatVP8;
-      const int32 status = ptr_vp8_frame->Init(vp8_config,
+      VideoConfig vpx_config = raw_frame.config();
+      vpx_config.format = config_.codec;
+      const int32 status = ptr_vpx_frame->Init(vpx_config,
                                                is_keyframe,
                                                raw_frame.timestamp(),
                                                raw_frame.duration(),
-                                               ptr_vp8_frame_buf,
+                                               ptr_vpx_frame_buf,
                                                pkt->data.frame.sz);
       if (status) {
         LOG(ERROR) << "VideoFrame Init failed: " << status;
         return kEncoderError;
       }
       if (is_keyframe) {
-        last_keyframe_time_ = ptr_vp8_frame->timestamp();
+        last_keyframe_time_ = ptr_vpx_frame->timestamp();
         LOG(INFO) << "keyframe @ " << last_keyframe_time_ / 1000.0 << "sec ("
                   << last_keyframe_time_ << "ms)";
       }
@@ -192,7 +199,7 @@ int VpxEncoder::EncodeFrame(const VideoFrame& raw_frame,
       break;
     }
   }
-  last_timestamp_ = ptr_vp8_frame->timestamp();
+  last_timestamp_ = ptr_vpx_frame->timestamp();
   return kSuccess;
 }
 
@@ -207,18 +214,18 @@ int VpxEncoder::CodecControl(int control_id, T val, T default_val) {
     // entries. Verbosity plus switch to the rescue!
     switch (control_id) {
       case VP8E_SET_CPUUSED:
-        status = vpx_codec_control(&vp8_context_, VP8E_SET_CPUUSED, val);
+        status = vpx_codec_control(&vpx_context_, VP8E_SET_CPUUSED, val);
         break;
       case VP8E_SET_STATIC_THRESHOLD:
-        status = vpx_codec_control(&vp8_context_, VP8E_SET_STATIC_THRESHOLD,
+        status = vpx_codec_control(&vpx_context_, VP8E_SET_STATIC_THRESHOLD,
                                    val);
         break;
       case VP8E_SET_TOKEN_PARTITIONS:
-        status = vpx_codec_control(&vp8_context_, VP8E_SET_TOKEN_PARTITIONS,
+        status = vpx_codec_control(&vpx_context_, VP8E_SET_TOKEN_PARTITIONS,
                                    static_cast<vp8e_token_partitions>(val));
         break;
       case VP8E_SET_NOISE_SENSITIVITY:
-        status = vpx_codec_control(&vp8_context_, VP8E_SET_NOISE_SENSITIVITY,
+        status = vpx_codec_control(&vpx_context_, VP8E_SET_NOISE_SENSITIVITY,
                                    val);
       default:
         LOG(ERROR) << "unknown control id in VpxEncoder::CodecControl.";

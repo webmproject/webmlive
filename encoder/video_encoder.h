@@ -27,6 +27,7 @@ enum VideoFormat {
   kVideoFormatRGB = 6,
   kVideoFormatRGBA = 7,
   kVideoFormatCount = 8,
+  kVideoFormatVP9 = 9,
 };
 
 // YUV bit count constants.
@@ -172,21 +173,35 @@ struct VpxConfig {
   VpxConfig()
       : keyframe_interval(1000),
         bitrate(500),
+        codec(kVideoFormatVP8),
         decimate(kUseDefault),
-        min_quantizer(10),
-        max_quantizer(46),
+        min_quantizer(2),
+        max_quantizer(52),
         speed(kUseDefault),
         static_threshold(kUseDefault),
         thread_count(kUseDefault),
         token_partitions(kUseDefault),
         undershoot(kUseDefault),
-        noise_sensitivity(kUseDefault) {}
+        noise_sensitivity(kUseDefault),
+        overshoot(kUseDefault),
+        total_buffer_time(1000),
+        initial_buffer_time(500),
+        optimal_buffer_time(600),
+        max_keyframe_bitrate(300),
+        profile(0),
+        sharpness(0),
+        error_resilient(true),
+        adaptive_quantization_mode(3),
+        disable_fpe(false) {}
 
   // Time between keyframes, in milliseconds.
   int keyframe_interval;
 
   // Video bitrate, in kilobits.
   int bitrate;
+
+  // Video codec, kVideoFormatVP8 or kVideoFormatVP9.
+  VideoFormat codec;
 
   // Video frame rate decimation factor.
   int decimate;
@@ -215,6 +230,42 @@ struct VpxConfig {
   // Reduces the noise level of uncompressed video before processing by
   // blurring the pixels of adjacent frames together.
   int noise_sensitivity;
+
+  // Percentage to overshoot the requested datarate.
+  int overshoot;
+
+  // Client buffer sizes (values in milliseconds).
+  int total_buffer_time;
+  int initial_buffer_time;
+  int optimal_buffer_time;
+
+  // Maximum keyframe (I-frame) bitrate (percentage of |bitrate|).
+  int max_keyframe_bitrate;
+
+  // Encoder usage profile.
+  int profile;
+
+  // Loop filter sharpness, 0-7.
+  int sharpness;
+
+  // Error resilience on/off.
+  bool error_resilient;
+
+  // Golden frame bitrate boost in CBR (percentage of |bitrate|).
+  int goldenframe_cbr_boost;
+
+  // Adaptive quantization mode
+  // 0: off
+  // 1: variance
+  // 2: complexity
+  // 3: cyclic refresh (default)
+  int adaptive_quantization_mode;
+
+  // Number of tile columns.
+  int tile_columns;
+
+  // Disables frame parallel decoding features.
+  bool disable_fpe;
 };
 
 // Forward declaration of |VpxEncoder| class for use in |VideoEncoder|. The
