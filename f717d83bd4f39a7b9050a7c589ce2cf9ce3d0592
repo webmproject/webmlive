@@ -16,6 +16,24 @@
       "revId": "f717d83bd4f39a7b9050a7c589ce2cf9ce3d0592",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//FLI\u003d",
+        "filename": "third_party/glog/README.webmlive",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-05T02:03:54Z",
+      "side": 1,
+      "message": "short hashes feel so lazy, though",
+      "parentUuid": "AAAAdn//FNg\u003d",
+      "revId": "f717d83bd4f39a7b9050a7c589ce2cf9ce3d0592",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
