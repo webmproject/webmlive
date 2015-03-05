@@ -51,6 +51,24 @@
       "revId": "1acb98e5db905609c42f71a6610aaf9ae6e6a36f",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//FMk\u003d",
+        "filename": "encoder/win/media_type_dshow.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-05T00:22:16Z",
+      "side": 1,
+      "message": "Then I guess it is fine. Only once per app run and it is sample code. And you called out why.",
+      "parentUuid": "AAAAdn//FMs\u003d",
+      "revId": "1acb98e5db905609c42f71a6610aaf9ae6e6a36f",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
