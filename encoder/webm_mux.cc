@@ -274,6 +274,17 @@ int LiveWebmMuxer::AddTrack(const VideoConfig& video_config) {
     LOG(ERROR) << "cannot AddVideoTrack on segment.";
     return kVideoTrackError;
   }
+
+  if (video_config.format != kVideoFormatVP8) {
+    mkvmuxer::VideoTrack* const video_track = static_cast<mkvmuxer::VideoTrack*>(
+        ptr_segment_->GetTrackByNumber(video_track_num_));
+    if (!video_track) {
+      LOG(ERROR) << "cannot get video track to set codec.\n";
+      return kVideoTrackError;
+    }
+    video_track->set_codec_id(mkvmuxer::Tracks::kVp9CodecId);
+  }
+
   return kSuccess;
 }
 
@@ -296,29 +307,30 @@ int LiveWebmMuxer::Finalize() {
   return kSuccess;
 }
 
-int LiveWebmMuxer::WriteVideoFrame(const VideoFrame& vp8_frame) {
+int LiveWebmMuxer::WriteVideoFrame(const VideoFrame& vpx_frame) {
   if (video_track_num_ == 0) {
     LOG(ERROR) << "Cannot WriteVideoFrame without a video track.";
     return kNoVideoTrack;
   }
-  if (!vp8_frame.buffer()) {
+  if (!vpx_frame.buffer()) {
     LOG(ERROR) << "cannot write empty frame.";
     return kInvalidArg;
   }
-  if (vp8_frame.format() != kVideoFormatVP8) {
+  if (vpx_frame.format() != kVideoFormatVP8 &&
+      vpx_frame.format() != kVideoFormatVP9) {
     LOG(ERROR) << "cannot write non-VP8 frame.";
     return kInvalidArg;
   }
-  const int64 timecode = milliseconds_to_timecode_ticks(vp8_frame.timestamp());
-  if (!ptr_segment_->AddFrame(vp8_frame.buffer(),
-                              vp8_frame.buffer_length(),
+  const int64 timecode = milliseconds_to_timecode_ticks(vpx_frame.timestamp());
+  if (!ptr_segment_->AddFrame(vpx_frame.buffer(),
+                              vpx_frame.buffer_length(),
                               video_track_num_,
                               timecode,
-                              vp8_frame.keyframe())) {
+                              vpx_frame.keyframe())) {
     LOG(ERROR) << "AddFrame (video) failed.";
     return kVideoWriteError;
   }
-  muxer_time_ = vp8_frame.timestamp();
+  muxer_time_ = vpx_frame.timestamp();
   return kSuccess;
 }
 
