@@ -41,14 +41,14 @@ class VpxEncoder {
   int Init(const WebmEncoderConfig& config);
 
   // Encodes |ptr_raw_frame| using libvpx and returns the compressed data via
-  // |ptr_vp8_frame|.
+  // |ptr_vpx_frame|.
   // Return values:
   // |kSuccess| - frame encoded successfully.
   // |kDropped| - decimation is enabled and the frame stored in
   //              |ptr_raw_frame| was dropped.
   // |kCodecError| - a libvpx operation failed.
-  // |kEncoderError| - compressed data cannot be stored in |ptr_vp8_frame|.
-  int EncodeFrame(const VideoFrame& raw_frame, VideoFrame* ptr_vp8_frame);
+  // |kEncoderError| - compressed data cannot be stored in |ptr_vpx_frame|.
+  int EncodeFrame(const VideoFrame& raw_frame, VideoFrame* ptr_vpx_frame);
 
   // Accessors.
   int64 frames_in() const { return frames_in_; }
@@ -77,7 +77,7 @@ class VpxEncoder {
   VpxConfig config_;
 
   // libvpx VP8 configuration structure.
-  vpx_codec_ctx_t vp8_context_;
+  vpx_codec_ctx_t vpx_context_;
 
   // Timestamp of most recent compressed frame.
   int64 last_timestamp_;
