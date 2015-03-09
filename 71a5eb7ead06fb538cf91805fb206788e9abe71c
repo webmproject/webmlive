@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//ExA\u003d",
+        "filename": "encoder/encoder_main.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T15:38:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//E1g\u003d",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//E1c\u003d",
         "filename": "encoder/encoder_main.cc",
         "patchSetId": 5
@@ -30,6 +48,24 @@
       "writtenOn": "2015-03-07T02:46:25Z",
       "side": 1,
       "message": "Golden frame",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Ew8\u003d",
+        "filename": "encoder/encoder_main.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T15:38:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//E1c\u003d",
       "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//Ew0\u003d",
+        "filename": "encoder/video_encoder.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T15:38:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//E1Y\u003d",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//E1A\u003d",
         "filename": "encoder/video_encoder.h",
         "patchSetId": 5
@@ -64,6 +118,24 @@
       "writtenOn": "2015-03-07T03:23:40Z",
       "side": 1,
       "message": ", VP9 here and elsewhere through this comment",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Eww\u003d",
+        "filename": "encoder/video_encoder.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T15:38:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//E1A\u003d",
       "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//Ews\u003d",
+        "filename": "encoder/video_encoder.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T15:38:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//E08\u003d",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//E1U\u003d",
         "filename": "encoder/video_encoder.h",
         "patchSetId": 5
@@ -98,6 +188,24 @@
       "writtenOn": "2015-03-07T02:46:25Z",
       "side": 1,
       "message": ", log2",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Ewo\u003d",
+        "filename": "encoder/video_encoder.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T15:38:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//E1U\u003d",
       "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -121,6 +229,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//Ewk\u003d",
+        "filename": "encoder/video_encoder.h",
+        "patchSetId": 5
+      },
+      "lineNbr": 290,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T15:38:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//E04\u003d",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//E1Q\u003d",
         "filename": "encoder/vpx_encoder.cc",
         "patchSetId": 5
@@ -132,6 +258,24 @@
       "writtenOn": "2015-03-07T02:46:25Z",
       "side": 1,
       "message": "1 since it\u0027s an int",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Ewg\u003d",
+        "filename": "encoder/vpx_encoder.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T15:38:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//E1Q\u003d",
       "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -155,6 +299,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//Ewc\u003d",
+        "filename": "encoder/vpx_encoder.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T15:38:14Z",
+      "side": 1,
+      "message": "I think it was just the returns in this function, and I fixed those... most of them were in the new code.",
+      "parentUuid": "AAAAdn//E1M\u003d",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//E1I\u003d",
         "filename": "encoder/vpx_encoder.cc",
         "patchSetId": 5
@@ -166,6 +328,24 @@
       "writtenOn": "2015-03-07T02:46:25Z",
       "side": 1,
       "message": "you could merge a bunch of cases and do vpx_codec_control(..., control_id, val)",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Ev8\u003d",
+        "filename": "encoder/vpx_encoder.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 298,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T15:38:14Z",
+      "side": 1,
+      "message": "vpx_codec_control() makes that impossible-- Either it breaks things, or my template won\u0027t expand properly (depending on what the vpx_codec_control(..., control_id, ...) call looks like):\n\nNo cast on control_id:\n\n1\u003e  vpx_encoder.cc\n1\u003eD:\\src\\webm\\webmlive\\encoder\\vpx_encoder.cc(276): error C3861: \u0027vpx_codec_control_control_id\u0027: identifier not found\n1\u003e          D:\\src\\webm\\webmlive\\encoder\\vpx_encoder.cc(108) : see reference to function template instantiation \u0027int32 webmlive::VpxEncoder::CodecControl\u003cint\u003e(int,T,T)\u0027 being compiled\n1\u003e          with\n1\u003e          [\n1\u003e              T\u003dint\n1\u003e          ]\n\nStatic cast:\n\n1\u003e  vpx_encoder.cc\n1\u003eD:\\src\\webm\\webmlive\\encoder\\vpx_encoder.cc(276): error C2065: \u0027vpx_codec_control_static_cast\u0027 : undeclared identifier\n1\u003e          D:\\src\\webm\\webmlive\\encoder\\vpx_encoder.cc(108) : see reference to function template instantiation \u0027int32 webmlive::VpxEncoder::CodecControl\u003cint\u003e(int,T,T)\u0027 being compiled\n1\u003e          with\n1\u003e          [\n1\u003e              T\u003dint\n1\u003e          ]\n1\u003eD:\\src\\webm\\webmlive\\encoder\\vpx_encoder.cc(276): error C2275: \u0027vp8e_enc_control_id\u0027 : illegal use of this type as an expression\n1\u003e          D:\\src\\webm\\webmlive\\third_party\\libvpx/vpx/vp8cx.h(134) : see declaration of \u0027vp8e_enc_control_id\u0027\n1\u003eD:\\src\\webm\\webmlive\\encoder\\vpx_encoder.cc(276): error C2064: term does not evaluate to a function taking 3 arguments\n\n\nC style cast:\n\n\u003e  vpx_encoder.cc\n1\u003eD:\\src\\webm\\webmlive\\encoder\\vpx_encoder.cc(285): error C2144: syntax error : \u0027vp8e_enc_control_id\u0027 should be preceded by \u0027)\u0027\n1\u003e          D:\\src\\webm\\webmlive\\encoder\\vpx_encoder.cc(108) : see reference to function template instantiation \u0027int32 webmlive::VpxEncoder::CodecControl\u003cint\u003e(int,T,T)\u0027 being compiled\n1\u003e          with\n1\u003e          [\n1\u003e              T\u003dint\n1\u003e          ]\n1\u003eD:\\src\\webm\\webmlive\\encoder\\vpx_encoder.cc(285): error C2660: \u0027vpx_codec_control_\u0027 : function does not take 0 arguments\n1\u003eD:\\src\\webm\\webmlive\\encoder\\vpx_encoder.cc(285): error C2059: syntax error : \u0027)\u0027\n\n\nAnyway, this shit is why the comment at line 267 is there.",
+      "parentUuid": "AAAAdn//E1I\u003d",
       "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
