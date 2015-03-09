@@ -151,10 +151,10 @@ class LiveWebmMuxer {
   // Returns |kAudioWriteError| when libwebm returns an error.
   int WriteAudioBuffer(const AudioBuffer& vorbis_buffer);
 
-  // Writes |vp8_frame| to the video track and returns |kSuccess|. Returns
-  // |kInvalidArg| when |vp8_frame| is empty or contains a non-VP8 frame.
+  // Writes |vpx_frame| to the video track and returns |kSuccess|. Returns
+  // |kInvalidArg| when |vpx_frame| is empty or contains a non-VPx frame.
   // Returns |kVideoWriteError| when libwebm returns an error.
-  int WriteVideoFrame(const VideoFrame& vp8_frame);
+  int WriteVideoFrame(const VideoFrame& vpx_frame);
 
   // Returns true and writes chunk length to |ptr_chunk_length| when |buffer_|
   // contains a complete WebM chunk.
