@@ -67,6 +67,23 @@
       "revId": "fda7a2ee666f03ddc18773594942a308af9ee6c1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Eug\u003d",
+        "filename": "encoder/vpx_encoder.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-09T16:36:33Z",
+      "side": 1,
+      "message": "This thing is broken... Sigh:\n\nhttps://code.google.com/p/webm/issues/detail?id\u003d970",
+      "revId": "fda7a2ee666f03ddc18773594942a308af9ee6c1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
