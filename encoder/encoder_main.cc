@@ -31,6 +31,8 @@ enum {
 const std::string kAgentQueryFragment = "&agent=p";
 const std::string kMetadataQueryFragment = "&metadata=1";
 const std::string kWebmItagQueryFragment = "&itag=43";
+const std::string kCodecVP8 = "vp8";
+const std::string kCodecVP9 = "vp9";
 typedef std::vector<std::string> StringVector;
 
 struct WebmEncoderClientConfig {
@@ -53,8 +55,6 @@ void usage(const char** argv) {
   printf("    The URL parameter is always required. If no query string is\n");
   printf("    present in the URL, the stream_id and stream_name are also\n");
   printf("    required.\n");
-  printf("    The stream_id and stream_name params are required when the\n");
-  printf("    URL lacks a query string.\n");
   printf("  General Options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
@@ -90,6 +90,8 @@ void usage(const char** argv) {
   printf("    --vframe_rate <width>              Frames per second.\n");
   printf("  VPX Encoder options:\n");
   printf("    --vpx_bitrate <kbps>               Video bitrate.\n");
+  printf("    --vpx_codec <codec>                Video codec, vp8 or vp9.\n");
+  printf("                                       The default codec is vp8\n.");
   printf("    --vpx_decimate <decimate factor>   FPS reduction factor.\n");
   printf("    --vpx_keyframe_interval <milliseconds>  Time between\n");
   printf("                                            keyframes.\n");
@@ -103,7 +105,35 @@ void usage(const char** argv) {
   printf("    --vpx_threads <num threads>        Number of encode threads.\n");
   printf("    --vpx_token_partitions <0-3>       Number of token\n");
   printf("                                       partitions.\n");
-  printf("    --vpx_undershoot <undershoot>      Undershoot value.\n");
+  printf("    --vpx_overshoot <percent>          Overshoot percentage.\n");
+  printf("    --vpx_undershoot <percent>         Undershoot percentage.\n");
+  printf("    --vpx_max_buffer <length>          Client buffer length (ms).\n");
+  printf("    --vpx_init_buffer <length>         Play start length (ms).\n");
+  printf("    --vpx_opt_buffer <length>          Optimal length (ms).\n");
+  printf("    --vpx_max_kf_bitrate <percent>     Max keyframe bitrate.\n");
+  printf("    --vpx_sharpness <0-7>              Loop filter sharpness.\n");
+  printf("    --vpx_error_resilience             Enables error resilience.\n");
+  printf("    --vpx_gf_cbr_boost <percent>       Golden frame bitrate\n");
+  printf("                                       boost.\n");
+  printf("  VP9 Specific Encoder options:");
+  printf("    --vp9_aq_mode <0-3>                Adaptive quant mode:\n");
+  printf("                                       0: off\n");
+  printf("                                       1: variance\n");
+  printf("                                       2: complexity\n");
+  printf("                                       3: cyclic refresh\n");
+  printf("                                         3 is the default.\n");
+  printf("    --vp9_tile_cols <cols>             Number of tile columns\n");
+  printf("                                       expressed in log2 units:\n");
+  printf("                                         0 = 1 tile column\n");
+  printf("                                         1 = 2 tile columns\n");
+  printf("                                         2 = 4 tile columns\n");
+  printf("                                         .....\n");
+  printf("                                         n = 2**n tile columns\n");
+  printf("                                       Image size controls max\n");
+  printf("                                       tile count; min tile width\n");
+  printf("                                       is 256 while max is 4096\n");
+  printf("    --vp9_disable_fpd                  Disables frame parallel\n");
+  printf("                                       decoding.\n");
 }
 
 // Parses name value pairs in the format name:value from |unparsed_entries|,
@@ -221,6 +251,15 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vpx_bitrate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.bitrate = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vpx_codec", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      std::string vpx_codec_value = argv[++i];
+      if (vpx_codec_value == kCodecVP8)
+        enc_config.vpx_config.codec = webmlive::kVideoFormatVP8;
+      else if (vpx_codec_value == kCodecVP9)
+        enc_config.vpx_config.codec = webmlive::kVideoFormatVP9;
+      else
+        LOG(ERROR) << "Invalid --vpx_codec value: " << vpx_codec_value;
     } else if (!strcmp("--vpx_decimate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.decimate = strtol(argv[++i], NULL, 10);
@@ -245,9 +284,42 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vpx_token_partitions", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.token_partitions = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vpx_overshoot", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.overshoot = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_undershoot", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.undershoot = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vpx_max_buffer", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.total_buffer_time = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vpx_init_buffer", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.initial_buffer_time = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vpx_opt_buffer", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.optimal_buffer_time = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vpx_max_kf_bitrate", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.max_keyframe_bitrate = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vpx_sharpness", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.sharpness = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vpx_error_resilience", argv[i])) {
+      enc_config.vpx_config.error_resilient = true;
+    } else if (!strcmp("--vpx_gf_cbr_boost", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.goldenframe_cbr_boost = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vp9_aq_mode", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.adaptive_quantization_mode =
+          strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vp9_tile_cols", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.tile_columns = strtol(argv[++i], NULL, 10);
+    } else if (!strcmp("--vp9_disable_fpd", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.vpx_config.disable_fpd = true;
     } else {
       LOG(WARNING) << "argument unknown or unparseable: " << argv[i];
     }
@@ -304,7 +376,7 @@ int start_uploader(WebmEncoderClientConfig* ptr_config,
   return status;
 }
 
-int client_main(WebmEncoderClientConfig* ptr_config) {
+int encoder_main(WebmEncoderClientConfig* ptr_config) {
   webmlive::WebmEncoderConfig& enc_config = ptr_config->enc_config;
   webmlive::HttpUploader uploader;
 
@@ -376,7 +448,7 @@ int main(int argc, const char** argv) {
   }
 
   LOG(INFO) << "url: " << config.target_url.c_str();
-  int exit_code = client_main(&config);
+  int exit_code = encoder_main(&config);
   google::ShutdownGoogleLogging();
   return exit_code;
 }

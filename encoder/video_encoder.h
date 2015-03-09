@@ -26,7 +26,8 @@ enum VideoFormat {
   kVideoFormatUYVY = 5,
   kVideoFormatRGB = 6,
   kVideoFormatRGBA = 7,
-  kVideoFormatCount = 8,
+  kVideoFormatVP9 = 8,
+  kVideoFormatCount = 9,
 };
 
 // YUV bit count constants.
@@ -73,14 +74,16 @@ struct VideoConfig {
   double frame_rate;    // Frame rate in frames per second.
 };
 
-// Storage class for I420, YV12, and VP8 video frames. The main idea here is to
+// Storage class for I420, YV12, and VPx video frames. The main idea here is to
 // store frames in such a way that they can easily be obtained from the capture
-// source and passed to the libvpx VP8 encoder.
+// source and passed to the libvpx VPx encoder.
 //
 // Notes
 // - Libvpx's VP8 encoder supports only I420 and YV12 input.
 //   |VideoFrame::Init()| converts all uncompressed formats other than
 //   |kVideoFormatI420| and |kVideoFormatYV12| to |kVideoFormatI420|.
+// - Libvpx's VP9 encoder supports formats beyond those above, but support for
+//   those formats is not implemented here.
 class VideoFrame {
  public:
   enum {
@@ -98,7 +101,8 @@ class VideoFrame {
   // |VideoFormat| enumeration value. Returns |kNoMemory| when unable to
   // allocate storage for |ptr_data|.
   // Note: When format is not one of |kVideoFormatI420|, |kVideoFormatYV12|,
-  //       |kVideoFormatVP8|, |Init()| converts the frame data to I420.
+  //       |kVideoFormatVP8| or |kVideoFormatVP9|, |Init()| converts the frame
+  //       data to I420.
   int Init(const VideoConfig& config,
            bool keyframe,
            int64 timestamp,
@@ -172,21 +176,36 @@ struct VpxConfig {
   VpxConfig()
       : keyframe_interval(1000),
         bitrate(500),
+        codec(kVideoFormatVP8),
         decimate(kUseDefault),
-        min_quantizer(10),
-        max_quantizer(46),
-        speed(kUseDefault),
+        min_quantizer(2),
+        max_quantizer(52),
+        speed(-6),
         static_threshold(kUseDefault),
         thread_count(kUseDefault),
         token_partitions(kUseDefault),
         undershoot(kUseDefault),
-        noise_sensitivity(kUseDefault) {}
+        noise_sensitivity(kUseDefault),
+        overshoot(kUseDefault),
+        total_buffer_time(1000),
+        initial_buffer_time(500),
+        optimal_buffer_time(600),
+        max_keyframe_bitrate(300),
+        sharpness(0),
+        error_resilient(false),
+        goldenframe_cbr_boost(300),
+        adaptive_quantization_mode(3),
+        tile_columns(4),
+        disable_fpd(false) {}
 
   // Time between keyframes, in milliseconds.
   int keyframe_interval;
 
   // Video bitrate, in kilobits.
   int bitrate;
+
+  // Video codec, kVideoFormatVP8 or kVideoFormatVP9.
+  VideoFormat codec;
 
   // Video frame rate decimation factor.
   int decimate;
@@ -215,6 +234,39 @@ struct VpxConfig {
   // Reduces the noise level of uncompressed video before processing by
   // blurring the pixels of adjacent frames together.
   int noise_sensitivity;
+
+  // Percentage to overshoot the requested datarate.
+  int overshoot;
+
+  // Client buffer sizes (values in milliseconds).
+  int total_buffer_time;
+  int initial_buffer_time;
+  int optimal_buffer_time;
+
+  // Maximum keyframe (I-frame) bitrate (percentage of |bitrate|).
+  int max_keyframe_bitrate;
+
+  // Loop filter sharpness, 0-7.
+  int sharpness;
+
+  // Error resilience on/off.
+  bool error_resilient;
+
+  // Golden frame bitrate boost in CBR (percentage of |bitrate|).
+  int goldenframe_cbr_boost;
+
+  // Adaptive quantization mode
+  // 0: off
+  // 1: variance
+  // 2: complexity
+  // 3: cyclic refresh (default)
+  int adaptive_quantization_mode;
+
+  // Number of tile columns, log2.
+  int tile_columns;
+
+  // Disables frame parallel decoding features.
+  bool disable_fpd;
 };
 
 // Forward declaration of |VpxEncoder| class for use in |VideoEncoder|. The
@@ -238,7 +290,7 @@ class VideoEncoder {
   VideoEncoder();
   ~VideoEncoder();
   int32 Init(const WebmEncoderConfig& config);
-  int32 EncodeFrame(const VideoFrame& raw_frame, VideoFrame* ptr_vp8_frame);
+  int32 EncodeFrame(const VideoFrame& raw_frame, VideoFrame* ptr_vpx_frame);
 
   // Accessors.
   int64 frames_in() const;
