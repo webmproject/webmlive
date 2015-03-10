@@ -145,7 +145,7 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
       return VideoEncoder::kCodecError;
     }
     if (CodecControl(VP9E_SET_FRAME_PARALLEL_DECODING,
-                     config_.disable_fpd ? 1 : 0,
+                     config_.frame_parallel_mode ? 1 : 0,
                      VpxConfig::kUseDefault)) {
       return VideoEncoder::kCodecError;
     }
