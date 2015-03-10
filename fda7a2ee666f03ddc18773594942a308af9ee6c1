@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//EkQ\u003d",
+        "filename": "encoder/encoder_main.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-10T18:01:33Z",
+      "side": 1,
+      "message": "Done, I think, because this sucks: https://code.google.com/p/webm/issues/detail?id\u003d972",
+      "parentUuid": "AAAAdn//Eu4\u003d",
+      "revId": "fda7a2ee666f03ddc18773594942a308af9ee6c1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//Eu0\u003d",
         "filename": "encoder/encoder_main.cc",
         "patchSetId": 7
@@ -30,6 +48,24 @@
       "writtenOn": "2015-03-09T16:34:48Z",
       "side": 1,
       "message": "max is 6",
+      "revId": "fda7a2ee666f03ddc18773594942a308af9ee6c1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Eiw\u003d",
+        "filename": "encoder/encoder_main.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-10T18:01:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//Eu0\u003d",
       "revId": "fda7a2ee666f03ddc18773594942a308af9ee6c1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//Eig\u003d",
+        "filename": "encoder/video_encoder.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-10T18:01:33Z",
+      "side": 1,
+      "message": "I thought libvpx was going to default to using threads \u003d\u003d tile_cols if I left the thread count alone.",
+      "parentUuid": "AAAAdn//Euw\u003d",
+      "revId": "fda7a2ee666f03ddc18773594942a308af9ee6c1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//Eus\u003d",
         "filename": "encoder/video_encoder.h",
         "patchSetId": 7
@@ -64,6 +118,24 @@
       "writtenOn": "2015-03-09T16:34:48Z",
       "side": 1,
       "message": "The negative param is weird. Why not just name it fpm?",
+      "revId": "fda7a2ee666f03ddc18773594942a308af9ee6c1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Eic\u003d",
+        "filename": "encoder/video_encoder.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-10T18:01:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//Eus\u003d",
       "revId": "fda7a2ee666f03ddc18773594942a308af9ee6c1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
