@@ -107,6 +107,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//Eg4\u003d",
+        "filename": "encoder/video_encoder.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-10T21:38:14Z",
+      "side": 1,
+      "message": "Yes we are switching it, but I was just thinking you might as well be explicit. not a big deal.",
+      "parentUuid": "AAAAdn//Eig\u003d",
+      "revId": "fda7a2ee666f03ddc18773594942a308af9ee6c1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//Eus\u003d",
         "filename": "encoder/video_encoder.h",
         "patchSetId": 7
