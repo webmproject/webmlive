@@ -349,6 +349,24 @@
       "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//EgY\u003d",
+        "filename": "encoder/vpx_encoder.cc",
+        "patchSetId": 5
+      },
+      "lineNbr": 298,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-03-10T21:52:04Z",
+      "side": 1,
+      "message": "\u003e vpx_codec_control() makes that impossible-- Either it breaks things, or my template won\u0027t expand properly (depending on what the vpx_codec_control(..., control_id, ...) call looks like):\n\nforgot about that. you can use VPX_DISABLE_CTRL_TYPECHECKS or vpx_codec_control_ and treat things as int (libavcodec/libvpxenc.c) does the former and defines a codecctl_int() wrapper",
+      "parentUuid": "AAAAdn//Ev8\u003d",
+      "revId": "71a5eb7ead06fb538cf91805fb206788e9abe71c",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
