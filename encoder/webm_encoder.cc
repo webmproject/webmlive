@@ -127,7 +127,9 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     }
 
     // Add the video track.
-    status = ptr_muxer_->AddTrack(config_.actual_video_config);
+    VideoConfig vpx_video_config = config_.actual_video_config;
+    vpx_video_config.format = config_.vpx_config.codec;
+    status = ptr_muxer_->AddTrack(vpx_video_config);
     if (status) {
       LOG(ERROR) << "live muxer AddTrack(video) failed " << status;
       return kInitFailed;

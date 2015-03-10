@@ -101,7 +101,8 @@ int VideoFrame::Init(const VideoConfig& config,
   const bool needs_conversion =
       (config.format != kVideoFormatI420 &&
        config.format != kVideoFormatYV12 &&
-       config.format != kVideoFormatVP8);
+       config.format != kVideoFormatVP8 &&
+       config.format != kVideoFormatVP9);
 
   if (needs_conversion) {
     // Convert the video frame to I420.
