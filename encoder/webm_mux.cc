@@ -319,7 +319,7 @@ int LiveWebmMuxer::WriteVideoFrame(const VideoFrame& vpx_frame) {
   }
   if (vpx_frame.format() != kVideoFormatVP8 &&
       vpx_frame.format() != kVideoFormatVP9) {
-    LOG(ERROR) << "cannot write non-VP8 frame.";
+    LOG(ERROR) << "cannot write non-VPx frame.";
     return kInvalidArg;
   }
   const int64 timecode = milliseconds_to_timecode_ticks(vpx_frame.timestamp());

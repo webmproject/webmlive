@@ -232,7 +232,7 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   VideoFrame raw_frame_;
 
   // Most recent frame from |video_encoder_|.
-  VideoFrame vp8_frame_;
+  VideoFrame vpx_frame_;
 
   // Video encoder.
   VideoEncoder video_encoder_;

@@ -12,6 +12,10 @@
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
 #include "encoder/video_encoder.h"
+
+#define VPX_CODEC_DISABLE_COMPAT 1
+#define VPX_DISABLE_CTRL_TYPECHECKS 1
+
 #include "libvpx/vpx/vpx_encoder.h"
 #include "libvpx/vpx/vp8cx.h"
 
