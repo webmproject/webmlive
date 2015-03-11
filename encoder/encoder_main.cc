@@ -31,8 +31,8 @@ enum {
 const std::string kAgentQueryFragment = "&agent=p";
 const std::string kMetadataQueryFragment = "&metadata=1";
 const std::string kWebmItagQueryFragment = "&itag=43";
-const std::string kCodecVP8 = "vp8";
-const std::string kCodecVP9 = "vp9";
+const std::string kCodecVp8 = "vp8";
+const std::string kCodecVp9 = "vp9";
 typedef std::vector<std::string> StringVector;
 
 struct WebmEncoderClientConfig {
@@ -255,9 +255,9 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vpx_codec", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       std::string vpx_codec_value = argv[++i];
-      if (vpx_codec_value == kCodecVP8)
+      if (vpx_codec_value == kCodecVp8)
         enc_config.vpx_config.codec = webmlive::kVideoFormatVP8;
-      else if (vpx_codec_value == kCodecVP9)
+      else if (vpx_codec_value == kCodecVp9)
         enc_config.vpx_config.codec = webmlive::kVideoFormatVP9;
       else
         LOG(ERROR) << "Invalid --vpx_codec value: " << vpx_codec_value;

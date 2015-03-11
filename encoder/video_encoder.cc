@@ -282,12 +282,12 @@ int VideoEncoder::Init(const WebmEncoderConfig& config) {
 }
 
 int VideoEncoder::EncodeFrame(const VideoFrame& raw_frame,
-                              VideoFrame* ptr_vp8_frame) {
+                              VideoFrame* ptr_vpx_frame) {
   if (!ptr_vpx_encoder_) {
     LOG(ERROR) << "VideoEncoder has NULL encoder, not Init'd";
     return kEncoderError;
   }
-  return ptr_vpx_encoder_->EncodeFrame(raw_frame, ptr_vp8_frame);
+  return ptr_vpx_encoder_->EncodeFrame(raw_frame, ptr_vpx_frame);
 }
 
 int64 VideoEncoder::frames_in() const {
