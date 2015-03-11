@@ -528,7 +528,7 @@ int WebmEncoder::EncodeVideoFrame() {
   }
 
   // Encode the video frame, and pass it to the muxer.
-  status = video_encoder_.EncodeFrame(raw_frame_, &vp8_frame_);
+  status = video_encoder_.EncodeFrame(raw_frame_, &vpx_frame_);
   if (status) {
     LOG(ERROR) << "Video frame encode failed " << status;
     return kVideoEncoderError;
@@ -537,14 +537,14 @@ int WebmEncoder::EncodeVideoFrame() {
   // Update encoded duration if able to obtain the lock.
   std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
   if (lock.owns_lock()) {
-    encoded_duration_ = std::max(vp8_frame_.timestamp(), encoded_duration_);
+    encoded_duration_ = std::max(vpx_frame_.timestamp(), encoded_duration_);
   }
 
-  status = ptr_muxer_->WriteVideoFrame(vp8_frame_);
+  status = ptr_muxer_->WriteVideoFrame(vpx_frame_);
   if (status) {
-    LOG(ERROR) << "Video frame mux failed " << status;
+    LOG(ERROR) << "Video frame mux failed: " << status;
   }
-  VLOG(4) << "muxed (video) " << vp8_frame_.timestamp() / 1000.0;
+  VLOG(4) << "muxed (video) " << vpx_frame_.timestamp() / 1000.0;
   return status;
 }
 

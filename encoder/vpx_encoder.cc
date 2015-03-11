@@ -264,53 +264,23 @@ template <typename T>
 int VpxEncoder::CodecControl(int control_id, T val, T default_val) {
   if (val != default_val) {
     vpx_codec_err_t status = VPX_CODEC_OK;
-
-    // libvpx's |vpx_codec_control| function features a bit of preprocessor
-    // abuse, and the function call will not expand properly in the context
-    // of a template function without use of the |vp8e_enc_control_id| enum
-    // entries. Verbosity plus switch to the rescue!
     switch (control_id) {
       case VP8E_SET_CPUUSED:
-        status = vpx_codec_control(&vpx_context_, VP8E_SET_CPUUSED, val);
-        break;
-      case VP8E_SET_STATIC_THRESHOLD:
-        status = vpx_codec_control(&vpx_context_,
-                                   VP8E_SET_STATIC_THRESHOLD, val);
-        break;
-      case VP8E_SET_TOKEN_PARTITIONS:
-        status = vpx_codec_control(&vpx_context_, VP8E_SET_TOKEN_PARTITIONS,
-                                   static_cast<vp8e_token_partitions>(val));
-        break;
-      case VP8E_SET_NOISE_SENSITIVITY:
-        status = vpx_codec_control(&vpx_context_,
-                                   VP8E_SET_NOISE_SENSITIVITY, val);
-        break;
-      case VP8E_SET_MAX_INTRA_BITRATE_PCT:
-        status = vpx_codec_control(&vpx_context_,
-                                   VP8E_SET_MAX_INTRA_BITRATE_PCT, val);
-        break;
       case VP8E_SET_GF_CBR_BOOST_PCT:
-        status = vpx_codec_control(&vpx_context_,
-                                   VP8E_SET_GF_CBR_BOOST_PCT, val);
-        break;
+      case VP8E_SET_MAX_INTRA_BITRATE_PCT:
+      case VP8E_SET_NOISE_SENSITIVITY:
       case VP8E_SET_SHARPNESS:
-        status = vpx_codec_control(&vpx_context_, VP8E_SET_SHARPNESS, val);
-        break;
+      case VP8E_SET_STATIC_THRESHOLD:
+      case VP8E_SET_TOKEN_PARTITIONS:
       case VP9E_SET_AQ_MODE:
-        status = vpx_codec_control(&vpx_context_, VP9E_SET_AQ_MODE, val);
-        break;
-      case VP9E_SET_TILE_COLUMNS:
-        status = vpx_codec_control(&vpx_context_, VP9E_SET_TILE_COLUMNS, val);
-        break;
       case VP9E_SET_FRAME_PARALLEL_DECODING:
-        status = vpx_codec_control(&vpx_context_,
-                                   VP9E_SET_FRAME_PARALLEL_DECODING, val);
+      case VP9E_SET_TILE_COLUMNS:
+        status = vpx_codec_control(&vpx_context_, control_id, val);
         break;
       default:
-        LOG(ERROR) << "unknown control id in VpxEncoder::CodecControl.";
+        LOG(ERROR) << "unknown VPx control id: " << control_id;
         return kEncoderError;
     }
-
     if (status) {
       LOG(ERROR) << "vpx_codec_control (" << control_id << ") failed: "
                  << vpx_codec_err_to_string(status);
