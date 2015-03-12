@@ -58,6 +58,8 @@ void usage(const char** argv) {
   printf("  General Options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
+  printf("    --adevnum <audio source num>   Select audio capture device by\n");
+  printf("                                   index.\n");
   printf("    --form_post                    Send WebM chunks as file data\n");
   printf("                                   in a form (a la RFC 1867).\n");
   printf("    --stream_id <stream ID>        Stream ID to include in POST\n");
@@ -66,6 +68,8 @@ void usage(const char** argv) {
   printf("                                   query string.\n");
   printf("    --url <target URL>             Target for HTTP Posts.\n");
   printf("    --vdev <video source name>     Video capture device name.\n");
+  printf("    --vdevnum <video source num>   Select video capture device by\n");
+  printf("                                   index.\n");
   printf("  Audio source configuration options:\n");
   printf("    --adisable                     Disable audio capture.\n");
   printf("    --amanual                      Attempt manual configuration.\n");
@@ -193,6 +197,8 @@ void parse_command_line(int argc, const char** argv,
       unparsed_vars.push_back(argv[++i]);
     } else if (!strcmp("--adev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.audio_device_name = argv[++i];
+    } else if (!strcmp("--adevnum", argv[i]) && arg_has_value(i, argc, argv)) {
+      enc_config.audio_device_index = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--achannels", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.requested_audio_config.channels =
@@ -220,6 +226,8 @@ void parse_command_line(int argc, const char** argv,
       enc_config.disable_video = true;
     } else if (!strcmp("--vdev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_device_name = argv[++i];
+    } else if (!strcmp("--vdevnum", argv[i]) && arg_has_value(i, argc, argv)) {
+      enc_config.video_device_index = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vmanual", argv[i])) {
       enc_config.ui_opts.manual_video_config = true;
     } else if (!strcmp("--vwidth", argv[i]) && arg_has_value(i, argc, argv)) {

@@ -122,7 +122,9 @@ MediaSourceImpl::MediaSourceImpl()
     : audio_from_video_source_(false),
       media_event_handle_(INVALID_HANDLE_VALUE),
       ptr_audio_callback_(NULL),
-      ptr_video_callback_(NULL) {
+      ptr_video_callback_(NULL),
+      audio_device_index_(0),
+      video_device_index_(0) {
 }
 
 MediaSourceImpl::~MediaSourceImpl() {
@@ -176,6 +178,9 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
     if (!config.video_device_name.empty()) {
       video_device_name_ = string_to_wstring(config.video_device_name);
     }
+    if (config.video_device_index != kUseDefaultDevice) {
+      video_device_index_ = config.video_device_index;
+    }
     status = CreateVideoSource();
     if (status) {
       LOG(ERROR) << "CreateVideoSource failed: " << status;
@@ -195,6 +200,9 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
   if (config.disable_audio == false) {
     if (!config.audio_device_name.empty()) {
       audio_device_name_ = string_to_wstring(config.audio_device_name);
+    }
+    if (config.audio_device_index != kUseDefaultDevice) {
+      audio_device_index_ = config.audio_device_index;
     }
     status = CreateAudioSource();
     if (status) {
@@ -295,10 +303,10 @@ int MediaSourceImpl::CreateVideoSource() {
               << wstring_to_string(loader.GetSourceName(i).c_str());
   }
   if (video_device_name_.empty()) {
-    video_source_ = loader.GetSource(0);
-  } else {
-    video_source_ = loader.GetSource(video_device_name_);
+    video_device_name_ = loader.GetSourceName(video_device_index_);
   }
+  video_source_ = loader.GetSource(video_device_name_);
+  LOG(INFO) << "Using vdev: " << wstring_to_string(video_device_name_);
   if (!video_source_) {
     LOG(ERROR) << "cannot create video source!";
     return WebmEncoder::kNoVideoSource;
@@ -547,10 +555,10 @@ int MediaSourceImpl::CreateAudioSource() {
               << wstring_to_string(loader.GetSourceName(i).c_str());
   }
   if (audio_device_name_.empty()) {
-    audio_source_ = loader.GetSource(0);
-  } else {
-    audio_source_ = loader.GetSource(audio_device_name_);
+    audio_device_name_ = loader.GetSourceName(audio_device_index_);
   }
+  audio_source_ = loader.GetSource(audio_device_name_);
+  LOG(INFO) << "Using adev: " << wstring_to_string(audio_device_name_);
   if (!audio_source_) {
     LOG(ERROR) << "cannot create audio source!";
     return WebmEncoder::kNoAudioSource;
