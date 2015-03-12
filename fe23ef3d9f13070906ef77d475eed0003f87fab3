@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//ESc\u003d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-12T03:42:30Z",
+      "side": 1,
+      "message": "I wish I already had it, but I just don\u0027t have things setup properly for it right now. (I don\u0027t think it will take long; it\u0027s on my todo list)",
+      "parentUuid": "AAAAdn//ESo\u003d",
+      "revId": "fe23ef3d9f13070906ef77d475eed0003f87fab3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//ESk\u003d",
         "filename": "encoder/win/media_source_dshow.h",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2015-03-12T03:39:01Z",
       "side": 1,
       "message": "Video",
+      "revId": "fe23ef3d9f13070906ef77d475eed0003f87fab3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//ESU\u003d",
+        "filename": "encoder/win/media_source_dshow.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 248,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-12T03:42:30Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//ESk\u003d",
       "revId": "fe23ef3d9f13070906ef77d475eed0003f87fab3",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
