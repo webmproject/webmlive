@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//ESo\u003d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-03-12T03:39:01Z",
+      "side": 1,
+      "message": "would an ls-devices be useful / possible?",
+      "revId": "fe23ef3d9f13070906ef77d475eed0003f87fab3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//ESk\u003d",
+        "filename": "encoder/win/media_source_dshow.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 248,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-03-12T03:39:01Z",
+      "side": 1,
+      "message": "Video",
+      "revId": "fe23ef3d9f13070906ef77d475eed0003f87fab3",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
