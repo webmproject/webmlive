@@ -523,14 +523,16 @@ int WebmEncoder::EncodeVideoFrame() {
 
   status = OffsetTimestamp(timestamp_offset_, &raw_frame_);
   if (status) {
-    LOG(ERROR) << "Video frame timestamp offset failed " << status;
+    LOG(ERROR) << "Video frame timestamp offset failed: " << status;
     return kVideoEncoderError;
   }
 
   // Encode the video frame, and pass it to the muxer.
   status = video_encoder_.EncodeFrame(raw_frame_, &vpx_frame_);
-  if (status) {
-    LOG(ERROR) << "Video frame encode failed " << status;
+  if (status == kDropped) {
+    return kSuccess;
+  } else if (status) {
+    LOG(ERROR) << "Video frame encode failed: " << status;
     return kVideoEncoderError;
   }
 
