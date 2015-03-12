@@ -323,6 +323,8 @@ int LiveWebmMuxer::WriteVideoFrame(const VideoFrame& vpx_frame) {
     return kInvalidArg;
   }
   const int64 timecode = milliseconds_to_timecode_ticks(vpx_frame.timestamp());
+  LOG(INFO) << "WriteVideoFrame: ts=" << vpx_frame.timestamp() << " tc="
+            << timecode;
   if (!ptr_segment_->AddFrame(vpx_frame.buffer(),
                               vpx_frame.buffer_length(),
                               video_track_num_,
@@ -350,6 +352,8 @@ int LiveWebmMuxer::WriteAudioBuffer(const AudioBuffer& vorbis_buffer) {
   }
   const int64 timecode =
       milliseconds_to_timecode_ticks(vorbis_buffer.timestamp());
+  LOG(INFO) << "WriteAudioBuffer: ts=" << vorbis_buffer.timestamp() << " tc="
+            << timecode;
   if (!ptr_segment_->AddFrame(vorbis_buffer.buffer(),
                               vorbis_buffer.buffer_length(),
                               audio_track_num_,
