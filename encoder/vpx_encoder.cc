@@ -54,6 +54,7 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
   libvpx_config.g_timebase.num = 1;
   libvpx_config.g_timebase.den = kTimebase;
   libvpx_config.rc_end_usage = VPX_CBR;
+  libvpx_config.g_lag_in_frames = 0;
 
   // TODO(tomfinegan): Add user settings validation-- v1 was relying on the
   //                   DShow filter to check settings.
