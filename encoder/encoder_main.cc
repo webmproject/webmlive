@@ -51,13 +51,16 @@ struct WebmEncoderClientConfig {
 // Prints usage.
 void usage(const char** argv) {
   printf("Usage: %ls --url <target URL>\n", argv[0]);
-  printf("  Notes: \n");
+  printf("  Notes:\n");
   printf("    The URL parameter is always required. If no query string is\n");
   printf("    present in the URL, the stream_id and stream_name are also\n");
   printf("    required.\n");
   printf("  General Options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
+  printf("    --adevidx <source index>       Select audio capture device by\n");
+  printf("                                   index. Ignored when --adev is\n");
+  printf("                                   used.\n");
   printf("    --form_post                    Send WebM chunks as file data\n");
   printf("                                   in a form (a la RFC 1867).\n");
   printf("    --stream_id <stream ID>        Stream ID to include in POST\n");
@@ -66,6 +69,9 @@ void usage(const char** argv) {
   printf("                                   query string.\n");
   printf("    --url <target URL>             Target for HTTP Posts.\n");
   printf("    --vdev <video source name>     Video capture device name.\n");
+  printf("    --vdevidx <source index>       Select video capture device by\n");
+  printf("                                   index. Ignored when --vdev is\n");
+  printf("                                   used.\n");
   printf("  Audio source configuration options:\n");
   printf("    --adisable                     Disable audio capture.\n");
   printf("    --amanual                      Attempt manual configuration.\n");
@@ -193,6 +199,8 @@ void parse_command_line(int argc, const char** argv,
       unparsed_vars.push_back(argv[++i]);
     } else if (!strcmp("--adev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.audio_device_name = argv[++i];
+    } else if (!strcmp("--adevidx", argv[i]) && arg_has_value(i, argc, argv)) {
+      enc_config.audio_device_index = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--achannels", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.requested_audio_config.channels =
@@ -220,6 +228,8 @@ void parse_command_line(int argc, const char** argv,
       enc_config.disable_video = true;
     } else if (!strcmp("--vdev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_device_name = argv[++i];
+    } else if (!strcmp("--vdevidx", argv[i]) && arg_has_value(i, argc, argv)) {
+      enc_config.video_device_index = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vmanual", argv[i])) {
       enc_config.ui_opts.manual_video_config = true;
     } else if (!strcmp("--vwidth", argv[i]) && arg_has_value(i, argc, argv)) {
