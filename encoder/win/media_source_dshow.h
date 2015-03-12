@@ -239,8 +239,14 @@ class MediaSourceImpl {
   // Audio device friendly name.
   std::wstring audio_device_name_;
 
+  // Audio device index.
+  int audio_device_index_;
+
   // Video device friendly name.
   std::wstring video_device_name_;
+
+  // Video device index.
+  int video_device_index_;
 
   // Requested audio settings.
   AudioConfig requested_audio_config_;

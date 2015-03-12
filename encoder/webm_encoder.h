@@ -23,6 +23,8 @@
 namespace webmlive {
 // All timestamps are in milliseconds.
 const int kTimebase = 1000;
+// Special value meaning use system default device.
+const int kUseDefaultDevice = -1;
 
 struct WebmEncoderConfig {
   // User interface control structure. |MediaSourceImpl| will attempt to
@@ -36,7 +38,11 @@ struct WebmEncoderConfig {
     bool manual_video_config;   // Show video source configuration interface.
   };
 
-  WebmEncoderConfig() : disable_audio(false), disable_video(false) {}
+  WebmEncoderConfig()
+      : disable_audio(false),
+        disable_video(false),
+        audio_device_index(kUseDefaultDevice),
+        video_device_index(kUseDefaultDevice) {}
 
   // Audio/Video disable flags.
   bool disable_audio;
@@ -45,8 +51,14 @@ struct WebmEncoderConfig {
   // Name of the audio device.  Leave empty to use system default.
   std::string audio_device_name;
 
+  // Audio device index. Leave set to |kUseDefaultDevice| to use system default.
+  int audio_device_index;
+
   // Name of the video device.  Leave empty to use system default.
   std::string video_device_name;
+
+  // Video device index. Leave set to |kUseDefaultDevice| to use system default.
+  int video_device_index;
 
   // Requested audio capture settings.
   AudioConfig requested_audio_config;
