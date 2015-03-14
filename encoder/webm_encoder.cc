@@ -430,6 +430,22 @@ int WebmEncoder::EncodeAudioOnly() {
   return kSuccess;
 }
 
+int WebmEncoder::UpdateVideoTimestamp(int64* timestamp) {
+  CHECK_NOTNULL(timestamp);
+  int status = video_pool_.ActiveBufferTimestamp(timestamp);
+  if (status < 0) {
+    LOG(ERROR) << "VideoFrame pool timestamp check failed: " << status;
+    return kVideoSinkError;
+  }
+  if (status == BufferPool<VideoFrame>::kEmpty) {
+    // Use the last encoded frame timestamp when |video_pool_| is empty.
+    *timestamp = video_encoder_.last_timestamp();
+  } else {
+    *timestamp += timestamp_offset_;
+  }
+  return status;
+}
+
 // On each encoding pass:
 // - Attempts to read an uncompressed audio buffer from |audio_pool_|, and
 //   passes it to |vorbis_encoder_| when a buffer is available.
@@ -459,16 +475,10 @@ int WebmEncoder::AVEncode() {
 
   // Store the next video timestamp.
   int64 video_timestamp = 0;
-  status = video_pool_.ActiveBufferTimestamp(&video_timestamp);
+  status = UpdateVideoTimestamp(&video_timestamp);
   if (status < 0) {
-    LOG(ERROR) << "VideoFrame pool timestamp check failed: " << status;
-    return kVideoSinkError;
-  }
-  if (status == BufferPool<VideoFrame>::kEmpty) {
-    // Use the last encoded frame timestamp when |video_pool_| is empty.
-    video_timestamp = video_encoder_.last_timestamp();
-  } else {
-    video_timestamp += timestamp_offset_;
+    LOG(ERROR) << "Video timestamp update failed: " << status;
+    return status;
   }
 
   // Read compressed audio until no more remains, or the compressed buffer
@@ -492,12 +502,17 @@ int WebmEncoder::AVEncode() {
 
   // Attempt to encoded a video frame when |video_timestamp| is less than the
   // next estimated compressed audio buffer timestamp.
-  if (video_timestamp <= vorb_enc.time_encoded()) {
+  while (video_timestamp <= vorb_enc.time_encoded()) {
     LOG(INFO) << "attempting video mux vid_ts=" << video_timestamp
               << " vorb_enc time_encoded=" << vorb_enc.time_encoded();
     status = EncodeVideoFrame();
     if (status) {
       LOG(ERROR) << "EncodeVideoFrame failed: " << status;
+      return status;
+    }
+    status = UpdateVideoTimestamp(&video_timestamp);
+    if (status < 0) {
+      LOG(ERROR) << "Video timestamp update failed: " << status;
       return status;
     }
   }
