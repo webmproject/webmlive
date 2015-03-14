@@ -115,6 +115,8 @@ add_executable(encoder
                buffer_pool.h
                buffer_util.cc
                buffer_util.h
+               dash_writer.cc
+               dash_writer.h
                data_sink.h
                encoder_base.h
                encoder_main.cc
