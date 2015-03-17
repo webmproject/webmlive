@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//Dr8\u003d",
+        "filename": "encoder/webm_encoder.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 510,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-17T18:51:48Z",
+      "side": 1,
+      "message": "This could break here, if you empty your video buffer pool. Then write this, then get another video frame with a \u003c timestamp. You might want to change the audio code above to do a peak, like the video code.",
+      "revId": "f317de6c45466c0083dd67d74cefa61194cb2cfc",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//DsU\u003d",
+        "filename": "encoder/webm_encoder.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 214,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-17T18:51:48Z",
+      "side": 1,
+      "message": "Are you updating anything? How about NextVideoTimestamp()?",
+      "revId": "f317de6c45466c0083dd67d74cefa61194cb2cfc",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
