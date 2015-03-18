@@ -414,6 +414,27 @@ int WebmEncoder::EncodeAudioOnly() {
   return kSuccess;
 }
 
+int WebmEncoder::PeekVideoTimestamp(int64* timestamp) {
+  CHECK_NOTNULL(timestamp);
+  const int status = video_pool_.ActiveBufferTimestamp(timestamp);
+  if (status < 0) {
+    LOG(ERROR) << "VideoFrame pool timestamp check failed: " << status;
+    return kVideoSinkError;
+  }
+  if (status == BufferPool<VideoFrame>::kEmpty) {
+    // When video_pool_| pool is empty use the timestamp of the last encoded
+    // video frame added to the calculated time per frame.
+    const int time_per_frame =
+        static_cast<int>(kTimebase / config_.actual_video_config.frame_rate);
+    *timestamp = video_encoder_.last_timestamp() + time_per_frame;
+    VLOG(3) << "NO video frame available ts=" << *timestamp;
+  } else {
+    *timestamp += timestamp_offset_;
+    VLOG(3) << "video frame available ts=" << *timestamp;
+  }
+  return status;
+}
+
 // On each encoding pass:
 // - Attempts to read an uncompressed audio buffer from |audio_pool_|, and
 //   passes it to |vorbis_encoder_| when a buffer is available.
@@ -443,16 +464,10 @@ int WebmEncoder::AVEncode() {
 
   // Store the next video timestamp.
   int64 video_timestamp = 0;
-  status = video_pool_.ActiveBufferTimestamp(&video_timestamp);
+  status = PeekVideoTimestamp(&video_timestamp);
   if (status < 0) {
-    LOG(ERROR) << "VideoFrame pool timestamp check failed: " << status;
-    return kVideoSinkError;
-  }
-  if (status == BufferPool<VideoFrame>::kEmpty) {
-    // Use the last encoded frame timestamp when |video_pool_| is empty.
-    video_timestamp = video_encoder_.last_timestamp();
-  } else {
-    video_timestamp += timestamp_offset_;
+    LOG(ERROR) << "Video timestamp peek failed: " << status;
+    return status;
   }
 
   // Read compressed audio until no more remains, or the compressed buffer
@@ -460,28 +475,37 @@ int WebmEncoder::AVEncode() {
   bool vorbis_buffered = false;
   AudioBuffer& vorb_buf = vorbis_audio_buffer_;
   VorbisEncoder& vorb_enc = vorbis_encoder_;
-  while ((status = vorb_enc.ReadCompressedAudio(&vorb_buf)) == kSuccess) {
-    if (video_timestamp < vorb_buf.timestamp()) {
-      vorbis_buffered = true;
-      break;
+  if (vorb_enc.time_encoded() <= video_timestamp) {
+    while ((status = vorb_enc.ReadCompressedAudio(&vorb_buf)) == kSuccess) {
+      if (video_timestamp < vorb_buf.timestamp()) {
+        vorbis_buffered = true;
+        break;
+      }
+      status = ptr_muxer_->WriteAudioBuffer(vorb_buf);
+      if (status) {
+        LOG(ERROR) << "audio mux failed: " << status;
+        return status;
+      }
+      vorbis_buffered = false;
+      LOG(INFO) << "muxed (audio) "
+                << vorbis_audio_buffer_.timestamp() / 1000.0;
     }
-    status = ptr_muxer_->WriteAudioBuffer(vorb_buf);
-    if (status) {
-      LOG(ERROR) << "audio mux failed: " << status;
-      return status;
-    }
-    vorbis_buffered = false;
-    LOG(INFO) << "muxed (audio) " << vorbis_audio_buffer_.timestamp() / 1000.0;
   }
 
-  // Attempt to encoded a video frame when |video_timestamp| is less than the
+  // Attempt to encode video frames when |video_timestamp| is less than the
   // next estimated compressed audio buffer timestamp.
-  if (video_timestamp <= vorb_enc.time_encoded()) {
-    LOG(INFO) << "attempting video mux vid_ts=" << video_timestamp
+  while (status != BufferPool<VideoFrame>::kEmpty &&
+         video_timestamp <= vorb_enc.time_encoded()) {
+    VLOG(3) << "attempting video mux vid_ts=" << video_timestamp
               << " vorb_enc time_encoded=" << vorb_enc.time_encoded();
     status = EncodeVideoFrame();
     if (status) {
       LOG(ERROR) << "EncodeVideoFrame failed: " << status;
+      return status;
+    }
+    status = PeekVideoTimestamp(&video_timestamp);
+    if (status < 0) {
+      LOG(ERROR) << "Video timestamp peek failed: " << status;
       return status;
     }
   }
@@ -498,7 +522,7 @@ int WebmEncoder::AVEncode() {
       LOG(ERROR) << "buffered audio mux failed: " << status;
       return status;
     }
-    LOG(INFO) << "muxed (audio) " << vorbis_audio_buffer_.timestamp() / 1000.0;
+    VLOG(3) << "muxed (audio) " << vorbis_audio_buffer_.timestamp() / 1000.0;
   }
   return kSuccess;
 }
@@ -547,7 +571,7 @@ int WebmEncoder::EncodeVideoFrame() {
   if (status) {
     LOG(ERROR) << "Video frame mux failed: " << status;
   }
-  VLOG(4) << "muxed (video) " << vpx_frame_.timestamp() / 1000.0;
+  LOG(INFO) << "muxed (video) " << vpx_frame_.timestamp() / 1000.0;
   return status;
 }
 
