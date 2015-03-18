@@ -210,6 +210,9 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   // timestamp.
   int WaitForSamples();
 
+  // Returns the timestamp of the next available video frame via |timestamp|.
+  int PeekVideoTimestamp(int64* timestamp);
+
   // Set to true when |Init()| is successful.
   bool initialized_;
 
