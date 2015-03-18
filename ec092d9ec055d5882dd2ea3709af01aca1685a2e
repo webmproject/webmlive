@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//Dmg\u003d",
+        "filename": "encoder/dash_writer.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-18T04:16:07Z",
+      "side": 1,
+      "message": "Eventually a lot of these should probably be configurable. But fine for now.",
+      "revId": "ec092d9ec055d5882dd2ea3709af01aca1685a2e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//DmY\u003d",
+        "filename": "encoder/dash_writer.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-18T04:16:07Z",
+      "side": 1,
+      "message": "nit: Not a big fan of the negative variables.",
+      "revId": "ec092d9ec055d5882dd2ea3709af01aca1685a2e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//DmU\u003d",
+        "filename": "encoder/dash_writer.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-18T04:16:07Z",
+      "side": 1,
+      "message": "ws",
+      "revId": "ec092d9ec055d5882dd2ea3709af01aca1685a2e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//DmQ\u003d",
+        "filename": "encoder/dash_writer.cc",
+        "patchSetId": 6
+      },
+      "lineNbr": 219,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-18T04:16:07Z",
+      "side": 1,
+      "message": "?????",
+      "revId": "ec092d9ec055d5882dd2ea3709af01aca1685a2e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Dmc\u003d",
+        "filename": "encoder/dash_writer.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-18T04:16:07Z",
+      "side": 1,
+      "message": "At some point you should probably make this a class. We could probably share some code with some of the other projects.\n\nBut fine for now.",
+      "revId": "ec092d9ec055d5882dd2ea3709af01aca1685a2e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Dmk\u003d",
+        "filename": "encoder/dash_writer.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-18T04:16:07Z",
+      "side": 1,
+      "message": "space",
+      "revId": "ec092d9ec055d5882dd2ea3709af01aca1685a2e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//DmM\u003d",
+        "filename": "encoder/dash_writer.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-18T04:16:07Z",
+      "side": 1,
+      "message": "The config handling is a little weird.",
+      "revId": "ec092d9ec055d5882dd2ea3709af01aca1685a2e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
