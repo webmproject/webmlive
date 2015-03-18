@@ -15,6 +15,7 @@
 #include <sstream>
 
 #include "encoder/buffer_pool-inl.h"
+#include "encoder/dash_writer.h"
 #include "encoder/webm_mux.h"
 #ifdef _WIN32
 #include "encoder/win/media_source_dshow.h"
@@ -298,6 +299,21 @@ void WebmEncoder::EncoderThread() {
     // media source Run failed; fatal/die:
     LOG(FATAL) << "Unable to run the media source! " << status;
   }
+
+  // Send the DASH manifest.
+  DashConfig dash_config;
+  DashWriter dash_writer;
+  if (!dash_writer.Init("webmlive", "webmlive", config_, &dash_config)) {
+    LOG(ERROR) << "DashWriter::Init failed.";
+  }
+  std::string dash_manifest;
+  if (!dash_writer.WriteManifest(dash_config, &dash_manifest)) {
+    LOG(ERROR) << "DashWriter::WriteManifest failed.";
+  }
+
+  ptr_data_sink_->WriteData(
+      reinterpret_cast<const uint8*>(dash_manifest.data()),
+      dash_manifest.length());
 
   // Wait for an input sample from each input stream-- this sets the
   // |timestamp_offset_| value when one or both streams starts with a negative
