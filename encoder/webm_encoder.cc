@@ -24,6 +24,10 @@
 
 namespace {
 
+const char kMuxedId[] = "muxed";
+const char kAudioId[] = "audio";
+const char kVideoId[] = "video";
+
 // Adds |timestamp_offset| to the timestamp value of |ptr_sample|, and returns
 // |WebmEncoder::kSuccess|. Returns |WebmEncoder::kInvalidArg| when |ptr_sample|
 // is NULL.
@@ -37,6 +41,48 @@ int OffsetTimestamp(int64 timestamp_offset, T* ptr_sample) {
   const int64 new_ts = timestamp_offset + ptr_sample->timestamp();
   ptr_sample->set_timestamp(new_ts);
   return WebmEncoder::kSuccess;
+}
+
+int InitMuxer(int chunk_duration, const std::string& muxer_id,
+              std::unique_ptr<webmlive::LiveWebmMuxer>* muxer) {
+  CHECK_NOTNULL(muxer);
+  (*muxer).reset(new (std::nothrow) webmlive::LiveWebmMuxer());  // NOLINT
+  if (!(*muxer).get()) {
+    LOG(ERROR) << "cannot construct live muxer!";
+    return webmlive::WebmEncoder::kInitFailed;
+  }
+  const int status = (*muxer)->Init(chunk_duration, muxer_id);
+  if (status) {
+    LOG(ERROR) << "live muxer Init failed " << status;
+    return webmlive::WebmEncoder::kInitFailed;
+  }
+  return status;
+}
+
+bool WriteManifest(const std::string& name, const std::string& manifest) {
+  FILE* manifest_file = fopen(name.c_str(), "w");
+  if (!manifest_file) {
+    LOG(ERROR) << "Unable to open manifest file.";
+    return false;
+  }
+  const int bytes_written =
+    fprintf(manifest_file, "%s", manifest.c_str());
+  fclose(manifest_file);
+  return (bytes_written == manifest.length());
+}
+
+bool WriteChunkFile(const std::string& chunk_name,
+                    const uint8* chunk_buffer, int32 chunk_length) {
+  FILE* chunk_file = fopen(chunk_name.c_str(), "wb");
+  if (!chunk_file) {
+    LOG(ERROR) << "Unable to open chunk file.";
+    return false;
+  }
+  const size_t bytes_written =
+      fwrite(reinterpret_cast<const void*>(chunk_buffer),
+             1, chunk_length, chunk_file);
+  fclose(chunk_file);
+  return (bytes_written == chunk_length);
 }
 
 }  // anonymous namespace
@@ -90,16 +136,41 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     return kInitFailed;
   }
 
-  // Construct and initialize the muxer.
-  ptr_muxer_.reset(new (std::nothrow) LiveWebmMuxer());  // NOLINT
-  if (!ptr_muxer_) {
-    LOG(ERROR) << "cannot construct live muxer!";
-    return kInitFailed;
-  }
-  status = ptr_muxer_->Init(config_.vpx_config.keyframe_interval);
-  if (status) {
-    LOG(ERROR) << "live muxer Init failed " << status;
-    return kInitFailed;
+  // TODO(tomfinegan): move this to the command line.
+  config_.dash_encode = true;
+
+  // When doing a DASH encode two muxers are used: One for each stream.
+  // Otherwise there's only one. Configure the muxers via local pointers-- the
+  // muxer actual being configured isn't really a concern of the code below as
+  // long as the configuration attempt succeeds.
+  LiveWebmMuxer* audio_muxer = NULL;
+  LiveWebmMuxer* video_muxer = NULL;
+
+  // Construct and initialize the muxer(s).
+  if (config_.dash_encode) {
+    status = InitMuxer(config_.vpx_config.keyframe_interval, kAudioId,
+                       &ptr_muxer_aud_);
+    if (status) {
+      LOG(ERROR) << "InitMuxer (A) failed: " << status;
+      return status;
+    }
+    status = InitMuxer(config_.vpx_config.keyframe_interval, kVideoId,
+                       &ptr_muxer_vid_);
+    if (status) {
+      LOG(ERROR) << "InitMuxer (V) failed: " << status;
+      return status;
+    }
+    audio_muxer = ptr_muxer_aud_.get();
+    video_muxer = ptr_muxer_vid_.get();
+  } else {
+    status = InitMuxer(config_.vpx_config.keyframe_interval, kMuxedId,
+                       &ptr_muxer_);
+    if (status) {
+      LOG(ERROR) << "InitMuxer failed: " << status;
+      return status;
+    }
+    audio_muxer = ptr_muxer_.get();
+    video_muxer = ptr_muxer_.get();
   }
 
   if (config_.disable_video == false) {
@@ -130,7 +201,7 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     // Add the video track.
     VideoConfig vpx_video_config = config_.actual_video_config;
     vpx_video_config.format = config_.vpx_config.codec;
-    status = ptr_muxer_->AddTrack(vpx_video_config);
+    status = video_muxer->AddTrack(vpx_video_config);
     if (status) {
       LOG(ERROR) << "live muxer AddTrack(video) failed " << status;
       return kInitFailed;
@@ -165,16 +236,18 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     codec_private.setup_length = vorbis_encoder_.setup_header_length();
 
     // Add the vorbis track.
-    status = ptr_muxer_->AddTrack(config_.actual_audio_config, codec_private);
+    status = audio_muxer->AddTrack(config_.actual_audio_config, codec_private);
     if (status) {
       LOG(ERROR) << "live muxer AddTrack(audio) failed " << status;
       return kInitFailed;
     }
   }
 
-  if (config.disable_audio) {
+  if (config_.dash_encode) {
+    ptr_encode_func_ = &WebmEncoder::DashEncode;
+  }else if (config_.disable_audio) {
     ptr_encode_func_ = &WebmEncoder::EncodeVideoFrame;
-  } else if (config.disable_video) {
+  } else if (config_.disable_video) {
     ptr_encode_func_ = &WebmEncoder::EncodeAudioOnly;
   } else {
     ptr_encode_func_ = &WebmEncoder::AVEncode;
@@ -259,7 +332,8 @@ bool WebmEncoder::StopRequested() {
   return stop_requested;
 }
 
-bool WebmEncoder::ReadChunkFromMuxer(int32 chunk_length) {
+bool WebmEncoder::ReadChunkFromMuxer(std::unique_ptr<LiveWebmMuxer>* muxer,
+                                     int32 chunk_length) {
   // Confirm that there's enough space in the chunk buffer.
   if (chunk_length > chunk_buffer_size_) {
     const int32 new_size = chunk_length * 2;
@@ -272,8 +346,8 @@ bool WebmEncoder::ReadChunkFromMuxer(int32 chunk_length) {
   }
 
   // Read the chunk into |chunk_buffer_|.
-  const int status = ptr_muxer_->ReadChunk(chunk_buffer_size_,
-                                           chunk_buffer_.get());
+  const int status = (*muxer)->ReadChunk(chunk_buffer_size_,
+                                         chunk_buffer_.get());
   if (status) {
     LOG(ERROR) << "error reading chunk: " << status;
     return false;
@@ -301,19 +375,24 @@ void WebmEncoder::EncoderThread() {
   }
 
   // Send the DASH manifest.
-  DashConfig dash_config;
-  DashWriter dash_writer;
-  if (!dash_writer.Init("webmlive", "webmlive", config_, &dash_config)) {
+  dash_writer_.reset(new (std::nothrow) DashWriter);  // NOLINT
+  if (!dash_writer_) {
+    LOG(FATAL) << "cannot construct dash writer!";
+  }
+  if (!dash_writer_->Init("webmlive", "webmlive", config_)) {
     LOG(ERROR) << "DashWriter::Init failed.";
   }
   std::string dash_manifest;
-  if (!dash_writer.WriteManifest(dash_config, &dash_manifest)) {
+  if (!dash_writer_->WriteManifest(&dash_manifest)) {
     LOG(ERROR) << "DashWriter::WriteManifest failed.";
   }
 
   ptr_data_sink_->WriteData(
       reinterpret_cast<const uint8*>(dash_manifest.data()),
-      dash_manifest.length());
+      dash_manifest.length(), "manifest");
+
+  // HACK: HERE BE DRAGONS
+  CHECK(WriteManifest("webmlive.mpd", dash_manifest));
 
   // Wait for an input sample from each input stream-- this sets the
   // |timestamp_offset_| value when one or both streams starts with a negative
@@ -338,22 +417,26 @@ void WebmEncoder::EncoderThread() {
         LOG(ERROR) << "encoding failed: " << status;
         break;
       }
-      if (ptr_data_sink_->Ready()) {
-        int32 chunk_length = 0;
-        const bool chunk_ready = ptr_muxer_->ChunkReady(&chunk_length);
-
-        if (chunk_ready) {
-          // A complete chunk is waiting in |ptr_muxer_|'s buffer.
-          if (!ReadChunkFromMuxer(chunk_length)) {
-            LOG(ERROR) << "cannot read WebM chunk.";
+      if (config_.dash_encode) {
+        if (!config_.disable_audio) {
+          status = WriteMuxerChunkToDataSink(&ptr_muxer_aud_);
+          if (status) {
+            LOG(ERROR) << "chunk write (A) failed: " << status;
             break;
           }
-
-          // Pass the chunk to |ptr_data_sink_|.
-          if (!ptr_data_sink_->WriteData(chunk_buffer_.get(), chunk_length)) {
-            LOG(ERROR) << "data sink write failed!";
+        }
+        if (!config_.disable_video) {
+          status = WriteMuxerChunkToDataSink(&ptr_muxer_vid_);
+          if (status) {
+            LOG(ERROR) << "chunk write (V) failed: " << status;
             break;
           }
+        }
+      } else {
+        status = WriteMuxerChunkToDataSink(&ptr_muxer_);
+        if (status) {
+          LOG(ERROR) << "muxed chunk write failed: " << status;
+          break;
         }
       }
     }
@@ -362,27 +445,23 @@ void WebmEncoder::EncoderThread() {
       // When |user_initiated_stop| is true the encode loop has been broken
       // cleanly (without error). Call |LiveWebmMuxer::Finalize()| to flush any
       // buffered samples, and upload the final chunk if one becomes available.
-      status = ptr_muxer_->Finalize();
-
-      if (status) {
-        LOG(ERROR) << "muxer Finalize failed: " << status;
-      } else {
-        int32 chunk_length = 0;
-        if (ptr_muxer_->ChunkReady(&chunk_length)) {
-          LOG(INFO) << "mkvmuxer Finalize produced a chunk.";
-
-          while (!ptr_data_sink_->Ready())
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-          if (ReadChunkFromMuxer(chunk_length)) {
-            const bool sink_write_ok =
-                ptr_data_sink_->WriteData(chunk_buffer_.get(), chunk_length);
-            if (!sink_write_ok) {
-              LOG(ERROR) << "data sink write failed for final chunk!";
-            } else {
-              LOG(INFO) << "Final chunk upload initiated.";
-            }
+      if (config_.dash_encode) {
+        if (!config_.disable_audio) {
+          status = WriteLastMuxerChunkToDataSink(&ptr_muxer_aud_);
+          if (status) {
+            LOG(ERROR) << "Failed to write last dash audio chunk";
           }
+        }
+        if (!config_.disable_video) {
+          status = WriteLastMuxerChunkToDataSink(&ptr_muxer_vid_);
+          if (status) {
+            LOG(ERROR) << "Failed to write last dash video chunk";
+          }
+        }
+      } else {
+        status = WriteLastMuxerChunkToDataSink(&ptr_muxer_);
+        if (status) {
+          LOG(ERROR) << "Failed to write last non-dash chunk";
         }
       }
     }
@@ -415,7 +494,7 @@ int WebmEncoder::EncodeAudioOnly() {
       LOG(ERROR) << "Audio buffer mux failed " << mux_status;
       return mux_status;
     }
-    LOG(INFO) << "muxed (audio) " << vorbis_audio_buffer_.timestamp() / 1000.0;
+    VLOG(4) << "muxed (A) " << vorbis_audio_buffer_.timestamp() / 1000.0;
 
     // Update encoded duration if able to obtain the lock.
     std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
@@ -444,10 +523,10 @@ int WebmEncoder::EncodeAudioOnly() {
 //     to true, and then waits to mux the audio until:
 // - When the stored |video_timestamp| is less than or equal to the _estimated_
 //   timestamp of the next compressed audio buffer from |vorbis_encoder_|, calls
-//   |EncodeVideoFrame()| to attempt read and encode of a video frame. This is
+//   |EncodeVideoFrame()| to attempt to read and encode a video frame. This is
 //   repeated until no video frames are available, or the next frame available
 //   would cause video to get ahead of audio.
-// - When the |vorbis_buffered| flag was been set because the audio timestamp
+// - When the |vorbis_buffered| flag was set because the audio timestamp
 //   produced by |vorbis_encoder_| was greater than |video_timestamp|, passes
 //   |vorbis_audio_buffer_| to |ptr_muxer_|.
 int WebmEncoder::AVEncode() {
@@ -483,8 +562,7 @@ int WebmEncoder::AVEncode() {
         return status;
       }
       vorbis_buffered = false;
-      LOG(INFO) << "muxed (audio) "
-                << vorbis_audio_buffer_.timestamp() / 1000.0;
+      VLOG(4) << "muxed (A) " << vorbis_audio_buffer_.timestamp() / 1000.0;
     }
   }
 
@@ -518,17 +596,80 @@ int WebmEncoder::AVEncode() {
       LOG(ERROR) << "buffered audio mux failed: " << status;
       return status;
     }
-    VLOG(3) << "muxed (audio) " << vorbis_audio_buffer_.timestamp() / 1000.0;
+    VLOG(4) << "muxed (buf, A) " << vorbis_audio_buffer_.timestamp() / 1000.0;
   }
   return kSuccess;
 }
 
-// On each encoding pass, either a call from |EncoderThread()| via
-// |ptr_encode_func_| or a call from |AVEncode()|:
+int WebmEncoder::DashEncode() {
+  // Encode a single audio buffer.
+  int status = EncodeAudioBuffer();
+  if (status) {
+    LOG(ERROR) << "EncodeAudioBuffer failed: " << status;
+    return status;
+  }
+
+  int64 video_timestamp;
+  status = PeekVideoTimestamp(&video_timestamp);
+  if (status < 0) {
+    LOG(ERROR) << "Video timestamp peek failed: " << status;
+    return status;
+  }
+
+  // Read compressed audio until no more remains, or the compressed buffer
+  // timestamp is greater than |video_timestamp|.
+  bool vorbis_buffered = false;
+  AudioBuffer& vorb_buf = vorbis_audio_buffer_;
+  VorbisEncoder& vorb_enc = vorbis_encoder_;
+  while ((status = vorb_enc.ReadCompressedAudio(&vorb_buf)) == kSuccess) {
+    status = ptr_muxer_aud_->WriteAudioBuffer(vorb_buf);
+    if (status) {
+      LOG(ERROR) << "audio mux failed: " << status;
+      return status;
+    }
+    VLOG(4) << "muxed (A) " << vorbis_audio_buffer_.timestamp() / 1000.0;
+
+    // Keep stream time reasonably close.
+    if (vorb_enc.time_encoded() > video_timestamp)
+      break;
+  }
+
+  // Attempt to encode video frames when |video_timestamp| is less than the
+  // next estimated compressed audio buffer timestamp.
+  while (status != BufferPool<VideoFrame>::kEmpty) {
+    VLOG(3) << "attempting video mux vid_ts=" << video_timestamp
+            << " vorb_enc time_encoded=" << vorb_enc.time_encoded();
+    status = EncodeVideoFrame();
+    if (status) {
+      LOG(ERROR) << "EncodeVideoFrame failed: " << status;
+      return status;
+    }
+    status = PeekVideoTimestamp(&video_timestamp);
+    if (status < 0) {
+      LOG(ERROR) << "Video timestamp peek failed: " << status;
+      return status;
+    }
+
+    // Keep stream time reasonably close.
+    if (video_timestamp > vorb_enc.time_encoded())
+      break;
+  }
+  return kSuccess;
+}
+
+
+// Reads, compresses and muxes one video frame.
 // - Attempts to read one frame from |video_pool_|, and compresses it using
 //   |video_encoder_| when a frame is available.
-// - Passes the compressed frame to |ptr_muxer_| for muxing.
+// - Passes the compressed frame to the video muxer for muxing.
 int WebmEncoder::EncodeVideoFrame() {
+  LiveWebmMuxer* video_muxer;
+  if (config_.dash_encode) {
+    video_muxer = ptr_muxer_vid_.get();
+  } else {
+    video_muxer = ptr_muxer_.get();
+  }
+
   // Try reading a video frame from the pool.
   int status = video_pool_.Decommit(&raw_frame_);
   if (status) {
@@ -563,11 +704,11 @@ int WebmEncoder::EncodeVideoFrame() {
     encoded_duration_ = std::max(vpx_frame_.timestamp(), encoded_duration_);
   }
 
-  status = ptr_muxer_->WriteVideoFrame(vpx_frame_);
+  status = video_muxer->WriteVideoFrame(vpx_frame_);
   if (status) {
     LOG(ERROR) << "Video frame mux failed: " << status;
   }
-  VLOG(3) << "muxed (video) " << vpx_frame_.timestamp() / 1000.0;
+  VLOG(3) << "muxed (V) " << vpx_frame_.timestamp() / 1000.0;
   return status;
 }
 
@@ -674,6 +815,86 @@ int WebmEncoder::PeekVideoTimestamp(int64* timestamp) {
     VLOG(3) << "video frame available ts=" << *timestamp;
   }
   return status;
+}
+
+int WebmEncoder::WriteMuxerChunkToDataSink(
+    std::unique_ptr<LiveWebmMuxer>* muxer) {
+  if (ptr_data_sink_->Ready()) {
+    int32 chunk_length = 0;
+    const bool chunk_ready = (*muxer)->ChunkReady(&chunk_length);
+    if (chunk_ready) {
+      const int64 chunk_num = (*muxer)->chunks_read();
+      std::string id = NextChunkId(muxer, chunk_num);
+      // A complete chunk is waiting in |muxer|'s buffer.
+      if (!ReadChunkFromMuxer(muxer, chunk_length)) {
+        LOG(ERROR) << "cannot read WebM chunk from muxer_id: "
+                   << (*muxer)->muxer_id();
+        return kWebmMuxerError;
+      }
+      // Pass the chunk to |ptr_data_sink_|.
+      if (!ptr_data_sink_->WriteData(chunk_buffer_.get(), chunk_length, id)) {
+        LOG(ERROR) << "data sink write failed!";
+        return kDataSinkWriteFail;
+      }
+      // HACK: HERE BE DRAGONS
+      CHECK(WriteChunkFile(id, chunk_buffer_.get(), chunk_length));
+    }
+  }
+  return kSuccess;
+}
+
+int WebmEncoder::WriteLastMuxerChunkToDataSink(
+    std::unique_ptr<LiveWebmMuxer>* muxer) {
+  int status = (*muxer)->Finalize();
+
+  if (status) {
+    LOG(ERROR) << "muxer Finalize failed, muxer_id: " << (*muxer)->muxer_id()
+               << " status: " << status;
+  } else {
+    int32 chunk_length = 0;
+    if ((*muxer)->ChunkReady(&chunk_length)) {
+      LOG(INFO) << "mkvmuxer Finalize produced a chunk.";
+      const int64 chunk_num = (*muxer)->chunks_read();
+      std::string id = NextChunkId(muxer, chunk_num);
+
+      while (!ptr_data_sink_->Ready())
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+      if (ReadChunkFromMuxer(muxer, chunk_length)) {
+        const bool sink_write_ok =
+            ptr_data_sink_->WriteData(chunk_buffer_.get(), chunk_length, id);
+        if (!sink_write_ok) {
+          LOG(ERROR) << "data sink write fail on final chunk for muxer_id:"
+                     << (*muxer)->muxer_id();
+        } else {
+          LOG(INFO) << "Final chunk upload initiated.";
+        }
+        // HACK: HERE BE DRAGONS
+        CHECK(WriteChunkFile(id, chunk_buffer_.get(), chunk_length));
+      }
+    }
+  }
+  return status;
+}
+
+std::string WebmEncoder::NextChunkId(std::unique_ptr<LiveWebmMuxer>* muxer,
+                                     int64 chunk_num) {
+  std::string id;
+  if (config_.dash_encode) {
+    AdaptationSet::MediaType media_type =
+        ((*muxer)->muxer_id() == kAudioId) ?
+            AdaptationSet::kAudio : AdaptationSet::kVideo;
+    dash_writer_->IdForChunk(media_type, chunk_num, &id);
+  } else {
+    const char kHeader[] = "header";
+    const char kChunk[] = "chunk";
+    if (chunk_num == 0)
+      id = kHeader;
+    else
+      id = kChunk;
+  }
+  LOG(INFO) << "chunk id: " << id;
+  return id;
 }
 
 }  // namespace webmlive
