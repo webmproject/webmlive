@@ -137,17 +137,21 @@ void WebmMuxWriter::ElementStartNotify(uint64 element_id, int64 position) {
 LiveWebmMuxer::LiveWebmMuxer()
     : audio_track_num_(0),
       video_track_num_(0),
-      muxer_time_(0) {
+      muxer_time_(0),
+      chunks_read_(0) {
 }
 
 LiveWebmMuxer::~LiveWebmMuxer() {
 }
 
-int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds) {
+int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds,
+                        const std::string& muxer_id) {
   if (cluster_duration_milliseconds < 1) {
     LOG(ERROR) << "bad cluster duration, must be greater than 1 millisecond.";
     return kInvalidArg;
   }
+
+  muxer_id_ = muxer_id;
 
   // Construct and Init |WebmMuxWriter|-- it handles writes coming from libwebm.
   ptr_writer_.reset(new (std::nothrow) WebmMuxWriter());  // NOLINT
@@ -403,6 +407,7 @@ int LiveWebmMuxer::ReadChunk(int32 buffer_capacity, uint8* ptr_buf) {
   // Copy chunk to user buffer, and erase it from |buffer_|.
   memcpy(ptr_buf, &buffer_[0], chunk_length);
   ptr_writer_->EraseChunk();
+  ++chunks_read_;
   return kSuccess;
 }
 
