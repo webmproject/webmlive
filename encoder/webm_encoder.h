@@ -42,7 +42,8 @@ struct WebmEncoderConfig {
       : disable_audio(false),
         disable_video(false),
         audio_device_index(kUseDefaultDevice),
-        video_device_index(kUseDefaultDevice) {}
+        video_device_index(kUseDefaultDevice),
+        dash_encode(false) {}
 
   // Audio/Video disable flags.
   bool disable_audio;
@@ -80,8 +81,12 @@ struct WebmEncoderConfig {
 
   // Source device options.
   UserInterfaceOptions ui_opts;
+
+  bool dash_encode;
+  std::string dash_name;
 };
 
+class DashWriter;
 class MediaSourceImpl;
 class LiveWebmMuxer;
 
@@ -93,6 +98,9 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   // Default size of |chunk_buffer_|.
   static const int kDefaultChunkBufferSize = 100 * 1024;
   enum {
+    // Data sink write failed.
+    kDataSinkWriteFail = -117,
+
     // AV capture implementation unable to setup audio buffer sink.
     kAudioSinkError = -116,
 
@@ -188,9 +196,10 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   // Returns true when user wants the encode thread to stop.
   bool StopRequested();
 
-  // Reads chunk from |ptr_muxer_| and reallocates |chunk_buffer_| when
-  // necessary. Returns true when successful.
-  bool ReadChunkFromMuxer(int32 chunk_length);
+  // Reads chunk from |muxer| and reallocates |chunk_buffer_| when necessary.
+  // Returns true when successful.
+  bool ReadChunkFromMuxer(std::unique_ptr<LiveWebmMuxer>* muxer,
+                          int32 chunk_length);
 
   // Encoding thread function.
   void EncoderThread();
@@ -201,6 +210,7 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   int EncodeAudioOnly();
   int AVEncode();
   int EncodeVideoFrame();
+  int DashEncode();
 
   // Utility function used to encode a single audio input buffer.
   int EncodeAudioBuffer();
@@ -212,6 +222,17 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
 
   // Returns the timestamp of the next available video frame via |timestamp|.
   int PeekVideoTimestamp(int64* timestamp);
+
+  // Writes |muxer| chunk to |ptr_data_sink_| when |muxer->ChunkReady()|
+  // returns true.
+  int WriteMuxerChunkToDataSink(std::unique_ptr<LiveWebmMuxer>* muxer);
+
+  // Writes last chunk from |muxer| to |ptr_data_sink_| and finalizes |muxer|.
+  int WriteLastMuxerChunkToDataSink(std::unique_ptr<LiveWebmMuxer>* muxer);
+
+  // Returns a chunk identifier for |chunk_num| from |muxer|.
+  std::string NextChunkId(std::unique_ptr<LiveWebmMuxer>* muxer,
+                          int64 chunk_num);
 
   // Set to true when |Init()| is successful.
   bool initialized_;
@@ -227,8 +248,16 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   // Pointer to platform specific audio/video source object implementation.
   std::unique_ptr<MediaSourceImpl> ptr_media_source_;
 
-  // Pointer to live WebM muxer.
+  // Pointer to live WebM muxer. |ptr_muxer_| is used for muxed A/V output and
+  // single stream output.
   std::unique_ptr<LiveWebmMuxer> ptr_muxer_;
+
+  // Pointers to live WebM muxers. |ptr_muxer_aud_| and |ptr_muxer_vid_| are
+  // used for DASH encodes that do not mux audio and video into the same WebM
+  // chunks.
+  // TODO(tomfinegan): Support multiple streams of each media type.
+  std::unique_ptr<LiveWebmMuxer> ptr_muxer_aud_;
+  std::unique_ptr<LiveWebmMuxer> ptr_muxer_vid_;
 
   // Mutex providing synchronization between user interface and encoder thread.
   mutable std::mutex mutex_;
@@ -273,6 +302,9 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
 
   // Encoder loop function pointer.
   EncoderLoopFunc ptr_encode_func_;
+
+  // DASH manifest writer.
+  std::unique_ptr<DashWriter> dash_writer_;
 
   // Timestamp adjustment value. Expressed in milliseconds. Used to change
   // input buffer timestamps when a stream starts with a timestamp less than 0.
