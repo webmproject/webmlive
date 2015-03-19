@@ -126,7 +126,7 @@ class LiveWebmMuxer {
   // that type. Returns |kSuccess| when successful. Returns |kInvalidArg| if
   // both configuration pointers are NULL. Returns |kInvalidArg| when
   // |cluster_duration| is < 1.
-  int Init(int32 cluster_duration_milliseconds);
+  int Init(int32 cluster_duration_milliseconds, const std::string& muxer_id);
 
   // Adds an audio track to |ptr_segment_| and returns |kSuccess|. Returns
   // |kAudioTrackAlreadyExists| when the audio track has already been added.
@@ -167,6 +167,8 @@ class LiveWebmMuxer {
 
   // Accessors.
   int64 muxer_time() const { return muxer_time_; }
+  int64 chunks_read() const { return chunks_read_; }
+  std::string muxer_id() const { return muxer_id_; }
 
  private:
   std::unique_ptr<WebmMuxWriter> ptr_writer_;
@@ -175,6 +177,8 @@ class LiveWebmMuxer {
   uint64 video_track_num_;
   WriteBuffer buffer_;
   int64 muxer_time_;
+  int64 chunks_read_;
+  std::string muxer_id_;
   friend class WebmMuxWriter;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(LiveWebmMuxer);
 };
