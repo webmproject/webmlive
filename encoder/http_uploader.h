@@ -128,7 +128,8 @@ class HttpUploader : public DataSinkInterface {
 
   // DataSinkInterface methods.
   virtual bool Ready() const { return UploadComplete(); }
-  virtual bool WriteData(const uint8* ptr_buffer, int32 length) {
+  virtual bool WriteData(const uint8* ptr_buffer, int32 length,
+                         const std::string& /*id*/) {
     return (UploadBuffer(ptr_buffer, length) == kSuccess);
   }
 
