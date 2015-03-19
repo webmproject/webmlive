@@ -114,13 +114,14 @@ DashConfig::DashConfig()
 //
 
 bool DashWriter::Init(std::string name, std::string id,
-                      const WebmEncoderConfig& webm_config,
-                      DashConfig* dash_config) {
-  CHECK_NOTNULL(dash_config);
+                      const WebmEncoderConfig& webm_config) {
   if (name.empty() || id.empty()) {
     LOG(ERROR) << "name or id empty in DashWriter::Init()";
     return false;
   }
+
+  name_ = name;
+  id_ = id;
 
   if (!webm_config.disable_audio) {
     config_.audio_as.enabled = true;
@@ -161,13 +162,11 @@ bool DashWriter::Init(std::string name, std::string id,
   config_.audio_as.chunk_duration = webm_config.vpx_config.keyframe_interval;
   config_.video_as.chunk_duration = webm_config.vpx_config.keyframe_interval;
 
-  *dash_config = config_;
   initialized_ = true;
   return true;
 }
 
-bool DashWriter::WriteManifest(const DashConfig& config,
-                               std::string* out_manifest) {
+bool DashWriter::WriteManifest(std::string* out_manifest) {
   CHECK_NOTNULL(out_manifest);
   if (!initialized_) {
     LOG(ERROR) << "DashWriter not initialized before call to WriteManifest()";
@@ -181,10 +180,10 @@ bool DashWriter::WriteManifest(const DashConfig& config,
   // Open the MPD element.
   manifest << "<MPD "
            << "xmlns=\"" << kDefaultSchema << "\" "
-           << "type=\"" << config.type << "\" "
-           << "minBufferTime=\"PT" << config.min_buffer_time << "S\" "
+           << "type=\"" << config_.type << "\" "
+           << "minBufferTime=\"PT" << config_.min_buffer_time << "S\" "
            << "mediaPresentationDuration=\"PT"
-           << config.media_presentation_duration << "\" "
+           << config_.media_presentation_duration << "\" "
            << "profiles=\"" << kDefaultProfiles << "\">"
            << "\n";
   IncreaseIndent();
@@ -192,18 +191,18 @@ bool DashWriter::WriteManifest(const DashConfig& config,
   // Open the Period element.
   manifest << indent_
            << "<Period "
-           << "start=\"PT" << config.start_time << "S\" "
-           << "duration=\"PT" << config.period_duration << "\">"
+           << "start=\"PT" << config_.start_time << "S\" "
+           << "duration=\"PT" << config_.period_duration << "\">"
            << "\n";
   IncreaseIndent();
 
-  if (config.audio_as.enabled) {
+  if (config_.audio_as.enabled) {
     std::string audio_as;
     WriteAudioAdaptationSet(&audio_as);
     manifest << audio_as;
   }
 
-  if (config.video_as.enabled) {
+  if (config_.video_as.enabled) {
     std::string video_as;
     WriteVideoAdaptationSet(&video_as);
     manifest << video_as;
@@ -217,9 +216,31 @@ bool DashWriter::WriteManifest(const DashConfig& config,
 
   LOG(INFO) << "\nmanifest:\n" << manifest.str();
   *out_manifest = manifest.str();
-  config_ = config;
-
   return true;
+}
+
+void DashWriter::IdForChunk(AdaptationSet::MediaType media_type,
+                            int64 chunk_num,
+                            std::string* chunk_id) const {
+  CHECK_NOTNULL(chunk_id);
+  CHECK(initialized_);
+  std::string initialization;
+  std::string media;
+  if (media_type == AdaptationSet::kAudio) {
+    initialization = name_ + "_" + kAudioId + ".hdr";
+    media  = name_ + "_" + kAudioId + "_";
+  } else {
+    initialization = name_ + "_" + kVideoId + ".hdr";
+    media  = name_ + "_" + kVideoId + "_";
+  }
+
+  std::ostringstream id;
+  if (chunk_num == 0) {
+    id << initialization << "";
+  } else {
+    id << media << chunk_num << ".chk";
+  }
+  *chunk_id = id.str();
 }
 
 void DashWriter::WriteAudioAdaptationSet(std::string* adaptation_set) {
