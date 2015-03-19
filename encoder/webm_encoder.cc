@@ -59,6 +59,32 @@ int InitMuxer(int chunk_duration, const std::string& muxer_id,
   return status;
 }
 
+bool WriteManifest(const std::string& name, const std::string& manifest) {
+  FILE* manifest_file = fopen(name.c_str(), "w");
+  if (!manifest_file) {
+    LOG(ERROR) << "Unable to open manifest file.";
+    return false;
+  }
+  const int bytes_written =
+    fprintf(manifest_file, "%s", manifest.c_str());
+  fclose(manifest_file);
+  return (bytes_written == manifest.length());
+}
+
+bool WriteChunkFile(const std::string& chunk_name,
+                    const uint8* chunk_buffer, int32 chunk_length) {
+  FILE* chunk_file = fopen(chunk_name.c_str(), "wb");
+  if (!chunk_file) {
+    LOG(ERROR) << "Unable to open chunk file.";
+    return false;
+  }
+  const size_t bytes_written =
+      fwrite(reinterpret_cast<const void*>(chunk_buffer),
+             1, chunk_length, chunk_file);
+  fclose(chunk_file);
+  return (bytes_written == chunk_length);
+}
+
 }  // anonymous namespace
 
 namespace webmlive {
@@ -364,6 +390,9 @@ void WebmEncoder::EncoderThread() {
   ptr_data_sink_->WriteData(
       reinterpret_cast<const uint8*>(dash_manifest.data()),
       dash_manifest.length(), "manifest");
+
+  // HACK: HERE BE DRAGONS
+  CHECK(WriteManifest("webmlive.mpd", dash_manifest));
 
   // Wait for an input sample from each input stream-- this sets the
   // |timestamp_offset_| value when one or both streams starts with a negative
@@ -807,6 +836,8 @@ int WebmEncoder::WriteMuxerChunkToDataSink(
         LOG(ERROR) << "data sink write failed!";
         return kDataSinkWriteFail;
       }
+      // HACK: HERE BE DRAGONS
+      CHECK(WriteChunkFile(id, chunk_buffer_.get(), chunk_length));
     }
   }
   return kSuccess;
@@ -838,6 +869,8 @@ int WebmEncoder::WriteLastMuxerChunkToDataSink(
         } else {
           LOG(INFO) << "Final chunk upload initiated.";
         }
+        // HACK: HERE BE DRAGONS
+        CHECK(WriteChunkFile(id, chunk_buffer_.get(), chunk_length));
       }
     }
   }
