@@ -117,7 +117,7 @@ class MediaSourceImpl {
     // Unable to connect audio source to Vorbis encoder.
     kAudioConnectError = -208,
 
-    // Unable to connect video source to VP8 encoder.
+    // Unable to connect video source to VPx encoder.
     kVideoConnectError = -207,
 
     // Unable to configure video source.

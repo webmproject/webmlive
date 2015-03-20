@@ -40,7 +40,7 @@ class VpxEncoder {
   VpxEncoder();
   ~VpxEncoder();
 
-  // Initializes libvpx for VP8 encoding and returns |kSuccess|. Returns
+  // Initializes libvpx for VPx encoding and returns |kSuccess|. Returns
   // |kCodecError| if a libvpx operation fails.
   int Init(const WebmEncoderConfig& config);
 
@@ -80,7 +80,7 @@ class VpxEncoder {
   // Webmlive libvpx settings structure.
   VpxConfig config_;
 
-  // libvpx VP8 configuration structure.
+  // libvpx VPx configuration structure.
   vpx_codec_ctx_t vpx_context_;
 
   // Timestamp of most recent compressed frame.
