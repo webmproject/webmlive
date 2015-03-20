@@ -27,8 +27,8 @@
 // App Version/Identity
 namespace webmlive {
 
-static const char* kClientName = "webmlive client encoder";
-static const char* kClientVersion = "0.0.2.0";
+static const char* kEncoderName = "webmlive encoder";
+static const char* kEncoderVersion = "2.0.0.0";
 
 }  // namespace webmlive
 
