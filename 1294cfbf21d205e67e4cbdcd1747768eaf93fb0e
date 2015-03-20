@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//DG4\u003d",
+        "filename": "encoder/dash_writer.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-20T18:07:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//DHs\u003d",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//DHg\u003d",
         "filename": "encoder/dash_writer.cc",
         "patchSetId": 7
@@ -30,6 +48,24 @@
       "writtenOn": "2015-03-20T16:25:13Z",
       "side": 1,
       "message": "Why not just return the string?",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//DG0\u003d",
+        "filename": "encoder/dash_writer.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-20T18:07:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//DHg\u003d",
       "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//DGw\u003d",
+        "filename": "encoder/webm_encoder.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-20T18:07:56Z",
+      "side": 1,
+      "message": "Added chunk_buffer_size_; everything else has a constructor",
+      "parentUuid": "AAAAdn//DHI\u003d",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//DHY\u003d",
         "filename": "encoder/webm_encoder.cc",
         "patchSetId": 7
@@ -64,6 +118,24 @@
       "writtenOn": "2015-03-20T16:25:13Z",
       "side": 1,
       "message": "You could just return the unique_ptr, unless the status is really useful.",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//DGc\u003d",
+        "filename": "encoder/webm_encoder.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-20T18:07:56Z",
+      "side": 1,
+      "message": "Yeah; LiveWebmMuxer returns (or tries to return) meaningful error codes, so I want to let them propagate all the way back up.",
+      "parentUuid": "AAAAdn//DHY\u003d",
       "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//DGs\u003d",
+        "filename": "encoder/webm_encoder.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-20T18:07:56Z",
+      "side": 1,
+      "message": "To avoid having to check encode type when adding tracks-- audio_muxer and video_muxer are always the right muxer after this block.\n\nI didn\u0027t want to have to pick between ptr_muxer_, ptr_muxer_aud_, and ptr_muxer_vid_ again down below at the AddTrack() calls.",
+      "parentUuid": "AAAAdn//DHc\u003d",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//DHU\u003d",
         "filename": "encoder/webm_encoder.cc",
         "patchSetId": 7
@@ -98,6 +188,24 @@
       "writtenOn": "2015-03-20T16:25:13Z",
       "side": 1,
       "message": "is this else here an error condition?",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//DGg\u003d",
+        "filename": "encoder/webm_encoder.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 875,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-20T18:07:56Z",
+      "side": 1,
+      "message": "No; it\u0027s the path I want. Else removed; returning in the if above when Finalize() returns an error.",
+      "parentUuid": "AAAAdn//DHU\u003d",
       "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -121,6 +229,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//DGk\u003d",
+        "filename": "encoder/webm_encoder.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 880,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-20T18:07:56Z",
+      "side": 1,
+      "message": "changed to const std::string\u0026; don\u0027t need the muxer here.",
+      "parentUuid": "AAAAdn//DHQ\u003d",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//DHM\u003d",
         "filename": "encoder/webm_encoder.h",
         "patchSetId": 7
@@ -138,6 +264,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//DGY\u003d",
+        "filename": "encoder/webm_encoder.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-20T18:07:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//DHM\u003d",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//DHE\u003d",
         "filename": "encoder/webm_mux.h",
         "patchSetId": 7
@@ -149,6 +293,24 @@
       "writtenOn": "2015-03-20T16:25:13Z",
       "side": 1,
       "message": "muxer_id?",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//DGM\u003d",
+        "filename": "encoder/webm_mux.h",
+        "patchSetId": 7
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-20T18:07:56Z",
+      "side": 1,
+      "message": "umm.... yeah that comment was completely wrong. Done.",
+      "parentUuid": "AAAAdn//DHE\u003d",
       "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
