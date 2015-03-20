@@ -386,9 +386,11 @@ void WebmEncoder::EncoderThread() {
     LOG(ERROR) << "DashWriter::WriteManifest failed.";
   }
 
+#if 0
   ptr_data_sink_->WriteData(
       reinterpret_cast<const uint8*>(dash_manifest.data()),
       dash_manifest.length(), "manifest");
+#endif
 
   // HACK: HERE BE DRAGONS
   CHECK(WriteManifest("webmlive.mpd", dash_manifest));
@@ -830,11 +832,13 @@ int WebmEncoder::WriteMuxerChunkToDataSink(
                    << (*muxer)->muxer_id();
         return kWebmMuxerError;
       }
+#if 0
       // Pass the chunk to |ptr_data_sink_|.
       if (!ptr_data_sink_->WriteData(chunk_buffer_.get(), chunk_length, id)) {
         LOG(ERROR) << "data sink write failed!";
         return kDataSinkWriteFail;
       }
+#endif
       // HACK: HERE BE DRAGONS
       CHECK(WriteChunkFile(id, chunk_buffer_.get(), chunk_length));
     }
@@ -860,6 +864,7 @@ int WebmEncoder::WriteLastMuxerChunkToDataSink(
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if (ReadChunkFromMuxer(muxer, chunk_length)) {
+#if 0
       const bool sink_write_ok =
           ptr_data_sink_->WriteData(chunk_buffer_.get(), chunk_length, id);
       if (!sink_write_ok) {
@@ -868,6 +873,7 @@ int WebmEncoder::WriteLastMuxerChunkToDataSink(
       } else {
         LOG(INFO) << "Final chunk upload initiated.";
       }
+#endif
       // HACK: HERE BE DRAGONS
       CHECK(WriteChunkFile(id, chunk_buffer_.get(), chunk_length));
     }
