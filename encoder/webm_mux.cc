@@ -198,9 +198,9 @@ int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds,
   ptr_segment_info->set_timecode_scale(kTimecodeScale);
 
   // Set writing application name.
-  std::string app_name = kClientName;
+  std::string app_name = kEncoderName;
   app_name += " v";
-  app_name += kClientVersion;
+  app_name += kEncoderVersion;
   ptr_segment_info->set_writing_app(app_name.c_str());
   return kSuccess;
 }
