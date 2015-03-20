@@ -40,7 +40,8 @@ class WebmMuxWriter : public mkvmuxer::IMkvWriter {
   virtual ~WebmMuxWriter();
 
   // Stores |ptr_buffer| and returns |kSuccess|.
-  int32 Init(LiveWebmMuxer::WriteBuffer* ptr_write_buffer);
+  int32 Init(LiveWebmMuxer::WriteBuffer* ptr_write_buffer,
+             const std::string& id);
 
   // Accessors.
   int64 bytes_written() const { return bytes_written_; }
@@ -72,6 +73,7 @@ class WebmMuxWriter : public mkvmuxer::IMkvWriter {
   int64 bytes_written_;
   int64 chunk_end_;
   LiveWebmMuxer::WriteBuffer* ptr_write_buffer_;
+  std::string id_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmMuxWriter);
 };
 
@@ -85,12 +87,14 @@ WebmMuxWriter::WebmMuxWriter()
 WebmMuxWriter::~WebmMuxWriter() {
 }
 
-int32 WebmMuxWriter::Init(LiveWebmMuxer::WriteBuffer* ptr_write_buffer) {
+int32 WebmMuxWriter::Init(LiveWebmMuxer::WriteBuffer* ptr_write_buffer,
+                          const std::string& id) {
   if (!ptr_write_buffer) {
     LOG(ERROR) << "Cannot Init, NULL write buffer.";
     return kInvalidArg;
   }
   ptr_write_buffer_ = ptr_write_buffer;
+  id_ = id;
   return kSuccess;
 }
 
@@ -125,8 +129,9 @@ int32 WebmMuxWriter::Write(const void* ptr_buffer, uint32 buffer_length) {
 void WebmMuxWriter::ElementStartNotify(uint64 element_id, int64 position) {
   if (element_id == mkvmuxer::kMkvCluster) {
     chunk_end_ = bytes_buffered_;
-    VLOG(1) << "chunk_end_=" << chunk_end_;
-    VLOG(1) << "position=" << position;
+    if (id_ == "video") {
+      LOG(INFO) << "video chunk_end_=" << chunk_end_<< " position=" << position;
+    }
   }
 }
 
@@ -159,7 +164,7 @@ int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds,
     LOG(ERROR) << "cannot construct WebmWriteBuffer.";
     return kNoMemory;
   }
-  if (ptr_writer_->Init(&buffer_)) {
+  if (ptr_writer_->Init(&buffer_, muxer_id)) {
     LOG(ERROR) << "cannot Init WebmWriteBuffer.";
     return kMuxerError;
   }
@@ -177,9 +182,11 @@ int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds,
   }
 
   ptr_segment_->set_mode(mkvmuxer::Segment::kLive);
-  const uint64 max_cluster_duration =
-      milliseconds_to_timecode_ticks(cluster_duration_milliseconds);
-  ptr_segment_->set_max_cluster_duration(max_cluster_duration);
+  if (cluster_duration_milliseconds > 0) {
+    const uint64 max_cluster_duration =
+        milliseconds_to_timecode_ticks(cluster_duration_milliseconds);
+    ptr_segment_->set_max_cluster_duration(max_cluster_duration);
+  }
 
   // Set segment info fields.
   using mkvmuxer::SegmentInfo;
