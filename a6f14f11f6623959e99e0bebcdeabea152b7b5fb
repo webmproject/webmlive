@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//DII\u003d",
+        "filename": "encoder/encoder_base.h",
+        "patchSetId": 6
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-20T15:24:50Z",
+      "side": 1,
+      "message": "right to 2.0. Not messing around",
+      "revId": "a6f14f11f6623959e99e0bebcdeabea152b7b5fb",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
