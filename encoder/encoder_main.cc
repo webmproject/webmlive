@@ -50,11 +50,15 @@ struct WebmEncoderClientConfig {
 
 // Prints usage.
 void usage(const char** argv) {
-  printf("Usage: %ls --url <target URL>\n", argv[0]);
+  printf("%s v%s\n", webmlive::kEncoderName, webmlive::kEncoderVersion);
+  printf("Usage: %s <args>\n", argv[0]);
   printf("  Notes:\n");
-  printf("    The URL parameter is always required. If no query string is\n");
-  printf("    present in the URL, the stream_id and stream_name are also\n");
-  printf("    required.\n");
+  printf("    - Uploading is currently DISABLED! The --url parameter will\n");
+  printf("      be ignored. File output to the current working directory is\n");
+  printf("      the only currently supported output method. The following\n");
+  printf("      notes still apply.\n");
+  printf("    - If an URL is provided without a query string present in the\n");
+  printf("      URL, the stream_id and stream_name args are required.\n");
   printf("  General Options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
@@ -82,13 +86,13 @@ void usage(const char** argv) {
   printf("    --vorbis_bitrate <kbps>            Average bitrate.\n");
   printf("    --vorbis_minimum_bitrate <kbps>    Minimum bitrate.\n");
   printf("    --vorbis_maximum_bitrate <kbps>    Maximum bitrate.\n");
-  printf("    --vorbis_disable_vbr               Disable VBR mode when");
-  printf("                                       specifying only an average");
+  printf("    --vorbis_disable_vbr               Disable VBR mode when\n");
+  printf("                                       specifying only an average\n");
   printf("                                       bitrate.\n");
   printf("    --vorbis_iblock_bias <-15.0-0.0>   Impulse block bias.\n");
   printf("    --vorbis_lowpass_frequency <2-99>  Hard-low pass frequency.\n");
   printf("  Video source configuration options:\n");
-  printf("    --vdisable                         Disable video capture.");
+  printf("    --vdisable                         Disable video capture.\n");
   printf("    --vmanual                          Attempt manual\n");
   printf("                                       configuration.\n");
   printf("    --vwidth <width>                   Width in pixels.\n");
@@ -97,7 +101,7 @@ void usage(const char** argv) {
   printf("  VPX Encoder options:\n");
   printf("    --vpx_bitrate <kbps>               Video bitrate.\n");
   printf("    --vpx_codec <codec>                Video codec, vp8 or vp9.\n");
-  printf("                                       The default codec is vp8\n.");
+  printf("                                       The default codec is vp8.\n");
   printf("    --vpx_decimate <decimate factor>   FPS reduction factor.\n");
   printf("    --vpx_keyframe_interval <milliseconds>  Time between\n");
   printf("                                            keyframes.\n");
@@ -442,20 +446,16 @@ int main(int argc, const char** argv) {
   parse_command_line(argc, argv, config);
 
   // validate params
-  if (config.target_url.empty()) {
-    LOG(ERROR) << "The URL parameter is required!";
-    usage(argv);
-    return EXIT_FAILURE;
-  }
-
-  // Confirm |stream_id| and |stream_name| are present when no query string
-  // is present in |target_url|.
-  if ((config.uploader_settings.stream_id.empty() ||
-      config.uploader_settings.stream_name.empty()) &&
-      config.target_url.find('?') == std::string::npos) {
-    LOG(ERROR) << "stream_id and stream_name are required when the target "
-               << "URL lacks a query string!\n";
-    return EXIT_FAILURE;
+  if (!config.target_url.empty()) {
+    // Confirm |stream_id| and |stream_name| are present when no query string
+    // is present in |target_url|.
+    if ((config.uploader_settings.stream_id.empty() ||
+        config.uploader_settings.stream_name.empty()) &&
+        config.target_url.find('?') == std::string::npos) {
+      LOG(ERROR) << "stream_id and stream_name are required when the target "
+                 << "URL lacks a query string!\n";
+      return EXIT_FAILURE;
+    }
   }
 
   LOG(INFO) << "url: " << config.target_url.c_str();
