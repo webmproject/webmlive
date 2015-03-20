@@ -108,13 +108,16 @@ class DashWriter {
   // Builds the SegmentTemplate media and initialization strings and then stores
   // them in |config|. Must be called before |WriteManifest()|. Returns true
   // when successful.
-  bool Init(std::string name, std::string id,
-            const WebmEncoderConfig& webm_config, DashConfig* config);
+  bool Init(const std::string& name, const std::string& id,
+            const WebmEncoderConfig& webm_config);
 
   // Writes the DASH manifest built from |config| to |manifest|. Returns true
   // when successful.
-  bool WriteManifest(const DashConfig& config,
-                     std::string* manifest);
+  bool WriteManifest(std::string* manifest);
+
+  // Returns a string suitable for identifying a chunk.
+  std::string IdForChunk(AdaptationSet::MediaType media_type,
+                         int64 chunk_num) const;
 
  private:
   void WriteAudioAdaptationSet(std::string* adaptation_set);
@@ -127,6 +130,8 @@ class DashWriter {
   bool initialized_;
   DashConfig config_;
   std::string indent_;
+  std::string name_;
+  std::string id_;
 };
 
 }  // namespace webmlive
