@@ -161,7 +161,7 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
   return kSuccess;
 }
 
-// Encodes |ptr_raw_frame| using libvpx and stores the resulting VP8 frame in
+// Encodes |ptr_raw_frame| using libvpx and stores the resulting VPx frame in
 // |ptr_vpx_frame|. First checks if |ptr_raw_frame| should be dropped due to
 // decimation, and then checks if it's time to force a keyframe before finally
 // wrapping the data from |ptr_raw_frame| in a vpx_img_t struct and passing it
