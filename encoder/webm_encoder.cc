@@ -154,8 +154,7 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
       LOG(ERROR) << "InitMuxer (A) failed: " << status;
       return status;
     }
-    status = InitMuxer(config_.vpx_config.keyframe_interval, kVideoId,
-                       &ptr_muxer_vid_);
+    status = InitMuxer(0, kVideoId, &ptr_muxer_vid_);
     if (status) {
       LOG(ERROR) << "InitMuxer (V) failed: " << status;
       return status;
@@ -163,8 +162,7 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     audio_muxer = ptr_muxer_aud_.get();
     video_muxer = ptr_muxer_vid_.get();
   } else {
-    status = InitMuxer(config_.vpx_config.keyframe_interval, kMuxedId,
-                       &ptr_muxer_);
+    status = InitMuxer(0, kMuxedId, &ptr_muxer_);
     if (status) {
       LOG(ERROR) << "InitMuxer failed: " << status;
       return status;
