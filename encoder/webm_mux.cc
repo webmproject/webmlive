@@ -151,11 +151,6 @@ LiveWebmMuxer::~LiveWebmMuxer() {
 
 int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds,
                         const std::string& muxer_id) {
-  if (cluster_duration_milliseconds < 1) {
-    LOG(ERROR) << "bad cluster duration, must be greater than 1 millisecond.";
-    return kInvalidArg;
-  }
-
   muxer_id_ = muxer_id;
 
   // Construct and Init |WebmMuxWriter|-- it handles writes coming from libwebm.
@@ -182,9 +177,11 @@ int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds,
   }
 
   ptr_segment_->set_mode(mkvmuxer::Segment::kLive);
-  const uint64 max_cluster_duration =
-      milliseconds_to_timecode_ticks(cluster_duration_milliseconds);
-  ptr_segment_->set_max_cluster_duration(max_cluster_duration);
+  if (cluster_duration_milliseconds > 0) {
+    const uint64 max_cluster_duration =
+        milliseconds_to_timecode_ticks(cluster_duration_milliseconds);
+    ptr_segment_->set_max_cluster_duration(max_cluster_duration);
+  }
 
   // Set segment info fields.
   using mkvmuxer::SegmentInfo;
