@@ -180,7 +180,7 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     const double& fps = config_.actual_video_config.frame_rate;
 
     // Buffer up to half a second of video when audio is enabled.
-    // TODO(tomfinegan): Add a VP8 frame pool to store compressed frames while
+    // TODO(tomfinegan): Add a VPx frame pool to store compressed frames while
     //                   waiting for audio instead of throwing memory at the
     //                   problem.
     const int num_video_buffers =

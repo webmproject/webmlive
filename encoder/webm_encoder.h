@@ -76,7 +76,7 @@ struct WebmEncoderConfig {
   // Vorbis audio encoder settings.
   VorbisConfig vorbis_config;
 
-  // VP8 encoder settings.
+  // VPx encoder settings.
   VpxConfig vpx_config;
 
   // Source device options.
@@ -90,7 +90,7 @@ class DashWriter;
 class MediaSourceImpl;
 class LiveWebmMuxer;
 
-// Top level WebM encoder class. Manages capture from A/V input devices, VP8
+// Top level WebM encoder class. Manages capture from A/V input devices, VPx
 // encoding, Vorbis encoding, and muxing into a WebM stream.
 class WebmEncoder : public AudioSamplesCallbackInterface,
                     public VideoFrameCallbackInterface {
