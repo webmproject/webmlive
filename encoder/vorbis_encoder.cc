@@ -354,9 +354,9 @@ int VorbisEncoder::GenerateHeaders() {
                                                       ClearVorbisComments);
 
   // Add app name and version to vorbis comments.
-  std::string encoder_id = kClientName;
+  std::string encoder_id = kEncoderName;
   encoder_id += " v";
-  encoder_id += kClientVersion;
+  encoder_id += kEncoderVersion;
   const std::string kVorbisEncoderTag = "encoder";
   vorbis_comment_add_tag(&comments,
                          kVorbisEncoderTag.c_str(),
