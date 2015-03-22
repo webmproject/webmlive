@@ -33,7 +33,7 @@ const char kContentComponentTypeVideo[] = "video";
 const int kDefaultPeriodDuration = kDefaultMediaPresentationDuration;
 const int kDefaultTimescale = 1000;  // milliseconds.
 const int kDefaultChunkDuration = 5000;  // milliseconds.
-const int kDefaultStartNumber = 1;
+const std::string kDefaultStartNumber = "1";
 const int kDefaultStartWithSap = 1;
 const int kDefaultBandwidth = 1000000;  // Bits.
 const int kDefaultFrameRate = 30;
@@ -113,35 +113,35 @@ DashConfig::DashConfig()
 // DashWriter
 //
 
-bool DashWriter::Init(const std::string& name, const std::string& id,
-                      const WebmEncoderConfig& webm_config) {
-  if (name.empty() || id.empty()) {
-    LOG(ERROR) << "name or id empty in DashWriter::Init()";
+bool DashWriter::Init(const WebmEncoderConfig& webm_config) {
+  if (webm_config.dash_name.empty()) {
+    LOG(ERROR) << "name empty in DashWriter::Init()";
     return false;
   }
 
-  name_ = name;
-  id_ = id;
+  name_ = webm_config.dash_name;
 
   if (!webm_config.disable_audio) {
     config_.audio_as.enabled = true;
     config_.audio_as.bandwidth =
         webm_config.vorbis_config.average_bitrate * 1000;
-    config_.audio_as.media = name + kChunkPattern;
-    config_.audio_as.initialization = name + kInitializationPattern;
+    config_.audio_as.media = name_ + kChunkPattern;
+    config_.audio_as.initialization = name_ + kInitializationPattern;
     config_.audio_as.rep_id = kAudioId;
     config_.audio_as.audio_sampling_rate =
         webm_config.actual_audio_config.sample_rate;
     config_.audio_as.value = webm_config.actual_audio_config.channels;
+    config_.audio_as.start_number = webm_config.dash_start_number;
   }
   if (!webm_config.disable_video) {
     config_.video_as.enabled = true;
     config_.video_as.bandwidth = webm_config.vpx_config.bitrate * 1000;
-    config_.video_as.media = name + kChunkPattern;
-    config_.video_as.initialization = name + kInitializationPattern;
+    config_.video_as.media = name_ + kChunkPattern;
+    config_.video_as.initialization = name_ + kInitializationPattern;
     config_.video_as.rep_id = kVideoId;
     config_.video_as.width = webm_config.actual_video_config.width;
     config_.video_as.height = webm_config.actual_video_config.height;
+    config_.video_as.start_number = webm_config.dash_start_number;
 
     if (webm_config.vpx_config.decimate != VpxConfig::kUseDefault) {
       config_.video_as.frame_rate = static_cast<int>(

@@ -53,36 +53,60 @@ void usage(const char** argv) {
   printf("%s v%s\n", webmlive::kEncoderName, webmlive::kEncoderVersion);
   printf("Usage: %s <args>\n", argv[0]);
   printf("  Notes:\n");
+  printf("    - DASH output is currently hard coded on and cannot be\n");
+  printf("      disabled.\n");
   printf("    - Uploading is currently DISABLED! The --url parameter will\n");
-  printf("      be ignored. File output to the current working directory is\n");
-  printf("      the only currently supported output method. The following\n");
-  printf("      notes still apply.\n");
+  printf("      be ignored. DASH file output to the is the only currently\n");
+  printf("      supported output method. The following note still applies.\n");
   printf("    - If an URL is provided without a query string present in the\n");
   printf("      URL, the stream_id and stream_name args are required.\n");
-  printf("  General Options:\n");
+  printf("  General options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
   printf("    --adevidx <source index>       Select audio capture device by\n");
   printf("                                   index. Ignored when --adev is\n");
   printf("                                   used.\n");
-  printf("    --form_post                    Send WebM chunks as file data\n");
-  printf("                                   in a form (a la RFC 1867).\n");
-  printf("    --stream_id <stream ID>        Stream ID to include in POST\n");
-  printf("                                   query string.\n");
-  printf("    --stream_name <stream name>    Stream name to include in POST\n");
-  printf("                                   query string.\n");
-  printf("    --url <target URL>             Target for HTTP Posts.\n");
   printf("    --vdev <video source name>     Video capture device name.\n");
   printf("    --vdevidx <source index>       Select video capture device by\n");
   printf("                                   index. Ignored when --vdev is\n");
   printf("                                   used.\n");
+  printf("  DASH encoding options:\n");
+  printf("    When the --dash argument is present an MPD file is produced\n");
+  printf("    that allows the WebM output to be consumed by DASH WebM\n");
+  printf("    players.\n");
+  printf("    DASH encoding output is unmuxed; audio and video are output\n");
+  printf("    in separate container streams.\n");
+  printf("    Default DASH name is webmlive. Default DASH dir is the\n");
+  printf("    current working directory.\n");
+  printf("    --dash                         Enables DASH output.\n");
+  printf("    --dash_dir <dir>               Output directory. Directory\n");
+  printf("                                   must exist.\n");
+  printf("    --dash_name <name>             MPD file name and DASH chunk\n");
+  printf("                                   file name prefix.\n");
+  printf("    --dash_start_number <string>   Use string specified instead \n");
+  printf("                                   of the value 1 for the\n");
+  printf("                                   SegmentTemplate startNumber.\n");
+  printf("  HTTP uploader options:\n");
+  printf("    Sends WebM chunks to an HTTP server via HTTP POST. Enabled\n");
+  printf("    when the --url argument is present.\n");
+  printf("    --url <target URL>             Target for HTTP POSTs.\n");
+  printf("    --header <name:value>          Adds HTTP header and value.\n");
+  printf("                                   Sent with all POSTs.\n");
+  printf("    --form_post                    Send WebM chunks as file data\n");
+  printf("                                   in a form (a la RFC 1867).\n");
+  printf("    --var <name:value>             Adds form variable and value.\n");
+  printf("                                   Sent with all POSTs.\n");
+  printf("    --stream_id <stream ID>        Stream ID to include in POST\n");
+  printf("                                   query string.\n");
+  printf("    --stream_name <stream name>    Stream name to include in POST\n");
+  printf("                                   query string.\n");
   printf("  Audio source configuration options:\n");
   printf("    --adisable                     Disable audio capture.\n");
   printf("    --amanual                      Attempt manual configuration.\n");
   printf("    --achannels <channels>         Number of audio channels.\n");
   printf("    --arate <sample rate>          Audio sample rate.\n");
   printf("    --asize <sample size>          Audio bits per sample.\n");
-  printf("  Vorbis Encoder options:\n");
+  printf("  Vorbis encoder options:\n");
   printf("    --vorbis_bitrate <kbps>            Average bitrate.\n");
   printf("    --vorbis_minimum_bitrate <kbps>    Minimum bitrate.\n");
   printf("    --vorbis_maximum_bitrate <kbps>    Maximum bitrate.\n");
@@ -98,7 +122,7 @@ void usage(const char** argv) {
   printf("    --vwidth <width>                   Width in pixels.\n");
   printf("    --vheight <height>                 Height in pixels.\n");
   printf("    --vframe_rate <width>              Frames per second.\n");
-  printf("  VPX Encoder options:\n");
+  printf("  VPx encoder options:\n");
   printf("    --vpx_bitrate <kbps>               Video bitrate.\n");
   printf("    --vpx_codec <codec>                Video codec, vp8 or vp9.\n");
   printf("                                       The default codec is vp8.\n");
@@ -121,10 +145,10 @@ void usage(const char** argv) {
   printf("    --vpx_max_kf_bitrate <percent>     Max keyframe bitrate.\n");
   printf("    --vpx_sharpness <0-7>              Loop filter sharpness.\n");
   printf("    --vpx_error_resilience             Enables error resilience.\n");
-  printf("  VP8 Specific Encoder options:\n");
+  printf("  VP8 specific encoder options:\n");
   printf("    --vp8_token_partitions <0-3>       Number of token\n");
   printf("                                       partitions.\n");
-  printf("  VP9 Specific Encoder options:\n");
+  printf("  VP9 specific encoder options:\n");
   printf("    --vp9_aq_mode <0-3>                Adaptive quant mode:\n");
   printf("                                       0: off\n");
   printf("                                       1: variance\n");
@@ -165,7 +189,7 @@ int store_string_map_entries(const StringVector& unparsed_entries,
       return kBadFormat;
     }
 
-    out_map[entry.substr(0, sep).c_str()] = entry.substr(sep+1);
+    out_map[entry.substr(0, sep).c_str()] = entry.substr(sep + 1);
     ++entry_iter;
   }
   return kSuccess;
@@ -195,13 +219,51 @@ void parse_command_line(int argc, const char** argv,
         !strcmp("--help", argv[i])) {
       usage(argv);
       exit(EXIT_SUCCESS);
-    } else if (!strcmp("--url", argv[i]) && arg_has_value(i, argc, argv)) {
+    }
+
+    //
+    // DASH encoder options.
+    //
+    else if (!strcmp("--dash", argv[i])) {
+      enc_config.dash_encode = true;
+    } else if (!strcmp("--dash_dir", argv[i]) && arg_has_value(i, argc, argv)) {
+      enc_config.dash_dir = argv[++i];
+      const char last_char = enc_config.dash_dir[enc_config.dash_dir.length()];
+      if (last_char != '/' && last_char != '\\') {
+        enc_config.dash_dir.append("/");
+      }
+    } else if (!strcmp("--dash_name", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.dash_name = argv[++i];
+    } else if (!strcmp("--dash_start_number", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      enc_config.dash_start_number = argv[++i];
+    }
+
+    //
+    // HTTP uploader options.
+    //
+    else if (!strcmp("--url", argv[i]) && arg_has_value(i, argc, argv)) {
       config.target_url = argv[++i];
     } else if (!strcmp("--header", argv[i]) && arg_has_value(i, argc, argv)) {
       unparsed_headers.push_back(argv[++i]);
+    } else if (!strcmp("--form_post", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
     } else if (!strcmp("--var", argv[i]) && arg_has_value(i, argc, argv)) {
       unparsed_vars.push_back(argv[++i]);
-    } else if (!strcmp("--adev", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--stream_name", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      uploader_settings.stream_name = argv[++i];
+    } else if (!strcmp("--stream_id", argv[i]) &&
+               arg_has_value(i, argc, argv)) {
+      uploader_settings.stream_id = argv[++i];
+    }
+
+    //
+    // Audio source configuration options.
+    //
+    else if (!strcmp("--adev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.audio_device_name = argv[++i];
     } else if (!strcmp("--adevidx", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.audio_device_index = strtol(argv[++i], NULL, 10);
@@ -219,16 +281,12 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--asize", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.requested_audio_config.bits_per_sample =
           static_cast<uint16>(strtol(argv[++i], NULL, 10));
-    } else if (!strcmp("--stream_name", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
-      uploader_settings.stream_name = argv[++i];
-    } else if (!strcmp("--stream_id", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
-      uploader_settings.stream_id = argv[++i];
-    } else if (!strcmp("--form_post", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
-      uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
-    } else if (!strcmp("--vdisable", argv[i])) {
+    }
+
+    //
+    // Video source configuration options.
+    //
+    else if (!strcmp("--vdisable", argv[i])) {
       enc_config.disable_video = true;
     } else if (!strcmp("--vdev", argv[i]) && arg_has_value(i, argc, argv)) {
       enc_config.video_device_name = argv[++i];
@@ -243,7 +301,12 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vframe_rate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.requested_video_config.frame_rate = strtod(argv[++i], NULL);
-    } else if (!strcmp("--vorbis_bitrate", argv[i]) &&
+    }
+
+    //
+    // Vorbis encoder options.
+    //
+    else if (!strcmp("--vorbis_bitrate", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vorbis_config.average_bitrate = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vorbis_minimum_bitrate", argv[i]) &&
@@ -260,7 +323,11 @@ void parse_command_line(int argc, const char** argv,
     } else if (!strcmp("--vorbis_lowpass_frequency", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vorbis_config.lowpass_frequency = strtod(argv[++i], NULL);
-    } else if (!strcmp("--vpx_keyframe_interval", argv[i]) &&
+    }
+
+    //
+    // VPx encoder options.
+    else if (!strcmp("--vpx_keyframe_interval", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.keyframe_interval = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_bitrate", argv[i]) &&
@@ -319,10 +386,20 @@ void parse_command_line(int argc, const char** argv,
       enc_config.vpx_config.sharpness = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_error_resilience", argv[i])) {
       enc_config.vpx_config.error_resilient = true;
-    } else if (!strcmp("--vp8_token_partitions", argv[i]) &&
+    }
+
+    //
+    // VP8 specific encoder options.
+    //
+    else if (!strcmp("--vp8_token_partitions", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.token_partitions = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vp9_aq_mode", argv[i]) &&
+    }
+
+    //
+    // VP9 specific encoder options.
+    //
+    else if (!strcmp("--vp9_aq_mode", argv[i]) &&
                arg_has_value(i, argc, argv)) {
       enc_config.vpx_config.adaptive_quantization_mode =
           strtol(argv[++i], NULL, 10);
