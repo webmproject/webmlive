@@ -38,7 +38,7 @@ public:
  int timescale;
  int chunk_duration;
  std::string media;
- int start_number;
+ std::string start_number;
  std::string initialization;
 
  // Representation properties.
@@ -108,8 +108,7 @@ class DashWriter {
   // Builds the SegmentTemplate media and initialization strings and then stores
   // them in |config|. Must be called before |WriteManifest()|. Returns true
   // when successful.
-  bool Init(const std::string& name, const std::string& id,
-            const WebmEncoderConfig& webm_config);
+  bool Init(const WebmEncoderConfig& webm_config);
 
   // Writes the DASH manifest built from |config| to |manifest|. Returns true
   // when successful.
@@ -131,7 +130,6 @@ class DashWriter {
   DashConfig config_;
   std::string indent_;
   std::string name_;
-  std::string id_;
 };
 
 }  // namespace webmlive

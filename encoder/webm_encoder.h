@@ -43,7 +43,10 @@ struct WebmEncoderConfig {
         disable_video(false),
         audio_device_index(kUseDefaultDevice),
         video_device_index(kUseDefaultDevice),
-        dash_encode(false) {}
+        dash_encode(false),
+        dash_name("webmlive"),
+        dash_dir("./"),
+        dash_start_number("1") {}
 
   // Audio/Video disable flags.
   bool disable_audio;
@@ -82,8 +85,17 @@ struct WebmEncoderConfig {
   // Source device options.
   UserInterfaceOptions ui_opts;
 
+  // Enable DASH encoding mode.
   bool dash_encode;
+
+  // MPD name and DASH chunk ID prefix.
   std::string dash_name;
+
+  // Output directory for MPD and DASH chunks.
+  std::string dash_dir;
+
+  // MPD SegmentTemplate startNumber value.
+  std::string dash_start_number;
 };
 
 class DashWriter;

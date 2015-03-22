@@ -137,7 +137,7 @@ int WebmEncoder::Init(const WebmEncoderConfig& config,
     return kInitFailed;
   }
 
-  // TODO(tomfinegan): move this to the command line.
+  // TODO(tomfinegan): Obey the command line instead of hard coding DASH output.
   config_.dash_encode = true;
 
   // When doing a DASH encode two muxers are used: One for each stream.
@@ -378,7 +378,7 @@ void WebmEncoder::EncoderThread() {
   if (!dash_writer_) {
     LOG(FATAL) << "cannot construct dash writer!";
   }
-  if (!dash_writer_->Init("webmlive", "webmlive", config_)) {
+  if (!dash_writer_->Init(config_)) {
     LOG(ERROR) << "DashWriter::Init failed.";
   }
   std::string dash_manifest;
@@ -393,7 +393,7 @@ void WebmEncoder::EncoderThread() {
 #endif
 
   // HACK: HERE BE DRAGONS
-  CHECK(WriteManifest("webmlive.mpd", dash_manifest));
+  CHECK(WriteManifest(config_.dash_dir + "webmlive.mpd", dash_manifest));
 
   // Wait for an input sample from each input stream-- this sets the
   // |timestamp_offset_| value when one or both streams starts with a negative
@@ -840,7 +840,8 @@ int WebmEncoder::WriteMuxerChunkToDataSink(
       }
 #endif
       // HACK: HERE BE DRAGONS
-      CHECK(WriteChunkFile(id, chunk_buffer_.get(), chunk_length));
+      CHECK(WriteChunkFile(config_.dash_dir + id,
+                           chunk_buffer_.get(), chunk_length));
     }
   }
   return kSuccess;
@@ -875,7 +876,8 @@ int WebmEncoder::WriteLastMuxerChunkToDataSink(
       }
 #endif
       // HACK: HERE BE DRAGONS
-      CHECK(WriteChunkFile(id, chunk_buffer_.get(), chunk_length));
+      CHECK(WriteChunkFile(config_.dash_dir + id,
+                           chunk_buffer_.get(), chunk_length));
     }
   }
   return status;
