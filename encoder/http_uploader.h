@@ -123,13 +123,14 @@ class HttpUploader : public DataSinkInterface {
   int Stop();
 
   // Sends a buffer to the uploader thread.
-  int UploadBuffer(const uint8* ptr_buffer, int32 length);
+  bool UploadBuffer(const uint8* ptr_buffer, int32 length,
+                    const std::string& id);
 
   // DataSinkInterface methods.
   virtual bool Ready() const { return UploadComplete(); }
   virtual bool WriteData(const uint8* ptr_buffer, int32 length,
-                         const std::string& /*id*/) {
-    return (UploadBuffer(ptr_buffer, length) == kSuccess);
+                         const std::string& id) {
+    return UploadBuffer(ptr_buffer, length, id);
   }
 
  private:

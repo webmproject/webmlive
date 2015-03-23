@@ -78,14 +78,11 @@ class HttpUploaderImpl {
   int Run();
 
   // Uploads user data.
-  int UploadBuffer(const uint8* ptr_buffer, int32 length);
+  bool UploadBuffer(const uint8* ptr_buffer, int32 length,
+                    const std::string& id);
 
   // Stops the uploader.
   int Stop();
-
-  // Adds |target_url| to |url_queue_|. Each time |UploadBuffer| is called, an
-  // URL is popped off the queue and assigned to |target_url_|
-  void EnqueueTargetUrl(const std::string& target_url);
 
  private:
   // Used by |UploadThread|. Returns true if user has called |Stop|.
@@ -173,7 +170,8 @@ class HttpUploaderImpl {
   // |Upload|.  This second locking mechanism is in place to allow |mutex_| to
   // be unlocked while uploads are in progress (which prevents public methods
   // from blocking).
-  LockableBuffer upload_buffer_;
+  //LockableBuffer upload_buffer_;
+  BufferQueue upload_buffer_;
 
   // The name of the file on the local system.  Note that it is not being read,
   // it's information included within the form data contained within the HTTP
@@ -229,8 +227,9 @@ int HttpUploader::Stop() {
 }
 
 // Return result of |UploadBuffer| on |ptr_uploader_|.
-int HttpUploader::UploadBuffer(const uint8* ptr_buffer, int32 length) {
-  return ptr_uploader_->UploadBuffer(ptr_buffer, length);
+bool HttpUploader::UploadBuffer(const uint8* ptr_buffer, int32 length,
+                                const std::string& id) {
+  return ptr_uploader_->UploadBuffer(ptr_buffer, length, id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -345,36 +344,12 @@ int HttpUploaderImpl::Run() {
   return kSuccess;
 }
 
-// Try to obtain lock on |mutex_|, and upload the user buffer stored in
-// |upload_buffer_| if the buffer is unlocked.  If the lock is obtained and the
-// buffer is unlocked, |UploadBuffer| locks the buffer and notifies the upload
-// thread through call to |notify_one| on the |buffer_ready_| condition
-// variable.
-int HttpUploaderImpl::UploadBuffer(const uint8* ptr_buf, int32 length) {
-  int status = HttpUploader::kUploadInProgress;
-  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
-  if (lock.owns_lock() && !upload_buffer_.IsLocked()) {
-    // Lock obtained; (re)initialize |upload_buffer_| with the user data...
-    status = upload_buffer_.Init(ptr_buf, length);
-    if (status) {
-      LOG(ERROR) << "upload_buffer_ Init failed, status=" << status;
-      return status;
-    }
-
-    // Lock |upload_buffer_|; it's unlocked by |UploadThread| once libcurl
-    // finishes its run.
-    status = upload_buffer_.Lock();
-    if (status) {
-      LOG(ERROR) << "upload_buffer_ Lock failed, status=" << status;
-      return status;
-    }
-    upload_complete_ = false;
-
-    // Wake |UploadThread|.
-    LOG(INFO) << "waking uploader with " << length << " bytes";
-    buffer_ready_.notify_one();
-  }
-  return status;
+// Enqueue the user buffer. Does not lock |mutex_|; relies on
+// |upload_buffer_|'s internal lock.
+bool HttpUploaderImpl::UploadBuffer(const uint8* ptr_buf, int32 length,
+                                   const std::string& id) {
+  upload_buffer_.EnqueueBuffer(id, ptr_buf, length);
+  return true;
 }
 
 // Stops |UploadThread|. First it wakes the thread by calling |notify_one| on
