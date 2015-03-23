@@ -46,8 +46,11 @@ struct HttpUploaderSettings {
   // Data stream ID.
   std::string stream_id;
 
-  // Post mode
+  // Post mode.
   UploadMode post_mode;
+
+  // Target URL.
+  std::string target_url;
 };
 
 struct HttpUploaderStats {
@@ -119,12 +122,8 @@ class HttpUploader : public DataSinkInterface {
   // Stops the uploader thread.
   int Stop();
 
-  // Sends a buffer to the uploader thread using an URL from |url_queue_|. Use
-  // |EnqueueTargetUrl| to set target URLs.
+  // Sends a buffer to the uploader thread.
   int UploadBuffer(const uint8* ptr_buffer, int32 length);
-
-  // Calls |HttpUploaderImpl::EnqueueTargetUrl| to enqueue |target_url|.
-  void EnqueueTargetUrl(const std::string& target_url);
 
   // DataSinkInterface methods.
   virtual bool Ready() const { return UploadComplete(); }
