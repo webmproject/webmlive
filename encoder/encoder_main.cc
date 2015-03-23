@@ -35,10 +35,7 @@ const std::string kCodecVp8 = "vp8";
 const std::string kCodecVp9 = "vp9";
 typedef std::vector<std::string> StringVector;
 
-struct WebmEncoderClientConfig {
-  // Target for HTTP POSTs.
-  std::string target_url;
-
+struct WebmEncoderConfig {
   // Uploader settings.
   webmlive::HttpUploaderSettings uploader_settings;
 
@@ -180,7 +177,7 @@ bool arg_has_value(int arg_index, int argc, const char** argv) {
 
 // Parses command line and stores user settings.
 void parse_command_line(int argc, const char** argv,
-                        WebmEncoderClientConfig& config) {
+                        WebmEncoderConfig& config) {
   StringVector unparsed_headers;
   StringVector unparsed_vars;
   webmlive::HttpUploaderSettings& uploader_settings = config.uploader_settings;
@@ -192,7 +189,7 @@ void parse_command_line(int argc, const char** argv,
       usage(argv);
       exit(EXIT_SUCCESS);
     } else if (!strcmp("--url", argv[i]) && arg_has_value(i, argc, argv)) {
-      config.target_url = argv[++i];
+      uploader_settings.target_url = argv[++i];
     } else if (!strcmp("--header", argv[i]) && arg_has_value(i, argc, argv)) {
       unparsed_headers.push_back(argv[++i]);
     } else if (!strcmp("--var", argv[i]) && arg_has_value(i, argc, argv)) {
@@ -345,7 +342,7 @@ void parse_command_line(int argc, const char** argv,
 
 // Calls |Init| and |Run| on |uploader| to start the uploader thread, which
 // uploads buffers when |UploadBuffer| is called on the uploader.
-int start_uploader(WebmEncoderClientConfig* ptr_config,
+int start_uploader(WebmEncoderConfig* ptr_config,
                    webmlive::HttpUploader* ptr_uploader) {
   int status = ptr_uploader->Init(ptr_config->uploader_settings);
   if (status) {
@@ -353,31 +350,19 @@ int start_uploader(WebmEncoderClientConfig* ptr_config,
     return status;
   }
 
-  if (ptr_config->target_url.find('?') == std::string::npos) {
+  if (ptr_config->uploader_settings.target_url.find('?') == std::string::npos) {
     // When the URL lacks a query string the URL must be reconstructed.
     std::ostringstream url;
 
     // Rebuild it with query params included.
-    url << ptr_config->target_url
+    url << ptr_config->uploader_settings.target_url
         << "?ns=" << ptr_config->uploader_settings.stream_name
         << "&id=" << ptr_config->uploader_settings.stream_id
         << kAgentQueryFragment
         << kWebmItagQueryFragment;
 
-    ptr_config->target_url = url.str();
+    ptr_config->uploader_settings.target_url = url.str();
   }
-
-  // Queue the target URLs.
-  // Store the target for all but the first upload in |base_url|.
-  const std::string base_url = ptr_config->target_url;
-
-  // Update the target URL to notify the server that the chunk in the first
-  // upload is metadata.
-  ptr_config->target_url.append(kMetadataQueryFragment);
-  ptr_uploader->EnqueueTargetUrl(ptr_config->target_url);
-
-  // Now add the URL that's used for all subsequent uploads.
-  ptr_uploader->EnqueueTargetUrl(base_url);
 
   // Run the uploader (it goes idle and waits for a buffer).
   status = ptr_uploader->Run();
@@ -387,7 +372,7 @@ int start_uploader(WebmEncoderClientConfig* ptr_config,
   return status;
 }
 
-int encoder_main(WebmEncoderClientConfig* ptr_config) {
+int encoder_main(WebmEncoderConfig* ptr_config) {
   webmlive::WebmEncoderConfig& enc_config = ptr_config->enc_config;
   webmlive::HttpUploader uploader;
 
@@ -438,11 +423,11 @@ int encoder_main(WebmEncoderClientConfig* ptr_config) {
 
 int main(int argc, const char** argv) {
   google::InitGoogleLogging(argv[0]);
-  WebmEncoderClientConfig config;
+  WebmEncoderConfig config;
   parse_command_line(argc, argv, config);
 
   // validate params
-  if (config.target_url.empty()) {
+  if (config.uploader_settings.target_url.empty()) {
     LOG(ERROR) << "The URL parameter is required!";
     usage(argv);
     return EXIT_FAILURE;
@@ -452,13 +437,13 @@ int main(int argc, const char** argv) {
   // is present in |target_url|.
   if ((config.uploader_settings.stream_id.empty() ||
       config.uploader_settings.stream_name.empty()) &&
-      config.target_url.find('?') == std::string::npos) {
+      config.uploader_settings.target_url.find('?') == std::string::npos) {
     LOG(ERROR) << "stream_id and stream_name are required when the target "
                << "URL lacks a query string!\n";
     return EXIT_FAILURE;
   }
 
-  LOG(INFO) << "url: " << config.target_url.c_str();
+  LOG(INFO) << "url: " << config.uploader_settings.target_url.c_str();
   int exit_code = encoder_main(&config);
   google::ShutdownGoogleLogging();
   return exit_code;
