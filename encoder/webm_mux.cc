@@ -40,7 +40,8 @@ class WebmMuxWriter : public mkvmuxer::IMkvWriter {
   virtual ~WebmMuxWriter();
 
   // Stores |ptr_buffer| and returns |kSuccess|.
-  int32 Init(LiveWebmMuxer::WriteBuffer* ptr_write_buffer);
+  int32 Init(LiveWebmMuxer::WriteBuffer* ptr_write_buffer,
+             const std::string& id);
 
   // Accessors.
   int64 bytes_written() const { return bytes_written_; }
@@ -72,6 +73,7 @@ class WebmMuxWriter : public mkvmuxer::IMkvWriter {
   int64 bytes_written_;
   int64 chunk_end_;
   LiveWebmMuxer::WriteBuffer* ptr_write_buffer_;
+  std::string id_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmMuxWriter);
 };
 
@@ -85,12 +87,14 @@ WebmMuxWriter::WebmMuxWriter()
 WebmMuxWriter::~WebmMuxWriter() {
 }
 
-int32 WebmMuxWriter::Init(LiveWebmMuxer::WriteBuffer* ptr_write_buffer) {
+int32 WebmMuxWriter::Init(LiveWebmMuxer::WriteBuffer* ptr_write_buffer,
+                          const std::string& id) {
   if (!ptr_write_buffer) {
     LOG(ERROR) << "Cannot Init, NULL write buffer.";
     return kInvalidArg;
   }
   ptr_write_buffer_ = ptr_write_buffer;
+  id_ = id;
   return kSuccess;
 }
 
@@ -125,8 +129,9 @@ int32 WebmMuxWriter::Write(const void* ptr_buffer, uint32 buffer_length) {
 void WebmMuxWriter::ElementStartNotify(uint64 element_id, int64 position) {
   if (element_id == mkvmuxer::kMkvCluster) {
     chunk_end_ = bytes_buffered_;
-    VLOG(1) << "chunk_end_=" << chunk_end_;
-    VLOG(1) << "position=" << position;
+    if (id_ == "video") {
+      LOG(INFO) << "video chunk_end_=" << chunk_end_<< " position=" << position;
+    }
   }
 }
 
@@ -137,17 +142,21 @@ void WebmMuxWriter::ElementStartNotify(uint64 element_id, int64 position) {
 LiveWebmMuxer::LiveWebmMuxer()
     : audio_track_num_(0),
       video_track_num_(0),
-      muxer_time_(0) {
+      muxer_time_(0),
+      chunks_read_(0) {
 }
 
 LiveWebmMuxer::~LiveWebmMuxer() {
 }
 
-int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds) {
+int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds,
+                        const std::string& muxer_id) {
   if (cluster_duration_milliseconds < 1) {
     LOG(ERROR) << "bad cluster duration, must be greater than 1 millisecond.";
     return kInvalidArg;
   }
+
+  muxer_id_ = muxer_id;
 
   // Construct and Init |WebmMuxWriter|-- it handles writes coming from libwebm.
   ptr_writer_.reset(new (std::nothrow) WebmMuxWriter());  // NOLINT
@@ -155,7 +164,7 @@ int LiveWebmMuxer::Init(int32 cluster_duration_milliseconds) {
     LOG(ERROR) << "cannot construct WebmWriteBuffer.";
     return kNoMemory;
   }
-  if (ptr_writer_->Init(&buffer_)) {
+  if (ptr_writer_->Init(&buffer_, muxer_id)) {
     LOG(ERROR) << "cannot Init WebmWriteBuffer.";
     return kMuxerError;
   }
@@ -403,6 +412,7 @@ int LiveWebmMuxer::ReadChunk(int32 buffer_capacity, uint8* ptr_buf) {
   // Copy chunk to user buffer, and erase it from |buffer_|.
   memcpy(ptr_buf, &buffer_[0], chunk_length);
   ptr_writer_->EraseChunk();
+  ++chunks_read_;
   return kSuccess;
 }
 
