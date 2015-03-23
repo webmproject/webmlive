@@ -10,12 +10,39 @@
 
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <vector>
 
 #include "encoder/basictypes.h"
 #include "encoder/encoder_base.h"
 
 namespace webmlive {
+
+// Thread safe buffer queue. Allows unbounded growth of internal queue.
+class BufferQueue {
+ public:
+  struct Buffer {
+    std::string id;
+    std::vector<uint8> data;
+  };
+
+  BufferQueue() {}
+  ~BufferQueue() {}
+
+  // Copies |data| into a new |Buffer| and assigns |id|. Blocks while waiting to
+  // obtain lock on |mutex_|. Returns true when |data| is successfully enqueued.
+  void EnqueueBuffer(const std::string& id, const uint8* data, int length);
+
+  // Returns a buffer if one is available. Does not block waiting on |mutex_|;
+  // gives up and returns NULL when unable to obtain lock. Non-NULL |Buffer|
+  // pointer memory is owned by caller.
+  Buffer* DequeueBuffer();
+
+ private:
+  bool locked_;
+  std::mutex mutex_;
+  std::queue<Buffer*> buffer_q_;
+};
 
 // Simple buffer object with locking facilities for passing data between
 // threads.  The general idea here is that one thread, A, calls |Init| to copy
@@ -34,8 +61,8 @@ class LockableBuffer {
     // Buffer is locked.
     kLocked = 1,
   };
-  LockableBuffer();
-  ~LockableBuffer();
+  LockableBuffer() : locked_(false) {}
+  ~LockableBuffer() {}
   // Returns true if the buffer is locked.
   bool IsLocked();
   // Copies data into the buffer. Does nothing and returns |kLocked| if the
