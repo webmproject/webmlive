@@ -15,10 +15,28 @@
 
 namespace webmlive {
 
-LockableBuffer::LockableBuffer() : locked_(false) {
+bool BufferQueue::EnqueueBuffer(const std::string& id,
+                                const uint8* data, int length) {
+  Buffer* buffer = new (std::nothrow) Buffer;
+  if (!buffer) {
+    LOG(ERROR) << "No memory in BufferQueue::EnqueueBuffer";
+    return false;
+  }
+  buffer->id = id;
+  buffer->data.insert(buffer->data.begin(), data, data + length);
+  std::lock_guard<std::mutex> lock(mutex_);
+  buffer_q_.push(buffer);
+  return true;
 }
 
-LockableBuffer::~LockableBuffer() {
+BufferQueue::Buffer* BufferQueue::DequeueBuffer() {
+  BufferQueue::Buffer* buffer = NULL;
+  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
+  if (lock.owns_lock()) {
+    buffer = buffer_q_.front();
+    buffer_q_.pop();
+  }
+  return buffer;
 }
 
 // Attempts to obtain lock on |mutex_|. Returns value of |locked_| if the lock
@@ -89,11 +107,8 @@ int LockableBuffer::Unlock() {
 // WebmChunkBuffer
 //
 
-WebmChunkBuffer::WebmChunkBuffer() : chunk_length_(0) {
-}
-
-WebmChunkBuffer::~WebmChunkBuffer() {
-}
+WebmChunkBuffer::WebmChunkBuffer() : chunk_length_(0) {}
+WebmChunkBuffer::~WebmChunkBuffer() {}
 
 // Checks if a chunk is ready, or attempts to parse some data by calling
 // |WebmBufferParser::Parse|.
