@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//Cyo\u003d",
+        "filename": "encoder/buffer_util.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-03-23T19:52:13Z",
+      "side": 1,
+      "message": "you\u0027ve got some int / int32 mix between this and LockableBuffer",
+      "revId": "8d5e4590f088ecd0981c47a7d2cb21b163d2449f",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Cyk\u003d",
+        "filename": "encoder/buffer_util.cc",
+        "patchSetId": 3
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-03-23T19:52:13Z",
+      "side": 1,
+      "message": "so nothrow + no return check?",
+      "revId": "8d5e4590f088ecd0981c47a7d2cb21b163d2449f",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
