@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//C0s\u003d",
+        "filename": "encoder/data_sink.h",
+        "patchSetId": 9
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-23T18:51:44Z",
+      "side": 1,
+      "message": "I\u0027ll land it in this one and rebase it out of the other chain.",
+      "parentUuid": "AAAAdn//C1Y\u003d",
+      "revId": "387cb810356bd64393b7dd1c29fd0721aa8a3744",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//C1M\u003d",
         "filename": "encoder/webm_encoder.cc",
         "patchSetId": 9
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//C0o\u003d",
+        "filename": "encoder/webm_encoder.cc",
+        "patchSetId": 9
+      },
+      "lineNbr": 249,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-23T18:51:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//C1M\u003d",
+      "revId": "387cb810356bd64393b7dd1c29fd0721aa8a3744",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//C1A\u003d",
         "filename": "encoder/webm_encoder.cc",
         "patchSetId": 9
@@ -47,6 +83,24 @@
       "writtenOn": "2015-03-23T18:34:03Z",
       "side": 1,
       "message": "what happens if the encode takes too long?",
+      "revId": "387cb810356bd64393b7dd1c29fd0721aa8a3744",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//C0k\u003d",
+        "filename": "encoder/webm_encoder.cc",
+        "patchSetId": 9
+      },
+      "lineNbr": 643,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-03-23T18:51:44Z",
+      "side": 1,
+      "message": "see no evil?\n\nThat\u0027s not handled, and hopefully won\u0027t need to be-- right now the only recourse is to decrease the input framerate until we\u0027re fast enough.",
+      "parentUuid": "AAAAdn//C1A\u003d",
       "revId": "387cb810356bd64393b7dd1c29fd0721aa8a3744",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
