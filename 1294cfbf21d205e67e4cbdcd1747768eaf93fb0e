@@ -177,6 +177,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//C1k\u003d",
+        "filename": "encoder/webm_encoder.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-23T18:33:48Z",
+      "side": 1,
+      "message": "OK got it.",
+      "parentUuid": "AAAAdn//DGs\u003d",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//DHU\u003d",
         "filename": "encoder/webm_encoder.cc",
         "patchSetId": 7
@@ -206,6 +224,24 @@
       "side": 1,
       "message": "No; it\u0027s the path I want. Else removed; returning in the if above when Finalize() returns an error.",
       "parentUuid": "AAAAdn//DHU\u003d",
+      "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//C1c\u003d",
+        "filename": "encoder/webm_encoder.cc",
+        "patchSetId": 7
+      },
+      "lineNbr": 875,
+      "author": {
+        "id": 1002054
+      },
+      "writtenOn": "2015-03-23T18:33:48Z",
+      "side": 1,
+      "message": "What if \"if ((*muxer)-\u003eChunkReady(\u0026chunk_length))\" returns false? The code will not write a data chunk to data sink, but will return status OK. Is that fine?",
+      "parentUuid": "AAAAdn//DGg\u003d",
       "revId": "1294cfbf21d205e67e4cbdcd1747768eaf93fb0e",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
