@@ -23,8 +23,8 @@ class DataSinkInterface {
   virtual bool Ready() const = 0;
 
   // Writes data to the sink and returns true when successful.
-  virtual bool WriteData(const uint8* ptr_data, int32 data_length,
-                         const std::string& id) = 0;
+  virtual bool WriteData(const std::string& id,
+                         const uint8* ptr_data, int32 data_length) = 0;
 };
 
 }  // namespace webmlive
