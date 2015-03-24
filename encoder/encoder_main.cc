@@ -241,7 +241,7 @@ void parse_command_line(int argc, const char** argv,
     // HTTP uploader options.
     //
     else if (!strcmp("--url", argv[i]) && arg_has_value(i, argc, argv)) {
-      config.target_url = argv[++i];
+      uploader_settings.target_url = argv[++i];
     } else if (!strcmp("--header", argv[i]) && arg_has_value(i, argc, argv)) {
       unparsed_headers.push_back(argv[++i]);
     } else if (!strcmp("--form_post", argv[i]) &&
@@ -508,12 +508,12 @@ int main(int argc, const char** argv) {
   parse_command_line(argc, argv, config);
 
   // validate params
-  if (!config.target_url.empty()) {
+  if (!config.uploader_settings.target_url.empty()) {
     // Confirm |stream_id| and |stream_name| are present when no query string
     // is present in |target_url|.
     if ((config.uploader_settings.stream_id.empty() ||
         config.uploader_settings.stream_name.empty()) &&
-        config.target_url.find('?') == std::string::npos) {
+        config.uploader_settings.target_url.find('?') == std::string::npos) {
       LOG(ERROR) << "stream_id and stream_name are required when the target "
                  << "URL lacks a query string!\n";
       return EXIT_FAILURE;
