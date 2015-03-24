@@ -32,10 +32,11 @@
 
 namespace webmlive {
 
-static const char* kExpectHeader = "Expect:";
-static const char* kContentTypeHeader = "Content-Type: video/webm";
-static const char* kFormName = "webm_file";
-static const char* kWebmMimeType = "video/webm";
+static const char kExpectHeader[] = "Expect:";
+static const char kContentTypeHeader[] = "Content-Type: video/webm";
+static const char kFormName[] = "webm_file";
+static const char kWebmMimeType[] = "video/webm";
+static const char kContentIdHeader[] = "X-Content-Id:";
 static const int kUnknownFileSize = -1;
 static const int kBytesRequiredForResume = 32*1024;
 
@@ -59,14 +60,16 @@ class HttpUploaderImpl {
     // unlocked |upload_buffer_|, which means |Stop| is waiting for
     // |UploadThread| to exit.
     kStopping = 2,
+
+    // No buffer available.
+    kNoBuffer = 3,
   };
 
   HttpUploaderImpl();
   ~HttpUploaderImpl();
 
-  // Returns true when the uploader is ready to start an upload. Always returns
-  // true when no uploads have been attempted.
-  bool UploadComplete() const;
+  // Always ready: upload_buffer_ grows as needed.
+  bool Ready() const { return true; }
 
   // Copies user settings and configures libcurl.
   int Init(const HttpUploaderSettings& settings);
@@ -78,14 +81,11 @@ class HttpUploaderImpl {
   int Run();
 
   // Uploads user data.
-  int UploadBuffer(const uint8* ptr_buffer, int32 length);
+  bool UploadBuffer(const std::string& id,
+                    const uint8* ptr_buffer, int32 length);
 
   // Stops the uploader.
   int Stop();
-
-  // Adds |target_url| to |url_queue_|. Each time |UploadBuffer| is called, an
-  // URL is popped off the queue and assigned to |target_url_|
-  void EnqueueTargetUrl(const std::string& target_url);
 
  private:
   // Used by |UploadThread|. Returns true if user has called |Stop|.
@@ -95,7 +95,7 @@ class HttpUploaderImpl {
   CURLcode SetCurlCallbacks();
 
   // Pass user HTTP headers to libcurl, and disable HTTP 100 responses.
-  CURLcode SetHeaders();
+  CURLcode SetHeaders(const std::string& content_id);
 
   // Configures libcurl to POST data buffers as file data in a form/multipart
   // HTTP POST.
@@ -128,6 +128,9 @@ class HttpUploaderImpl {
   // using libcurl.
   void UploadThread();
 
+  // Frees HTTP header list.
+  void FreeHeaders();
+
   // Stop flag. Internal callers use |StopRequested| to allow for
   // synchronization via |mutex_|.  Set by |Stop|, and responded to in
   // |UploadThread|.
@@ -136,10 +139,6 @@ class HttpUploaderImpl {
   // Upload complete/ready to upload flag.  Initializes to true to allow
   // users of the uploader to base all Upload calls on |UploadComplete|.
   bool upload_complete_;
-
-  // Condition variable used to wake |UploadThread| when a user code passes a
-  // buffer to |UploadBuffer|.
-  std::condition_variable buffer_ready_;
 
   // Mutex for synchronization of public method calls with |UploadThread|
   // activity. Mutable so |UploadComplete()| can be a const method.
@@ -173,7 +172,8 @@ class HttpUploaderImpl {
   // |Upload|.  This second locking mechanism is in place to allow |mutex_| to
   // be unlocked while uploads are in progress (which prevents public methods
   // from blocking).
-  LockableBuffer upload_buffer_;
+  //LockableBuffer upload_buffer_;
+  BufferQueue upload_buffer_;
 
   // The name of the file on the local system.  Note that it is not being read,
   // it's information included within the form data contained within the HTTP
@@ -193,9 +193,8 @@ HttpUploader::HttpUploader() {
 HttpUploader::~HttpUploader() {
 }
 
-// Return result of |UploadeComplete| on |ptr_uploader_|.
-bool HttpUploader::UploadComplete() const {
-  return ptr_uploader_->UploadComplete();
+bool HttpUploader::Ready() const {
+  return ptr_uploader_->Ready();
 }
 
 // Copy user settings, and setup the internal uploader object.
@@ -229,8 +228,9 @@ int HttpUploader::Stop() {
 }
 
 // Return result of |UploadBuffer| on |ptr_uploader_|.
-int HttpUploader::UploadBuffer(const uint8* ptr_buffer, int32 length) {
-  return ptr_uploader_->UploadBuffer(ptr_buffer, length);
+bool HttpUploader::UploadBuffer(const std::string& id,
+                                const uint8* ptr_buffer, int length) {
+  return ptr_uploader_->UploadBuffer(id, ptr_buffer, length);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -256,26 +256,12 @@ HttpUploaderImpl::~HttpUploaderImpl() {
     ptr_form_ = NULL;
     ptr_form_end_ = NULL;
   }
-  if (ptr_headers_) {
-    curl_slist_free_all(ptr_headers_);
-    ptr_headers_ = NULL;
-  }
-}
-
-// Obtain lock on |mutex_| and return value of |upload_complete_|.
-bool HttpUploaderImpl::UploadComplete() const {
-  bool complete = false;
-  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
-  if (lock.owns_lock()) {
-    complete = upload_complete_;
-  }
-  return complete;
+  FreeHeaders();
 }
 
 // Initializes the upload:
 // - copies user settings
 // - sets basic libcurl settings (progress and write callbacks)
-// - calls SetHeaders to pass user headers to libcurl
 int HttpUploaderImpl::Init(const HttpUploaderSettings& settings) {
   if (settings.target_url.empty()) {
     LOG(ERROR) << "Empty target URL.";
@@ -304,13 +290,6 @@ int HttpUploaderImpl::Init(const HttpUploaderSettings& settings) {
   if (curl_ret != CURLE_OK) {
     LOG_CURL_ERR(curl_ret, "curl callback setup failed.");
     return kLibCurlError;
-  }
-
-  // Disable HTTP 100 responses, and set user HTTP headers.
-  curl_ret = SetHeaders();
-  if (curl_ret) {
-    LOG_CURL_ERR(curl_ret, "unable to set headers.");
-    return HttpUploader::kHeaderError;
   }
 
   local_file_name_ = settings_.local_file;
@@ -345,36 +324,12 @@ int HttpUploaderImpl::Run() {
   return kSuccess;
 }
 
-// Try to obtain lock on |mutex_|, and upload the user buffer stored in
-// |upload_buffer_| if the buffer is unlocked.  If the lock is obtained and the
-// buffer is unlocked, |UploadBuffer| locks the buffer and notifies the upload
-// thread through call to |notify_one| on the |buffer_ready_| condition
-// variable.
-int HttpUploaderImpl::UploadBuffer(const uint8* ptr_buf, int32 length) {
-  int status = HttpUploader::kUploadInProgress;
-  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
-  if (lock.owns_lock() && !upload_buffer_.IsLocked()) {
-    // Lock obtained; (re)initialize |upload_buffer_| with the user data...
-    status = upload_buffer_.Init(ptr_buf, length);
-    if (status) {
-      LOG(ERROR) << "upload_buffer_ Init failed, status=" << status;
-      return status;
-    }
-
-    // Lock |upload_buffer_|; it's unlocked by |UploadThread| once libcurl
-    // finishes its run.
-    status = upload_buffer_.Lock();
-    if (status) {
-      LOG(ERROR) << "upload_buffer_ Lock failed, status=" << status;
-      return status;
-    }
-    upload_complete_ = false;
-
-    // Wake |UploadThread|.
-    LOG(INFO) << "waking uploader with " << length << " bytes";
-    buffer_ready_.notify_one();
-  }
-  return status;
+// Enqueue the user buffer. Does not lock |mutex_|; relies on
+// |upload_buffer_|'s internal lock.
+bool HttpUploaderImpl::UploadBuffer(const std::string& id,
+                                    const uint8* ptr_buf, int length) {
+  upload_buffer_.EnqueueBuffer(id, ptr_buf, length);
+  return true;
 }
 
 // Stops |UploadThread|. First it wakes the thread by calling |notify_one| on
@@ -387,10 +342,6 @@ int HttpUploaderImpl::UploadBuffer(const uint8* ptr_buf, int32 length) {
 // libcurl callbacks.
 int HttpUploaderImpl::Stop() {
   assert(upload_thread_);
-  if (UploadComplete()) {
-    // Wake up the upload thread
-    buffer_ready_.notify_one();
-  }
   mutex_.lock();
   stop_ = true;
   mutex_.unlock();
@@ -444,7 +395,8 @@ CURLcode HttpUploaderImpl::SetCurlCallbacks() {
 
 // Disable HTTP 100 responses (send empty Expect header), and pass user HTTP
 // headers into lib curl.
-CURLcode HttpUploaderImpl::SetHeaders() {
+CURLcode HttpUploaderImpl::SetHeaders(const std::string& content_id) {
+  FreeHeaders();
   // Tell libcurl to omit "Expect: 100-continue" from requests
   ptr_headers_ = curl_slist_append(ptr_headers_, kExpectHeader);
   if (settings_.post_mode == webmlive::HTTP_POST) {
@@ -460,6 +412,10 @@ CURLcode HttpUploaderImpl::SetHeaders() {
     header << header_iter->first.c_str() << ":" << header_iter->second.c_str();
     ptr_headers_ = curl_slist_append(ptr_headers_, header.str().c_str());
   }
+  // add |content_id|.
+  const std::string content_id_header = kContentIdHeader + content_id;
+  ptr_headers_ = curl_slist_append(ptr_headers_, content_id_header.c_str());
+ 
   CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_HTTPHEADER, ptr_headers_);
   if (err != CURLE_OK) {
     LOG_CURL_ERR(err, "setopt CURLOPT_HTTPHEADER failed err=");
@@ -470,7 +426,7 @@ CURLcode HttpUploaderImpl::SetHeaders() {
 // Sets necessary curl options for form based file upload, and adds the user
 // form variables.
 int HttpUploaderImpl::SetupFormPost(const uint8* const ptr_buffer,
-                                    int32 length) {
+                                    int length) {
   if (ptr_form_) {
     curl_formfree(ptr_form_);
     ptr_form_ = NULL;
@@ -513,7 +469,7 @@ int HttpUploaderImpl::SetupFormPost(const uint8* const ptr_buffer,
 }
 
 // Configures libcurl to POST data buffers as HTTP POST content-data.
-int HttpUploaderImpl::SetupPost(const uint8* const ptr_buffer, int32 length) {
+int HttpUploaderImpl::SetupPost(const uint8* const ptr_buffer, int length) {
   CURLcode err_setopt = curl_easy_setopt(ptr_curl_, CURLOPT_POST, ptr_form_);
   if (err_setopt != CURLE_OK) {
     LOG_CURL_ERR(err_setopt, "setopt CURLOPT_HTTPPOST failed.");
@@ -538,20 +494,14 @@ int HttpUploaderImpl::SetupPost(const uint8* const ptr_buffer, int32 length) {
 
 // Upload data using libcurl.
 int HttpUploaderImpl::Upload() {
-  if (!upload_buffer_.IsLocked()) {
-    LOG(INFO) << "woke with unlocked buffer, stopping.";
-    return kStopping;
+  BufferQueue::Buffer* buffer = upload_buffer_.DequeueBuffer();
+  if (!buffer) {
+    return kNoBuffer;
   }
 
-  uint8* ptr_data = NULL;
-  int32 length = 0;
-  int status = upload_buffer_.GetBuffer(&ptr_data, &length);
-  if (status) {
-    LOG(ERROR) << "error, could not get buffer pointer, status=" << status;
-    return HttpUploader::kRunFailed;
-  }
+  // TODO(tomfinegan): Maybe this should be a header? 
 
-  LOG(INFO) << "upload buffer size=" << length;
+  LOG(INFO) << "upload buffer size=" << buffer->data.size();
   CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_URL,
                                   settings_.target_url.c_str());
   if (err != CURLE_OK) {
@@ -560,16 +510,25 @@ int HttpUploaderImpl::Upload() {
   }
 
   if (settings_.post_mode == webmlive::HTTP_FORM_POST) {
-    if (SetupFormPost(ptr_data, length)) {
+    if (SetupFormPost(&buffer->data[0], buffer->data.size())) {
       LOG(ERROR) << "SetupFormPost failed!";
       return HttpUploader::kRunFailed;
     }
   } else {
-    if (SetupPost(ptr_data, length)) {
+    if (SetupPost(&buffer->data[0], buffer->data.size())) {
       LOG(ERROR) << "SetupPost failed!";
       return HttpUploader::kRunFailed;
     }
   }
+
+  // Disable HTTP 100 responses, and set user HTTP headers.
+  err = SetHeaders(buffer->id);
+  if (err) {
+    LOG_CURL_ERR(err, "unable to set headers.");
+    return HttpUploader::kHeaderError;
+  }
+
+
 
   err = curl_easy_perform(ptr_curl_);
   if (err != CURLE_OK) {
@@ -591,14 +550,6 @@ int HttpUploaderImpl::Upload() {
     stats_.total_bytes_uploaded += static_cast<int64>(bytes_uploaded);
   }
 
-  return kSuccess;
-}
-
-// Idle the upload thread while awaiting user data.
-int HttpUploaderImpl::WaitForUserData() {
-  std::unique_lock<std::mutex> lock(mutex_);
-  buffer_ready_.wait(lock);  // Unlock |mutex_| and idle the thread while we
-                             // wait for the next chunk of user data.
   return kSuccess;
 }
 
@@ -662,29 +613,28 @@ void HttpUploaderImpl::ResetStats() {
 void HttpUploaderImpl::UploadThread() {
   LOG(INFO) << "upload thread running...";
   while (!StopRequested()) {
-    LOG(INFO) << "upload thread waiting for buffer...";
-    WaitForUserData();
-    LOG(INFO) << "uploading buffer...";
     int status = Upload();
     if (status == kStopping) {
       break;
+    }
+    if (status == kNoBuffer) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      continue;
     }
     if (status) {
       LOG(ERROR) << "buffer upload failed, status=" << status;
       // TODO(tomfinegan): Report upload failure, and provide access to
       //                   response code and data.
-    } else {
-      std::lock_guard<std::mutex> lock(mutex_);
-      LOG(INFO) << "unlocking upload buffer...";
-      status = upload_buffer_.Unlock();
-      if (status) {
-        LOG(ERROR) << "unable to unlock buffer, status=" << status;
-        // keep spinning, for now...
-      }
-      upload_complete_ = true;
     }
   }
   LOG(INFO) << "thread done";
+}
+
+void HttpUploaderImpl::FreeHeaders() {
+  if (ptr_headers_) {
+    curl_slist_free_all(ptr_headers_);
+    ptr_headers_ = NULL;
+  }
 }
 
 }  // namespace webmlive

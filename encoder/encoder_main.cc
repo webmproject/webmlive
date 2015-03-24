@@ -28,9 +28,6 @@ enum {
   kSuccess = 0,
 };
 
-const std::string kAgentQueryFragment = "&agent=p";
-const std::string kMetadataQueryFragment = "&metadata=1";
-const std::string kWebmItagQueryFragment = "&itag=43";
 const std::string kCodecVp8 = "vp8";
 const std::string kCodecVp9 = "vp9";
 typedef std::vector<std::string> StringVector;
@@ -431,20 +428,6 @@ int start_uploader(WebmEncoderConfig* ptr_config,
     return status;
   }
 
-  if (ptr_config->uploader_settings.target_url.find('?') == std::string::npos) {
-    // When the URL lacks a query string the URL must be reconstructed.
-    std::ostringstream url;
-
-    // Rebuild it with query params included.
-    url << ptr_config->uploader_settings.target_url
-        << "?ns=" << ptr_config->uploader_settings.stream_name
-        << "&id=" << ptr_config->uploader_settings.stream_id
-        << kAgentQueryFragment
-        << kWebmItagQueryFragment;
-
-    ptr_config->uploader_settings.target_url = url.str();
-  }
-
   // Run the uploader (it goes idle and waits for a buffer).
   status = ptr_uploader->Run();
   if (status) {
@@ -506,21 +489,6 @@ int main(int argc, const char** argv) {
   google::InitGoogleLogging(argv[0]);
   WebmEncoderConfig config;
   parse_command_line(argc, argv, config);
-
-  // validate params
-  if (!config.uploader_settings.target_url.empty()) {
-    // Confirm |stream_id| and |stream_name| are present when no query string
-    // is present in |target_url|.
-    if ((config.uploader_settings.stream_id.empty() ||
-        config.uploader_settings.stream_name.empty()) &&
-        config.uploader_settings.target_url.find('?') == std::string::npos) {
-      LOG(ERROR) << "stream_id and stream_name are required when the target "
-                 << "URL lacks a query string!\n";
-      return EXIT_FAILURE;
-    }
-  }
-
-  LOG(INFO) << "url: " << config.uploader_settings.target_url.c_str();
   int exit_code = encoder_main(&config);
   google::ShutdownGoogleLogging();
   return exit_code;
