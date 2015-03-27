@@ -393,7 +393,7 @@ void WebmEncoder::EncoderThread() {
 #endif
 
   // HACK: HERE BE DRAGONS
-  CHECK(WriteManifest(config_.dash_dir + "webmlive.mpd", dash_manifest));
+  CHECK(WriteManifest(config_.dash_dir + config_.dash_name, dash_manifest));
 
   // Wait for an input sample from each input stream-- this sets the
   // |timestamp_offset_| value when one or both streams starts with a negative
