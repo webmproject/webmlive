@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//BpM\u003d",
+        "filename": "testing/webmstreamserver.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-01T23:32:35Z",
+      "side": 1,
+      "message": "this is not a boolean, you should use \u0027is None\u0027",
+      "revId": "fbc45ed3771f51c77ace1a6c755d83a5e33fbe08",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//BpE\u003d",
+        "filename": "testing/webmstreamserver.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-01T23:32:35Z",
+      "side": 1,
+      "message": "indent is mixed here and within the else",
+      "revId": "fbc45ed3771f51c77ace1a6c755d83a5e33fbe08",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//BpI\u003d",
+        "filename": "testing/webmstreamserver.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-01T23:32:35Z",
+      "side": 1,
+      "message": "you could name the error you expect to catch and dump it in the output",
+      "revId": "fbc45ed3771f51c77ace1a6c755d83a5e33fbe08",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
