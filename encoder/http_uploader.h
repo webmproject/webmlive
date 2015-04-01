@@ -40,12 +40,6 @@ struct HttpUploaderSettings {
   // User HTTP headers.
   StringMap headers;
 
-  // HTTP post data stream name.
-  std::string stream_name;
-
-  // Data stream ID.
-  std::string stream_id;
-
   // Post mode.
   UploadMode post_mode;
 
