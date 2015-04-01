@@ -67,10 +67,10 @@ class LockableBuffer {
   bool IsLocked();
   // Copies data into the buffer. Does nothing and returns |kLocked| if the
   // buffer is already locked.
-  int Init(const uint8* const ptr_data, int32 length);
+  int Init(const uint8* const ptr_data, int length);
   // Returns pointer to internal buffer.  Does nothing and returns |kNotLocked|
   // if called with the buffer unlocked.
-  int GetBuffer(uint8** ptr_buffer, int32* ptr_length);
+  int GetBuffer(uint8** ptr_buffer, int* ptr_length);
   // Lock the buffer.  Returns |kLocked| if already locked.
   int Lock();
   // Unlock the buffer. Returns |kNotLocked| if buffer already unlocked.
@@ -109,25 +109,25 @@ class WebmChunkBuffer {
   // Checks for a complete "chunk" by attempting to parse buffered data.
   // Returns true and sets |ptr_chunk_length| if one is ready. Always returns
   // false if |ptr_chunk_length| is NULL.
-  bool ChunkReady(int32* ptr_chunk_length);
+  bool ChunkReady(int* ptr_chunk_length);
   // Adds data to |buffer_| and returns |kSuccess|.
-  int BufferData(const uint8* const ptr_data, int32 length);
+  int BufferData(const uint8* const ptr_data, int length);
   // Moves "chunk" data into your buffer. The data has been from removed from
   // |buffer_| when |kSuccess| is returned.  Returns |kUserBufferTooSmall| if
   // |length| is less than |chunk_length|.
-  int ReadChunk(uint8* ptr_buf, int32 length);
+  int ReadChunk(uint8* ptr_buf, int length);
   // Initializes |parser_| and returns |kSuccess|.
   int Init();
   // Returns the length of the currently parsed and buffered chunk, or 0 if
   // a complete chunk is not buffered.
-  int32 chunk_length() const { return chunk_length_; }
+  int chunk_length() const { return chunk_length_; }
 
  private:
   typedef std::vector<uint8> Buffer;
   // WebM data parser.
   std::unique_ptr<WebmBufferParser> parser_;
   // Length of the buffered chunk, or 0 if one is not buffered.
-  int32 chunk_length_;
+  int chunk_length_;
   // Data buffer.
   Buffer buffer_;
   WEBMLIVE_DISALLOW_COPY_AND_ASSIGN(WebmChunkBuffer);
