@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//Bq8\u003d",
+        "filename": "encoder/encoder_main.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 232,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-01T22:01:44Z",
+      "side": 1,
+      "message": "are you planning on using this again?",
+      "revId": "298737e1a62be8d6aafa78bdf46ceb9b23584aa9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
