@@ -13,48 +13,38 @@ import time
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 FILENAME = 'test.webm'
-POSTCOUNT = 0
 
 class WebMStreamServer(BaseHTTPRequestHandler):
   def do_POST(self):
-    global POSTCOUNT
     try:
-      ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
-      self.file = file(FILENAME, 'ab')
+      print "%s" % self.headers
+      content_type, param_dictionary = cgi.parse_header(
+          self.headers['content-type'])
+
+      # Strip everything but the last component if the client sent a POST w/a
+      # x-content-id header that could be a full path.
+      file_name = os.path.basename(self.headers['x-content-id'])
+      if not file_name:
+        self.send_response(400)
+        print "Bad request: sanitized x-content-id value empty."
+        return
+
       if self.path.startswith("/dash"):
-        # Hooooorible... terrrrrrible hack: post count is magic!
-        if POSTCOUNT == 0:
-          # this is the manifest
-          print "manifest"
-          print "%s" % self.headers
-          mpd_file = open('webmlive.mpd', 'w')
-          mpd_file.write(self.rfile.read(int(self.headers['content-length'])))
-          mpd_file.close()
-        elif POSTCOUNT == 1:
-          # this is the hdr chunk
-          print "header chunk"
-          hdr_file = open('webmlive_webmlive.hdr', 'wb')
-          hdr_file.write(self.rfile.read(int(self.headers['content-length'])))
-          hdr_file.close()
-        else:
-          # this and all following chunks are media data
-          print "media chunk"
-          fname = "webmlive_webmlive_" + str(POSTCOUNT-1) + ".chk"
-          chk_file = open(fname, 'wb')
-          chk_file.write(self.rfile.read(int(self.headers['content-length'])))
-          chk_file.close()
-        self.send_response(200)
-        POSTCOUNT += 1
-        print "POSTCOUNT = " + str(POSTCOUNT)
+         post_file = open(file_name, 'wb')
+         post_file.write(self.rfile.read(int(self.headers['content-length'])))
+         post_file.close()
+         print "wrote %s" % file_name
+         self.send_response(200)
       else:
         print self.path
-        if ctype == 'multipart/form-data':
-          query = cgi.parse_multipart(self.rfile, pdict)
+        self.file = file(FILENAME, 'ab')
+        if content_type == 'multipart/form-data':
+          query = cgi.parse_multipart(self.rfile, param_dictionary)
           upfilecontent = query.get('webm_file')
           self.file.write(upfilecontent[0])
           self.send_response(200)
           self.wfile.write('Post OK')
-        elif ctype == 'video/webm':
+        elif content_type == 'video/webm':
           length = int(self.headers['content-length'])
           if length > 0:
             self.file.write(self.rfile.read(length))
@@ -68,11 +58,11 @@ class WebMStreamServer(BaseHTTPRequestHandler):
           print 'unsupported content-type, cannot handle POST!'
           self.send_response(500)
           self.wfile.write('Unsupported content-type')
+          self.file.close()
 
-        self.file.close()
         self.end_headers()
     except:
-      print "you suck!"
+      print "In except: something is broken!"
       pass
 
 

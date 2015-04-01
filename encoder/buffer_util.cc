@@ -32,7 +32,7 @@ bool BufferQueue::EnqueueBuffer(const std::string& id,
 BufferQueue::Buffer* BufferQueue::DequeueBuffer() {
   BufferQueue::Buffer* buffer = NULL;
   std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
-  if (lock.owns_lock()) {
+  if (lock.owns_lock() && !buffer_q_.empty()) {
     buffer = buffer_q_.front();
     buffer_q_.pop();
   }
@@ -51,7 +51,7 @@ bool LockableBuffer::IsLocked() {
 
 // Confirms buffer is unlocked via call to |IsLocked|, obtains lock on
 // |mutex_|, and copies the user data into |buffer_|.
-int LockableBuffer::Init(const uint8* const ptr_data, int32 length) {
+int LockableBuffer::Init(const uint8* const ptr_data, int length) {
   if (IsLocked()) {
     return kLocked;
   }
@@ -67,7 +67,7 @@ int LockableBuffer::Init(const uint8* const ptr_data, int32 length) {
 
 // Confirms buffer is locked via call to |IsLocked|, obtains lock on
 // |mutex_|, and copies the user data into |buffer_|.
-int LockableBuffer::GetBuffer(uint8** ptr_buffer, int32* ptr_length) {
+int LockableBuffer::GetBuffer(uint8** ptr_buffer, int* ptr_length) {
   if (!ptr_length) {
     return kInvalidArg;
   }
@@ -114,7 +114,7 @@ WebmChunkBuffer::~WebmChunkBuffer() {}
 // |WebmBufferParser::Parse|.
 // When a chunk is ready, or when |WebmBufferParser::Parse| completes one, sets
 // |ptr_chunk_length| and returns true.
-bool WebmChunkBuffer::ChunkReady(int32* ptr_chunk_length) {
+bool WebmChunkBuffer::ChunkReady(int* ptr_chunk_length) {
   if (ptr_chunk_length) {
     *ptr_chunk_length = 0;
     if (chunk_length_ > 0) {
@@ -130,7 +130,7 @@ bool WebmChunkBuffer::ChunkReady(int32* ptr_chunk_length) {
 }
 
 // Inserts data from |ptr_data| at the end of |buffer_|.
-int WebmChunkBuffer::BufferData(const uint8* const ptr_data, int32 length) {
+int WebmChunkBuffer::BufferData(const uint8* const ptr_data, int length) {
   if (!ptr_data || length < 1) {
     LOG(ERROR) << "invalid arg(s).";
     return kInvalidArg;
@@ -153,7 +153,7 @@ int WebmChunkBuffer::Init() {
 // Copies the buffered chunk data into |ptr_buf|, erases it from |buffer_|, and
 // resets |chunk_length_| to 0.  Resetting |chunk_length_| allows parsing to
 // resume in |ChunkReady|.
-int WebmChunkBuffer::ReadChunk(uint8* ptr_buf, int32 length) {
+int WebmChunkBuffer::ReadChunk(uint8* ptr_buf, int length) {
   if (!ptr_buf) {
     LOG(ERROR) << "NULL buffer pointer";
     return kInvalidArg;
