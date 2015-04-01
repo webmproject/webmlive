@@ -128,8 +128,6 @@ add_executable(encoder
                vorbis_encoder.h
                vpx_encoder.cc
                vpx_encoder.h
-               webm_buffer_parser.cc
-               webm_buffer_parser.h
                webm_encoder.cc
                webm_encoder.h
                webm_mux.cc
