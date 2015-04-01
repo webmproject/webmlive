@@ -32,7 +32,7 @@ bool BufferQueue::EnqueueBuffer(const std::string& id,
 BufferQueue::Buffer* BufferQueue::DequeueBuffer() {
   BufferQueue::Buffer* buffer = NULL;
   std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
-  if (lock.owns_lock()) {
+  if (lock.owns_lock() && !buffer_q_.empty()) {
     buffer = buffer_q_.front();
     buffer_q_.pop();
   }
