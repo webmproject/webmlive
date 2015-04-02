@@ -16,6 +16,24 @@
       "revId": "298737e1a62be8d6aafa78bdf46ceb9b23584aa9",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//Bn0\u003d",
+        "filename": "encoder/encoder_main.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 232,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-02T00:36:35Z",
+      "side": 1,
+      "message": "yeah; it\u0027s working locally. Patch just isn\u0027t ready.",
+      "parentUuid": "AAAAdn//Bq8\u003d",
+      "revId": "298737e1a62be8d6aafa78bdf46ceb9b23584aa9",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
