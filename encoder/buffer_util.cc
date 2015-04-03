@@ -10,7 +10,6 @@
 #include <mutex>
 #include <thread>
 
-#include "encoder/webm_buffer_parser.h"
 #include "glog/logging.h"
 
 namespace webmlive {
@@ -101,72 +100,6 @@ int LockableBuffer::Unlock() {
   }
   locked_ = false;
   return status;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// WebmChunkBuffer
-//
-
-WebmChunkBuffer::WebmChunkBuffer() : chunk_length_(0) {}
-WebmChunkBuffer::~WebmChunkBuffer() {}
-
-// Checks if a chunk is ready, or attempts to parse some data by calling
-// |WebmBufferParser::Parse|.
-// When a chunk is ready, or when |WebmBufferParser::Parse| completes one, sets
-// |ptr_chunk_length| and returns true.
-bool WebmChunkBuffer::ChunkReady(int* ptr_chunk_length) {
-  if (ptr_chunk_length) {
-    *ptr_chunk_length = 0;
-    if (chunk_length_ > 0) {
-      *ptr_chunk_length = chunk_length_;
-      return true;
-    }
-    if (parser_->Parse(buffer_, &chunk_length_) == kSuccess) {
-      *ptr_chunk_length = chunk_length_;
-      return true;
-    }
-  }
-  return false;
-}
-
-// Inserts data from |ptr_data| at the end of |buffer_|.
-int WebmChunkBuffer::BufferData(const uint8* const ptr_data, int length) {
-  if (!ptr_data || length < 1) {
-    LOG(ERROR) << "invalid arg(s).";
-    return kInvalidArg;
-  }
-  buffer_.insert(buffer_.end(), ptr_data, ptr_data+length);
-  LOG(INFO) << "buffer_ size=" << buffer_.size();
-  return kSuccess;
-}
-
-// Constructs and inits |parser_|.
-int WebmChunkBuffer::Init() {
-  parser_.reset(new (std::nothrow) WebmBufferParser());  // NOLINT
-  if (!parser_) {
-    LOG(ERROR) << "out of memory";
-    return kOutOfMemory;
-  }
-  return parser_->Init();
-}
-
-// Copies the buffered chunk data into |ptr_buf|, erases it from |buffer_|, and
-// resets |chunk_length_| to 0.  Resetting |chunk_length_| allows parsing to
-// resume in |ChunkReady|.
-int WebmChunkBuffer::ReadChunk(uint8* ptr_buf, int length) {
-  if (!ptr_buf) {
-    LOG(ERROR) << "NULL buffer pointer";
-    return kInvalidArg;
-  }
-  if (length < chunk_length_) {
-    LOG(ERROR) << "not enough space for chunk";
-    return kUserBufferTooSmall;
-  }
-  memcpy(ptr_buf, &buffer_[0], chunk_length_);
-  Buffer::iterator erase_end_pos = buffer_.begin() + chunk_length_;
-  buffer_.erase(buffer_.begin(), erase_end_pos);
-  chunk_length_ = 0;
-  return kSuccess;
 }
 
 }  // namespace webmlive
