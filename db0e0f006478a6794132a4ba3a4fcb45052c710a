@@ -2,6 +2,57 @@
   "comments": [
     {
       "key": {
+        "uuid": "AAAAdn//BYE\u003d",
+        "filename": "testing/test_server.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-03T21:53:30Z",
+      "side": 1,
+      "message": "2015?",
+      "revId": "db0e0f006478a6794132a4ba3a4fcb45052c710a",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//BYA\u003d",
+        "filename": "testing/test_server.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-03T21:53:30Z",
+      "side": 1,
+      "message": "pass",
+      "revId": "db0e0f006478a6794132a4ba3a4fcb45052c710a",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//BX8\u003d",
+        "filename": "testing/test_server.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-03T21:53:30Z",
+      "side": 1,
+      "message": "preferred would be to break after the function or use extra ()s",
+      "revId": "db0e0f006478a6794132a4ba3a4fcb45052c710a",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//BZw\u003d",
         "filename": "testing/test_server.py",
         "patchSetId": 2
@@ -13,6 +64,24 @@
       "writtenOn": "2015-04-03T18:46:29Z",
       "side": 1,
       "message": "Empty strings aren\u0027t truthy. Py docs say:\n\nhttps://docs.python.org/release/2.5.2/lib/truth.html\n\nOtoh, testing for None here works only if one explicitly sets file_name to None. i.e. this is not true:\n\nif \u0027\u0027 is None:\n\nNor is:\n\nif os.path.basename(\u0027/a/b/c/d/\u0027):\n\nAnyway, probably being paranoid anyway... the only things that hit this server are the encoder from in here and security scanners (which use GET... so far).",
+      "revId": "db0e0f006478a6794132a4ba3a4fcb45052c710a",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//BYI\u003d",
+        "filename": "testing/test_server.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-03T21:53:30Z",
+      "side": 1,
+      "message": "oops I didn\u0027t notice the type, this is correct for strings",
+      "parentUuid": "AAAAdn//BZw\u003d",
       "revId": "db0e0f006478a6794132a4ba3a4fcb45052c710a",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
