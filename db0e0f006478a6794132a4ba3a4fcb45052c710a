@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//BXY\u003d",
+        "filename": "testing/test_server.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-03T22:15:03Z",
+      "side": 1,
+      "message": "Done... kind of ambiguous w/this being a rename. Otoh, it\u0027s pretty much a new file anyway.",
+      "parentUuid": "AAAAdn//BYE\u003d",
+      "revId": "db0e0f006478a6794132a4ba3a4fcb45052c710a",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//BYA\u003d",
         "filename": "testing/test_server.py",
         "patchSetId": 2
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//BXg\u003d",
+        "filename": "testing/test_server.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-03T22:15:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//BYA\u003d",
+      "revId": "db0e0f006478a6794132a4ba3a4fcb45052c710a",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//BX8\u003d",
         "filename": "testing/test_server.py",
         "patchSetId": 2
@@ -47,6 +83,24 @@
       "writtenOn": "2015-04-03T21:53:30Z",
       "side": 1,
       "message": "preferred would be to break after the function or use extra ()s",
+      "revId": "db0e0f006478a6794132a4ba3a4fcb45052c710a",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//BXc\u003d",
+        "filename": "testing/test_server.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-03T22:15:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//BX8\u003d",
       "revId": "db0e0f006478a6794132a4ba3a4fcb45052c710a",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
