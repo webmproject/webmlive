@@ -31,11 +31,11 @@ class WebMStreamServer(BaseHTTPRequestHandler):
         return
 
       if self.path.startswith("/dash"):
-         post_file = open(file_name, 'wb')
-         post_file.write(self.rfile.read(int(self.headers['content-length'])))
-         post_file.close()
-         print "wrote %s" % file_name
-         self.send_response(200)
+        post_file = open(file_name, 'wb')
+        post_file.write(self.rfile.read(int(self.headers['content-length'])))
+        post_file.close()
+        print "wrote %s" % file_name
+        self.send_response(200)
       else:
         print self.path
         self.file = file(FILENAME, 'ab')
