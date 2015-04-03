@@ -16,6 +16,24 @@
       "revId": "ed33b1910f92bca8bf28ab36aeb67dd77b544346",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//BWQ\u003d",
+        "filename": "testing/test_server.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-03T22:41:18Z",
+      "side": 1,
+      "message": "auto formatter I abused dropped it in; removed.",
+      "parentUuid": "AAAAdn//BW8\u003d",
+      "revId": "ed33b1910f92bca8bf28ab36aeb67dd77b544346",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
     }
   ]
 }
