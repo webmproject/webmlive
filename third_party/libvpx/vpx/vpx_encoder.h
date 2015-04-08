@@ -59,7 +59,7 @@ extern "C" {
    * types, removing or reassigning enums, adding/removing/rearranging
    * fields to structures
    */
-#define VPX_ENCODER_ABI_VERSION (3 + VPX_CODEC_ABI_VERSION) /**<\hideinitializer*/
+#define VPX_ENCODER_ABI_VERSION (4 + VPX_CODEC_ABI_VERSION) /**<\hideinitializer*/
 
 
   /*! \brief Encoder capabilities bitfield
@@ -161,9 +161,9 @@ extern "C" {
     VPX_CODEC_STATS_PKT,       /**< Two-pass statistics for this frame */
     VPX_CODEC_FPMB_STATS_PKT,  /**< first pass mb statistics for this frame */
     VPX_CODEC_PSNR_PKT,        /**< PSNR statistics for this frame */
-    // TODO(minghai): This is for testing purporses. The released library can't
-    // depend on vpx_config.h
-#if defined(CONFIG_SPATIAL_SVC) && CONFIG_SPATIAL_SVC
+    // Spatial SVC is still experimental and may be removed before the next ABI
+    // bump.
+#if VPX_ENCODER_ABI_VERSION > (4 + VPX_CODEC_ABI_VERSION)
     VPX_CODEC_SPATIAL_SVC_LAYER_SIZES, /**< Sizes for each layer in this frame*/
     VPX_CODEC_SPATIAL_SVC_LAYER_PSNR, /**< PSNR for each layer in this frame*/
 #endif
@@ -203,9 +203,9 @@ extern "C" {
         double       psnr[4];     /**< PSNR, total/y/u/v */
       } psnr;                       /**< data for PSNR packet */
       vpx_fixed_buf_t raw;     /**< data for arbitrary packets */
-      // TODO(minghai): This is for testing purporses. The released library
-      // can't depend on vpx_config.h
-#if defined(CONFIG_SPATIAL_SVC) && CONFIG_SPATIAL_SVC
+      // Spatial SVC is still experimental and may be removed before the next
+      // ABI bump.
+#if VPX_ENCODER_ABI_VERSION > (4 + VPX_CODEC_ABI_VERSION)
       size_t layer_sizes[VPX_SS_MAX_LAYERS];
       struct vpx_psnr_pkt layer_psnr[VPX_SS_MAX_LAYERS];
 #endif
@@ -827,9 +827,9 @@ extern "C" {
    * be called by all applications to initialize the configuration structure
    * before specializing the configuration with application specific values.
    *
-   * \param[in]    iface   Pointer to the algorithm interface to use.
-   * \param[out]   cfg     Configuration buffer to populate
-   * \param[in]    usage   End usage. Set to 0 or use codec specific values.
+   * \param[in]    iface     Pointer to the algorithm interface to use.
+   * \param[out]   cfg       Configuration buffer to populate.
+   * \param[in]    reserved  Must set to 0 for VP8 and VP9.
    *
    * \retval #VPX_CODEC_OK
    *     The configuration was populated.
@@ -840,7 +840,7 @@ extern "C" {
    */
   vpx_codec_err_t  vpx_codec_enc_config_default(vpx_codec_iface_t    *iface,
                                                 vpx_codec_enc_cfg_t  *cfg,
-                                                unsigned int          usage);
+                                                unsigned int          reserved);
 
 
   /*!\brief Set or change configuration

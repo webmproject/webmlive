@@ -153,7 +153,7 @@ int VpxEncoder::Init(const WebmEncoderConfig& user_config) {
     // TODO(tomfinegan): Why does vpx_codec_control() return an error for
     // this flag when using VP8 if it's a VP8E flag?
     // https://code.google.com/p/webm/issues/detail?id=971
-    if (CodecControl(VP8E_SET_GF_CBR_BOOST_PCT, config_.goldenframe_cbr_boost,
+    if (CodecControl(VP9E_SET_GF_CBR_BOOST_PCT, config_.goldenframe_cbr_boost,
                      VpxConfig::kUseDefault)) {
       return VideoEncoder::kCodecError;
     }
@@ -267,7 +267,6 @@ int VpxEncoder::CodecControl(int control_id, T val, T default_val) {
     vpx_codec_err_t status = VPX_CODEC_OK;
     switch (control_id) {
       case VP8E_SET_CPUUSED:
-      case VP8E_SET_GF_CBR_BOOST_PCT:
       case VP8E_SET_MAX_INTRA_BITRATE_PCT:
       case VP8E_SET_NOISE_SENSITIVITY:
       case VP8E_SET_SHARPNESS:
@@ -275,6 +274,7 @@ int VpxEncoder::CodecControl(int control_id, T val, T default_val) {
       case VP8E_SET_TOKEN_PARTITIONS:
       case VP9E_SET_AQ_MODE:
       case VP9E_SET_FRAME_PARALLEL_DECODING:
+      case VP9E_SET_GF_CBR_BOOST_PCT:
       case VP9E_SET_TILE_COLUMNS:
         status = vpx_codec_control(&vpx_context_, control_id, val);
         break;
