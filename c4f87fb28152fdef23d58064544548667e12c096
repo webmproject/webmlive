@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//A9s\u003d",
+        "filename": "encoder/http_uploader.cc",
+        "patchSetId": 4
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-08T21:05:05Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//A+c\u003d",
+      "revId": "c4f87fb28152fdef23d58064544548667e12c096",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//A+U\u003d",
         "filename": "encoder/http_uploader.cc",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2015-04-08T19:05:19Z",
       "side": 1,
       "message": "these could take strings, but that\u0027s not a discussion for this change",
+      "revId": "c4f87fb28152fdef23d58064544548667e12c096",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//A9o\u003d",
+        "filename": "encoder/http_uploader.cc",
+        "patchSetId": 4
+      },
+      "lineNbr": 500,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-08T21:05:05Z",
+      "side": 1,
+      "message": "yeah, definitely could be a string. Maybe I\u0027ll dig into this later.",
+      "parentUuid": "AAAAdn//A+U\u003d",
       "revId": "c4f87fb28152fdef23d58064544548667e12c096",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
