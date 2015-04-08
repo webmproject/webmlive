@@ -18,13 +18,9 @@ class DataSinkInterface {
  public:
   virtual ~DataSinkInterface() {}
 
-  // Returns true when the class implementing |DataSinkInterface| is ready to
-  // receive data via a call to |WriteData()|.
-  virtual bool Ready() const = 0;
-
-  // Writes data to the sink and returns true when successful.
-  virtual bool WriteData(const uint8* ptr_data, int32 data_length,
-                         const std::string& id) = 0;
+  // Writes data to the sink and returns true when successful. Must not block.
+  virtual bool WriteData(const std::string& id,
+                         const uint8* ptr_data, int data_length) = 0;
 };
 
 }  // namespace webmlive

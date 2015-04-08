@@ -386,14 +386,14 @@ void WebmEncoder::EncoderThread() {
     LOG(ERROR) << "DashWriter::WriteManifest failed.";
   }
 
-#if 0
   ptr_data_sink_->WriteData(
+      config_.dash_name + ".mpd",
       reinterpret_cast<const uint8*>(dash_manifest.data()),
-      dash_manifest.length(), "manifest");
-#endif
+      dash_manifest.length());
 
-  // HACK: HERE BE DRAGONS
-  CHECK(WriteManifest(config_.dash_dir + "webmlive.mpd", dash_manifest));
+  // TODO(tomfinegan): Support multiple data sinks/create a local file sink.
+  CHECK(WriteManifest(config_.dash_dir + config_.dash_name + ".mpd",
+                      dash_manifest));
 
   // Wait for an input sample from each input stream-- this sets the
   // |timestamp_offset_| value when one or both streams starts with a negative
@@ -820,29 +820,27 @@ int WebmEncoder::PeekVideoTimestamp(int64* timestamp) {
 
 int WebmEncoder::WriteMuxerChunkToDataSink(
     std::unique_ptr<LiveWebmMuxer>* muxer) {
-  if (ptr_data_sink_->Ready()) {
-    int32 chunk_length = 0;
-    const bool chunk_ready = (*muxer)->ChunkReady(&chunk_length);
-    if (chunk_ready) {
-      const int64 chunk_num = (*muxer)->chunks_read();
-      std::string id = NextChunkId((*muxer)->muxer_id(), chunk_num);
-      // A complete chunk is waiting in |muxer|'s buffer.
-      if (!ReadChunkFromMuxer(muxer, chunk_length)) {
-        LOG(ERROR) << "cannot read WebM chunk from muxer_id: "
-                   << (*muxer)->muxer_id();
-        return kWebmMuxerError;
-      }
-#if 0
-      // Pass the chunk to |ptr_data_sink_|.
-      if (!ptr_data_sink_->WriteData(chunk_buffer_.get(), chunk_length, id)) {
-        LOG(ERROR) << "data sink write failed!";
-        return kDataSinkWriteFail;
-      }
-#endif
-      // HACK: HERE BE DRAGONS
-      CHECK(WriteChunkFile(config_.dash_dir + id,
-                           chunk_buffer_.get(), chunk_length));
+  int32 chunk_length = 0;
+  const bool chunk_ready = (*muxer)->ChunkReady(&chunk_length);
+  if (chunk_ready) {
+    const int64 chunk_num = (*muxer)->chunks_read();
+    const std::string id = NextChunkId((*muxer)->muxer_id(), chunk_num);
+    // A complete chunk is waiting in |muxer|'s buffer.
+    if (!ReadChunkFromMuxer(muxer, chunk_length)) {
+      LOG(ERROR) << "cannot read WebM chunk from muxer_id: "
+                 << (*muxer)->muxer_id();
+      return kWebmMuxerError;
     }
+
+    // Pass the chunk to |ptr_data_sink_|.
+    if (!ptr_data_sink_->WriteData(id, chunk_buffer_.get(), chunk_length)) {
+      LOG(ERROR) << "data sink write failed!";
+      return kDataSinkWriteFail;
+    }
+
+    // TODO(tomfinegan): Support multiple data sinks/create a local file sink.
+    CHECK(WriteChunkFile(config_.dash_dir + id,
+                         chunk_buffer_.get(), chunk_length));
   }
   return kSuccess;
 }
@@ -859,23 +857,19 @@ int WebmEncoder::WriteLastMuxerChunkToDataSink(
   if ((*muxer)->ChunkReady(&chunk_length)) {
     LOG(INFO) << "mkvmuxer Finalize produced a chunk.";
     const int64 chunk_num = (*muxer)->chunks_read();
-    std::string id = NextChunkId((*muxer)->muxer_id(), chunk_num);
-
-    while (!ptr_data_sink_->Ready())
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    const std::string id = NextChunkId((*muxer)->muxer_id(), chunk_num);
 
     if (ReadChunkFromMuxer(muxer, chunk_length)) {
-#if 0
       const bool sink_write_ok =
-          ptr_data_sink_->WriteData(chunk_buffer_.get(), chunk_length, id);
+          ptr_data_sink_->WriteData(id, chunk_buffer_.get(), chunk_length);
       if (!sink_write_ok) {
         LOG(ERROR) << "data sink write fail on final chunk for muxer_id:"
                    << (*muxer)->muxer_id();
       } else {
         LOG(INFO) << "Final chunk upload initiated.";
       }
-#endif
-      // HACK: HERE BE DRAGONS
+
+      // TODO(tomfinegan): Support multiple data sinks/create a local file sink.
       CHECK(WriteChunkFile(config_.dash_dir + id,
                            chunk_buffer_.get(), chunk_length));
     }
