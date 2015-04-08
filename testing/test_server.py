@@ -34,11 +34,21 @@ class TestServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
     TestServer - SimpleHTTPRequestHandler that implements do_POST to provide a
                  target for webmlive's encoder.
     """
+    def send_response_and_end_headers(self, code, message=''):
+        """
+        Utility method for sending HTTP responses.
+        """
+        self.send_response(code)
+        self.end_headers()
+        if message:
+            self.wfile.write(message)
 
     def do_POST(self):  # pylint: disable=invalid-name
         """
         HTTP POST handler.
         """
+        message = ''
+        response_code = 400
         try:
             print '%s' % self.headers
             (content_type, param_dictionary) = cgi.parse_header(
@@ -48,9 +58,10 @@ class TestServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
             # POST w/an x-content-id header that could be a full path.
             file_name = os.path.basename(self.headers['x-content-id'])
             if not file_name:
-                self.send_response(400)
-                self.end_headers()
-                print 'Bad request: sanitized x-content-id value empty.'
+                response_code = 400
+                message = 'Bad request: sanitized x-content-id value empty.'
+                self.send_response_and_end_headers(response_code, message)
+                print message
                 return
 
             if self.path.startswith('/dash'):
@@ -58,8 +69,8 @@ class TestServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 post_file.write(self.rfile.read(
                     int(self.headers['content-length'])))
                 post_file.close()
-                print 'wrote %s' % file_name
-                self.send_response(200)
+                message = 'wrote {}'.format(file_name)
+                response_code = 200
             else:
                 # TODO(tomfinegan): read x-session-id and use that for the file
                 # name here, and then get rid of |FILENAME|, because yuck.
@@ -70,25 +81,23 @@ class TestServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
                         self.rfile, param_dictionary)
                     upfilecontent = query.get('webm_file')
                     self.file.write(upfilecontent[0])
-                    self.send_response(200)
-                    self.wfile.write('Post OK')
+                    response_code = 200
                 elif content_type == 'video/webm':
                     length = int(self.headers['content-length'])
                     if length > 0:
                         self.file.write(self.rfile.read(length))
-                        self.send_response(200)
-                        self.wfile.write('Post OK')
+                        response_code = 200
                     else:
-                        print 'post has 0 content-length (or is missing field)!'
-                        self.send_response(400)
-                        self.wfile.write('bad/missing content-length')
+                        response_code = 200
+                        message = 'POST has 0 content-length/missing field'
+                        print message
                 else:
-                    print 'unsupported content-type, cannot handle POST!'
-                    self.send_response(400)
-                    self.wfile.write('Unsupported content-type')
+                    response_code = 400
+                    message = 'unsupported content-type, cannot handle POST!'
                     self.file.close()
 
-                self.end_headers()
+            self.send_response_and_end_headers(response_code, message)
+
         except Exception as exception:
             print 'In except: something is broken!'
             print 'type(exception): %s' % str(type(exception))
