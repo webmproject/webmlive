@@ -8,7 +8,10 @@
 #ifndef WEBMLIVE_ENCODER_DATA_SINK_H_
 #define WEBMLIVE_ENCODER_DATA_SINK_H_
 
+#include <memory>
+#include <mutex>
 #include <string>
+#include <vector>
 
 #include "encoder/basictypes.h"
 
@@ -23,6 +26,31 @@ class DataSinkInterface {
                          const uint8* ptr_data, int data_length) = 0;
 };
 
+class DataSinkInterface2 {
+ public:
+  struct Buffer {
+    typedef std::shared_ptr<std::vector<uint8_t>> SharedDataPtr;
+    std::string id;
+    SharedDataPtr data;
+  };
+
+  virtual ~DataSinkInterface2() {}
+  virtual bool WriteData(const Buffer& buffer);
+};
+
+class DataSink : public DataSinkInterface {
+ public:
+  DataSink() {}
+  virtual ~DataSink() {}
+  
+  // Adds |data_sink| to |data_sinks_|.
+  void AddDataSink(DataSink* data_sink);
+
+  virtual bool WriteData(const std::string& id,
+                         const uint8* ptr_data, int data_length) override;
+ private:
+  std::mutex mutex_;
+  std::vector<DataSink*> data_sinks_;
 };
 
 }  // namespace webmlive
