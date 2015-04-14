@@ -26,8 +26,7 @@ T milliseconds_to_timecode_ticks(T milliseconds) {
   return milliseconds * LiveWebmMuxer::kTimecodeScale;
 }
 
-// Buffer object implementing libwebm's IMkvWriter interface. Constructed from
-// user's |WebmChunkBuffer| to store data written by libwebm.
+// Buffer object implementing libwebm's IMkvWriter interface.
 class WebmMuxWriter : public mkvmuxer::IMkvWriter {
  public:
   enum {

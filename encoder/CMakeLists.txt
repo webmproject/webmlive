@@ -117,9 +117,12 @@ add_executable(encoder
                buffer_util.h
                dash_writer.cc
                dash_writer.h
+               data_sink.cc
                data_sink.h
                encoder_base.h
                encoder_main.cc
+               file_writer.cc
+               file_writer.h
                http_uploader.cc
                http_uploader.h
                video_encoder.cc
