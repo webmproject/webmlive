@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "encoder/buffer_util.h"
+#include "encoder/file_writer.h"
 #include "encoder/http_uploader.h"
 #include "encoder/webm_encoder.h"
 #include "glog/logging.h"
@@ -403,6 +404,24 @@ void parse_command_line(int argc, const char** argv,
   store_string_map_entries(unparsed_vars, uploader_settings.form_variables);
 }
 
+// Calls |Init| and |Run| on |ptr_writer| to start the file writer thread, which
+// writes buffers when |WriteData| is called on the writer via |DataSink|.
+bool start_writer(WebmEncoderConfig* ptr_config,
+                  webmlive::FileWriter* ptr_writer) {
+  if (!ptr_writer->Init(ptr_config->enc_config.dash_encode,
+                        ptr_config->enc_config.dash_dir)) {
+    LOG(ERROR) << "writer Init failed.";
+    return false;
+  }
+
+  // Run the writer (it goes idle and waits for a buffer).
+  if (!ptr_writer->Run()) {
+    LOG(ERROR) << "writer Run failed.";
+    return false;
+  }
+  return true;
+}
+
 // Calls |Init| and |Run| on |uploader| to start the uploader thread, which
 // uploads buffers when |UploadBuffer| is called on the uploader.
 int start_uploader(WebmEncoderConfig* ptr_config,
@@ -423,13 +442,25 @@ int start_uploader(WebmEncoderConfig* ptr_config,
 
 int encoder_main(WebmEncoderConfig* ptr_config) {
   webmlive::WebmEncoderConfig& enc_config = ptr_config->enc_config;
+  webmlive::FileWriter file_writer;
   webmlive::HttpUploader uploader;
+  webmlive::DataSink data_sink;
+
+  // Add |file_writer| and |uploader| to |data_sink|.
+  data_sink.AddDataSink(&file_writer);
+  data_sink.AddDataSink(&uploader);
 
   // Init the WebM encoder.
   webmlive::WebmEncoder encoder;
-  int status = encoder.Init(enc_config, &uploader);
+  int status = encoder.Init(enc_config, &data_sink);
   if (status) {
     LOG(ERROR) << "WebmEncoder Run failed, status=" << status;
+    return EXIT_FAILURE;
+  }
+
+  // Start the file writer thread.
+  if (!start_writer(ptr_config, &file_writer)) {
+    LOG(ERROR) << "start_writer failed.";
     return EXIT_FAILURE;
   }
 
@@ -466,6 +497,8 @@ int encoder_main(WebmEncoderConfig* ptr_config) {
   encoder.Stop();
   LOG(INFO) << "stopping uploader...";
   uploader.Stop();
+  LOG(INFO) << "stopping file writer...";
+  file_writer.Stop();
 
   return EXIT_SUCCESS;
 }
