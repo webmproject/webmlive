@@ -38,6 +38,11 @@ BufferQueue::Buffer* BufferQueue::DequeueBuffer() {
   return buffer;
 }
 
+size_t BufferQueue::GetNumBuffers() {
+  std::lock_guard<std::mutex> lock(mutex_);
+  return buffer_q_.size();
+}
+
 // Attempts to obtain lock on |mutex_|. Returns value of |locked_| if the lock
 // is obtained, assumes locked and returns true otherwise.
 bool LockableBuffer::IsLocked() {

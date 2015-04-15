@@ -38,6 +38,9 @@ class BufferQueue {
   // pointer memory is owned by caller.
   Buffer* DequeueBuffer();
 
+  // Returns number of buffers queued. Blocks on |mutex_| acquisition.
+  size_t GetNumBuffers();
+
  private:
   bool locked_;
   std::mutex mutex_;
