@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn//AWA\u003d",
+        "filename": "encoder/file_writer.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-15T23:50:06Z",
+      "side": 1,
+      "message": "Run()/Stop()/StopRequested()/WaitForUserData() should probably be from mixin classes, but I really don\u0027t want to get into that level of template evilness and/or multiple inheritance in webmlive. I think it would get in the way of clarity.\n\nAnyway, just wanted to point the above out since the aforementioned functions are all basically dupes of stuff from HttpUploaderImpl.",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
