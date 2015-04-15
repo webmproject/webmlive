@@ -37,12 +37,9 @@ static const char kContentTypeHeader[] = "Content-Type: video/webm";
 static const char kFormName[] = "webm_file";
 static const char kWebmMimeType[] = "video/webm";
 static const char kContentIdHeader[] = "X-Content-Id: ";
-static const int kUnknownFileSize = -1;
-static const int kBytesRequiredForResume = 32*1024;
 
 class HttpUploaderImpl {
  public:
-  typedef std::queue<std::string> UrlQueue;
   enum {
     // Libcurl reported an unexpected error.
     kLibCurlError = -401,
@@ -317,7 +314,10 @@ int HttpUploaderImpl::Run() {
 // |upload_buffer_|'s internal lock.
 bool HttpUploaderImpl::UploadBuffer(const std::string& id,
                                     const uint8* ptr_buf, int length) {
-  upload_buffer_.EnqueueBuffer(id, ptr_buf, length);
+  if (!upload_buffer_.EnqueueBuffer(id, ptr_buf, length)) {
+    LOG(ERROR) << "Upload buffer enqueue failed.";
+    return false;
+  }
   // Wake |UploadThread|.
   LOG(INFO) << "waking uploader with " << length << " bytes";
   wake_condition_.notify_one();
@@ -599,7 +599,7 @@ void HttpUploaderImpl::ResetStats() {
 // Upload thread.  Wakes when user provides a buffer via call to
 // |UploadBuffer|.
 void HttpUploaderImpl::UploadThread() {
-  while (!StopRequested()) {
+  while (!StopRequested() || upload_buffer_.GetNumBuffers() > 0) {
     BufferQueue::Buffer* buffer = upload_buffer_.DequeueBuffer();
     if (!buffer) {
       VLOG(1) << "upload thread waiting for buffer...";
