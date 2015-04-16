@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//APA\u003d",
+        "filename": "encoder/data_sink.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-16T15:49:16Z",
+      "side": 1,
+      "message": "yeah, acknowledged. Just reread the difference, and would likely be well worth the change if this wasn\u0027t just a pointer.",
+      "parentUuid": "AAAAdn//ASI\u003d",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//ASA\u003d",
         "filename": "encoder/data_sink.cc",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2015-04-16T06:04:57Z",
       "side": 1,
       "message": "const",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//AO4\u003d",
+        "filename": "encoder/data_sink.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-16T15:49:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//ASA\u003d",
       "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//APc\u003d",
+        "filename": "encoder/data_sink.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-16T15:49:16Z",
+      "side": 1,
+      "message": "this continues existing behavior: the encoder and sinks ignore errors other than logging them. I should probably make the functions void, but logging failures seemed better than that and has also seemed adequate for this app.\n\nI can make things less permissive, but I want to change the setup stuff in encoder_main to enable multiple sinks only when requested before I make the change. (less things that can fail make me more comfortable with the app giving up when they do)",
+      "parentUuid": "AAAAdn//AR8\u003d",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//AR4\u003d",
         "filename": "encoder/encoder_main.cc",
         "patchSetId": 1
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//AOo\u003d",
+        "filename": "encoder/encoder_main.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 409,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-16T15:49:16Z",
+      "side": 1,
+      "message": "This file needs a clean up pass-- sticking with existing and then coming back through. There are refactoring/cleanup CLs coming behind this one.",
+      "parentUuid": "AAAAdn//AR4\u003d",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//AR0\u003d",
         "filename": "encoder/file_writer.cc",
         "patchSetId": 1
@@ -81,6 +153,24 @@
       "writtenOn": "2015-04-16T06:04:57Z",
       "side": 1,
       "message": "I think it\u0027s sizeof() elsewhere",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//AOk\u003d",
+        "filename": "encoder/file_writer.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-16T15:49:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//AR0\u003d",
       "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -121,6 +211,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//AOg\u003d",
+        "filename": "encoder/file_writer.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-16T15:49:16Z",
+      "side": 1,
+      "message": "This got misaligned after a move-- fixed. Went with args.",
+      "parentUuid": "AAAAdn//ARw\u003d",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//ARo\u003d",
         "filename": "encoder/http_uploader.h",
         "patchSetId": 1
@@ -138,6 +246,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn//AOU\u003d",
+        "filename": "encoder/http_uploader.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-16T15:49:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//ARo\u003d",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//ARk\u003d",
         "filename": "encoder/http_uploader.h",
         "patchSetId": 1
@@ -149,6 +275,24 @@
       "writtenOn": "2015-04-16T06:04:57Z",
       "side": 1,
       "message": "ditto",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//AOY\u003d",
+        "filename": "encoder/http_uploader.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-16T15:49:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "AAAAdn//ARk\u003d",
       "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
