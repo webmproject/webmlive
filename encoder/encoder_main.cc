@@ -484,7 +484,7 @@ int encoder_main(WebmEncoderConfig* ptr_config) {
 
   while (!_kbhit()) {
     // Output current duration and upload progress
-    if (uploader.GetStats(&stats) == webmlive::HttpUploader::kSuccess) {
+    if (uploader.GetStats(&stats)) {
       printf("\rencoded duration: %04f seconds, uploaded: %I64d @ %d kBps",
              (encoder.encoded_duration() / 1000.0),
              stats.bytes_sent_current + stats.total_bytes_uploaded,
