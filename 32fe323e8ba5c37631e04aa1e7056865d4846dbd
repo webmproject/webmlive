@@ -2,6 +2,91 @@
   "comments": [
     {
       "key": {
+        "uuid": "AAAAdn//ASI\u003d",
+        "filename": "encoder/data_sink.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-16T06:04:57Z",
+      "side": 1,
+      "message": "doesn\u0027t matter here, but you could use emplace_back",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//ASA\u003d",
+        "filename": "encoder/data_sink.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-16T06:04:57Z",
+      "side": 1,
+      "message": "const",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//AR8\u003d",
+        "filename": "encoder/data_sink.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-16T06:04:57Z",
+      "side": 1,
+      "message": "either way the data sinks will be in inconsistent states, why not return false either immediately or afterward?",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//AR4\u003d",
+        "filename": "encoder/encoder_main.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 409,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-16T06:04:57Z",
+      "side": 1,
+      "message": "what\u0027s up with the function naming style here? I guess I didn\u0027t notice before...",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//AR0\u003d",
+        "filename": "encoder/file_writer.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-16T06:04:57Z",
+      "side": 1,
+      "message": "I think it\u0027s sizeof() elsewhere",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn//AWA\u003d",
         "filename": "encoder/file_writer.cc",
         "patchSetId": 1
@@ -13,6 +98,57 @@
       "writtenOn": "2015-04-15T23:50:06Z",
       "side": 1,
       "message": "Run()/Stop()/StopRequested()/WaitForUserData() should probably be from mixin classes, but I really don\u0027t want to get into that level of template evilness and/or multiple inheritance in webmlive. I think it would get in the way of clarity.\n\nAnyway, just wanted to point the above out since the aforementioned functions are all basically dupes of stuff from HttpUploaderImpl.",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//ARw\u003d",
+        "filename": "encoder/file_writer.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-16T06:04:57Z",
+      "side": 1,
+      "message": "alignment is weird; you could break after \u0027(\u0027 or align the args",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//ARo\u003d",
+        "filename": "encoder/http_uploader.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-16T06:04:57Z",
+      "side": 1,
+      "message": "virtual + override is redundant; not sure if virtual+override here would allow an override of a non-existent base function (override alone won\u0027t)",
+      "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn//ARk\u003d",
+        "filename": "encoder/http_uploader.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-16T06:04:57Z",
+      "side": 1,
+      "message": "ditto",
       "revId": "32fe323e8ba5c37631e04aa1e7056865d4846dbd",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
