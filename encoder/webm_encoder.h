@@ -174,7 +174,7 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   // Initializes the encoder. Returns |kSuccess| upon success, or one of the
   // above status codes upon failure. Always returns |kInvalidArg| when
   // |ptr_data_sink| is NULL.
-  int Init(const WebmEncoderConfig& config, DataSinkInterface* ptr_data_sink);
+  int Init(const WebmEncoderConfig& config, DataSink* ptr_data_sink);
 
   // Runs the encoder. Returns |kSuccess| when successful, or one of the above
   // status codes upon failure.
@@ -278,7 +278,7 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   std::shared_ptr<std::thread> encode_thread_;
 
   // Data sink to which WebM chunks are written.
-  DataSinkInterface* ptr_data_sink_;
+  DataSink* ptr_data_sink_;
 
   // Buffer object used to push |VideoFrame|s from |MediaSourceImpl| into
   // |EncoderThread()|.

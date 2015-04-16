@@ -121,10 +121,10 @@ class HttpUploader : public DataSinkInterface {
                     const uint8* ptr_buffer, int length);
 
   // DataSinkInterface methods.
-  virtual bool WriteData(const std::string& id,
-                         const uint8* ptr_buffer, int length) override {
-    return UploadBuffer(id, ptr_buffer, length);
+  bool WriteData(DataSinkInterface::SharedDataSinkBuffer buffer) override {
+    return UploadBuffer(buffer->id, &buffer->data[0], buffer->data.size());
   }
+  std::string Name() const override { return "HttpUploader"; }
 
  private:
   // Pointer to uploader implementation.
