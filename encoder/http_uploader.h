@@ -70,31 +70,6 @@ class HttpUploaderImpl;
 //   successful uploads.
 class HttpUploader : public DataSinkInterface {
  public:
-  enum {
-    // Bad URL.
-    kUrlConfigError = -307,
-
-    // Bad user HTTP header, or error passing header to libcurl.
-    kHeaderError = -305,
-
-    // Bad user Form variable, or error passsing it to libcurl.
-    kFormError = -304,
-
-    // Invalid argument supplied to method call.
-    kInvalidArg = -303,
-
-    // Uploader |Init| failed.
-    kInitFailed = -302,
-
-    // Uploader |Run| failed.
-    kRunFailed = -301,
-
-    // Success.
-    kSuccess = 0,
-
-    // Upload already running.
-    kUploadInProgress = 1,
-  };
   HttpUploader();
   virtual ~HttpUploader();
 
@@ -104,17 +79,17 @@ class HttpUploader : public DataSinkInterface {
 
   // Constructs |HttpUploaderImpl|, which copies |settings|. Returns |kSuccess|
   // upon success.
-  int Init(const HttpUploaderSettings& settings);
+  bool Init(const HttpUploaderSettings& settings);
 
   // Returns the current upload stats. Note, obtains lock before copying stats
   // to |ptr_stats|.
-  int GetStats(HttpUploaderStats* ptr_stats);
+  bool GetStats(HttpUploaderStats* ptr_stats);
 
   // Runs the uploader thread.
-  int Run();
+  bool Run();
 
   // Stops the uploader thread.
-  int Stop();
+  bool Stop();
 
   // Sends a buffer to the uploader thread.
   bool UploadBuffer(const std::string& id,
