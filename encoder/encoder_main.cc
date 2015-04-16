@@ -406,8 +406,8 @@ void parse_command_line(int argc, const char** argv,
 
 // Calls |Init| and |Run| on |ptr_writer| to start the file writer thread, which
 // writes buffers when |WriteData| is called on the writer via |DataSink|.
-bool start_writer(WebmEncoderConfig* ptr_config,
-                  webmlive::FileWriter* ptr_writer) {
+bool StartWriter(WebmEncoderConfig* ptr_config,
+                 webmlive::FileWriter* ptr_writer) {
   if (!ptr_writer->Init(ptr_config->enc_config.dash_encode,
                         ptr_config->enc_config.dash_dir)) {
     LOG(ERROR) << "writer Init failed.";
@@ -424,20 +424,19 @@ bool start_writer(WebmEncoderConfig* ptr_config,
 
 // Calls |Init| and |Run| on |uploader| to start the uploader thread, which
 // uploads buffers when |UploadBuffer| is called on the uploader.
-int start_uploader(WebmEncoderConfig* ptr_config,
+bool StartUploader(WebmEncoderConfig* ptr_config,
                    webmlive::HttpUploader* ptr_uploader) {
-  int status = ptr_uploader->Init(ptr_config->uploader_settings);
-  if (status) {
-    LOG(ERROR) << "uploader Init failed, status=" << status;
-    return status;
+  if (!ptr_uploader->Init(ptr_config->uploader_settings)) {
+    LOG(ERROR) << "uploader Init failed.";
+    return false;
   }
 
   // Run the uploader (it goes idle and waits for a buffer).
-  status = ptr_uploader->Run();
-  if (status) {
-    LOG(ERROR) << "uploader Run failed, status=" << status;
+  if (!ptr_uploader->Run()) {
+    LOG(ERROR) << "uploader Run failed.";
+    return false;
   }
-  return status;
+  return true;
 }
 
 int encoder_main(WebmEncoderConfig* ptr_config) {
@@ -459,15 +458,14 @@ int encoder_main(WebmEncoderConfig* ptr_config) {
   }
 
   // Start the file writer thread.
-  if (!start_writer(ptr_config, &file_writer)) {
+  if (!StartWriter(ptr_config, &file_writer)) {
     LOG(ERROR) << "start_writer failed.";
     return EXIT_FAILURE;
   }
 
   // Start the uploader thread.
-  status = start_uploader(ptr_config, &uploader);
-  if (status) {
-    LOG(ERROR) << "start_uploader failed, status=" << status;
+  if (!StartUploader(ptr_config, &uploader)) {
+    LOG(ERROR) << "start_uploader failed.";
     return EXIT_FAILURE;
   }
 
@@ -484,7 +482,7 @@ int encoder_main(WebmEncoderConfig* ptr_config) {
 
   while (!_kbhit()) {
     // Output current duration and upload progress
-    if (uploader.GetStats(&stats) == webmlive::HttpUploader::kSuccess) {
+    if (uploader.GetStats(&stats)) {
       printf("\rencoded duration: %04f seconds, uploaded: %I64d @ %d kBps",
              (encoder.encoded_duration() / 1000.0),
              stats.bytes_sent_current + stats.total_bytes_uploaded,
