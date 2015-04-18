@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "AAAAdn/+/7c\u003d",
+        "filename": "encoder/file_writer.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-18T03:35:36Z",
+      "side": 1,
+      "message": "61 was only something SUSv2 I thought, normally it\u0027s 60...",
+      "revId": "93ebfd4ed55bcf188767e455219772c163c4faa1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn/+/7Y\u003d",
+        "filename": "encoder/file_writer.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-18T03:35:36Z",
+      "side": 1,
+      "message": "can be override",
+      "revId": "93ebfd4ed55bcf188767e455219772c163c4faa1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
