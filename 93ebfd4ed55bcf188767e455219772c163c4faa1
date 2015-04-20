@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "AAAAdn/+/5g\u003d",
+        "filename": "encoder/file_writer.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-20T16:08:58Z",
+      "side": 1,
+      "message": "stolen from cppreference.org-- they might be wrong. :|\n\nI thought the 61 was a leap second. Maybe I\u0027ve got it backwards.",
+      "parentUuid": "AAAAdn/+/7c\u003d",
+      "revId": "93ebfd4ed55bcf188767e455219772c163c4faa1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "AAAAdn/+/7Y\u003d",
         "filename": "encoder/file_writer.h",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2015-04-18T03:35:36Z",
       "side": 1,
       "message": "can be override",
+      "revId": "93ebfd4ed55bcf188767e455219772c163c4faa1",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "AAAAdn/+/5c\u003d",
+        "filename": "encoder/file_writer.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-04-20T16:08:58Z",
+      "side": 1,
+      "message": "Are they equivalent in this case? I need to do some reading about virtual vs override. Anyway, leaving this alone for now.",
+      "parentUuid": "AAAAdn/+/7Y\u003d",
       "revId": "93ebfd4ed55bcf188767e455219772c163c4faa1",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
