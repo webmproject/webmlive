@@ -34,11 +34,15 @@ const std::string kCodecVp9 = "vp9";
 typedef std::vector<std::string> StringVector;
 
 struct WebmEncoderConfig {
+  WebmEncoderConfig() : enable_file_output(true), enable_http_upload(true) {}
   // Uploader settings.
   webmlive::HttpUploaderSettings uploader_settings;
 
   // WebM encoder settings.
   webmlive::WebmEncoderConfig enc_config;
+
+  bool enable_file_output;
+  bool enable_http_upload;
 };
 
 }  // anonymous namespace
@@ -49,6 +53,9 @@ void Usage(const char** argv) {
   printf("Usage: %s <args>\n", argv[0]);
   printf("  General options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
+  printf("    --disable_file_output          Disables local file output.\n");
+  printf("    --disable_http_upload          Disables upload of output to\n");
+  printf("                                   HTTP servers.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
   printf("    --adevidx <source index>       Select audio capture device by\n");
   printf("                                   index. Ignored when --adev is\n");
@@ -201,6 +208,10 @@ void ParseCommandLine(int argc, const char** argv, WebmEncoderConfig* config) {
         !strcmp("--help", argv[i])) {
       Usage(argv);
       exit(EXIT_SUCCESS);
+    } else if (!strcmp("--disable_file_output", argv[i])) {
+      config->enable_file_output = false;
+    } else if (!strcmp("--disable_http_upload", argv[i])) {
+      config->enable_http_upload = false;
     }
 
     //
@@ -400,7 +411,8 @@ void ParseCommandLine(int argc, const char** argv, WebmEncoderConfig* config) {
 // Calls |Init| and |Run| on |ptr_writer| to start the file writer thread, which
 // writes buffers when |WriteData| is called on the writer via |DataSink|.
 bool StartWriter(WebmEncoderConfig* ptr_config,
-                 webmlive::FileWriter* ptr_writer) {
+                 webmlive::FileWriter* ptr_writer,
+                 webmlive::DataSink* ptr_data_sink) {
   if (!ptr_writer->Init(ptr_config->enc_config.dash_encode,
                         ptr_config->enc_config.dash_dir)) {
     LOG(ERROR) << "writer Init failed.";
@@ -412,13 +424,15 @@ bool StartWriter(WebmEncoderConfig* ptr_config,
     LOG(ERROR) << "writer Run failed.";
     return false;
   }
+  ptr_data_sink->AddDataSink(ptr_writer);
   return true;
 }
 
 // Calls |Init| and |Run| on |uploader| to start the uploader thread, which
 // uploads buffers when |UploadBuffer| is called on the uploader.
 bool StartUploader(WebmEncoderConfig* ptr_config,
-                   webmlive::HttpUploader* ptr_uploader) {
+                   webmlive::HttpUploader* ptr_uploader,
+                   webmlive::DataSink* ptr_data_sink) {
   if (!ptr_uploader->Init(ptr_config->uploader_settings)) {
     LOG(ERROR) << "uploader Init failed.";
     return false;
@@ -429,6 +443,7 @@ bool StartUploader(WebmEncoderConfig* ptr_config,
     LOG(ERROR) << "uploader Run failed.";
     return false;
   }
+  ptr_data_sink->AddDataSink(ptr_uploader);
   return true;
 }
 
@@ -438,9 +453,10 @@ int EncoderMain(WebmEncoderConfig* ptr_config) {
   webmlive::HttpUploader uploader;
   webmlive::DataSink data_sink;
 
-  // Add |file_writer| and |uploader| to |data_sink|.
-  data_sink.AddDataSink(&file_writer);
-  data_sink.AddDataSink(&uploader);
+  if (!ptr_config->enable_file_output && !ptr_config->enable_http_upload) {
+    LOG(ERROR) << "File output or HTTP upload must be enabled.";
+    return EXIT_FAILURE;
+  }
 
   // Init the WebM encoder.
   webmlive::WebmEncoder encoder;
@@ -451,13 +467,15 @@ int EncoderMain(WebmEncoderConfig* ptr_config) {
   }
 
   // Start the file writer thread.
-  if (!StartWriter(ptr_config, &file_writer)) {
+  if (ptr_config->enable_file_output &&
+      !StartWriter(ptr_config, &file_writer, &data_sink)) {
     LOG(ERROR) << "start_writer failed.";
     return EXIT_FAILURE;
   }
 
   // Start the uploader thread.
-  if (!StartUploader(ptr_config, &uploader)) {
+  if (ptr_config->enable_http_upload &&
+      !StartUploader(ptr_config, &uploader, &data_sink)) {
     LOG(ERROR) << "start_uploader failed.";
     return EXIT_FAILURE;
   }
@@ -486,10 +504,14 @@ int EncoderMain(WebmEncoderConfig* ptr_config) {
 
   LOG(INFO) << "stopping encoder...";
   encoder.Stop();
-  LOG(INFO) << "stopping uploader...";
-  uploader.Stop();
-  LOG(INFO) << "stopping file writer...";
-  file_writer.Stop();
+  if (ptr_config->enable_http_upload) {
+    LOG(INFO) << "stopping uploader...";
+    uploader.Stop();
+  }
+  if (ptr_config->enable_file_output) {
+    LOG(INFO) << "stopping file writer...";
+    file_writer.Stop();
+  }
 
   return EXIT_SUCCESS;
 }
