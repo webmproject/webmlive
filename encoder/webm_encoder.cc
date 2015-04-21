@@ -347,23 +347,25 @@ void WebmEncoder::EncoderThread() {
     LOG(FATAL) << "Unable to run the media source! " << status;
   }
 
-  // Send the DASH manifest.
-  dash_writer_.reset(new (std::nothrow) DashWriter);  // NOLINT
-  if (!dash_writer_) {
-    LOG(FATAL) << "cannot construct dash writer!";
-  }
-  if (!dash_writer_->Init(config_)) {
-    LOG(ERROR) << "DashWriter::Init failed.";
-  }
-  std::string dash_manifest;
-  if (!dash_writer_->WriteManifest(&dash_manifest)) {
-    LOG(ERROR) << "DashWriter::WriteManifest failed.";
-  }
+  if (config_.dash_encode) {
+    // Send the DASH manifest.
+    dash_writer_.reset(new (std::nothrow) DashWriter);  // NOLINT
+    if (!dash_writer_) {
+      LOG(FATAL) << "cannot construct dash writer!";
+    }
+    if (!dash_writer_->Init(config_)) {
+      LOG(ERROR) << "DashWriter::Init failed.";
+    }
+    std::string dash_manifest;
+    if (!dash_writer_->WriteManifest(&dash_manifest)) {
+      LOG(ERROR) << "DashWriter::WriteManifest failed.";
+    }
 
-  ptr_data_sink_->WriteData(
-      config_.dash_name + ".mpd",
-      reinterpret_cast<const uint8*>(dash_manifest.data()),
-      dash_manifest.length());
+    ptr_data_sink_->WriteData(
+        config_.dash_name + ".mpd",
+        reinterpret_cast<const uint8*>(dash_manifest.data()),
+        dash_manifest.length());
+  }
 
   // Wait for an input sample from each input stream-- this sets the
   // |timestamp_offset_| value when one or both streams starts with a negative

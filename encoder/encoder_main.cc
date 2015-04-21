@@ -47,9 +47,6 @@ struct WebmEncoderConfig {
 void Usage(const char** argv) {
   printf("%s v%s\n", webmlive::kEncoderName, webmlive::kEncoderVersion);
   printf("Usage: %s <args>\n", argv[0]);
-  printf("  Notes:\n");
-  printf("    - DASH output is currently hard coded on and cannot be\n");
-  printf("      disabled.\n");
   printf("  General options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
   printf("    --adev <audio source name>     Audio capture device name.\n");
