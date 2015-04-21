@@ -169,7 +169,7 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   };
 
   WebmEncoder();
-  ~WebmEncoder();
+  ~WebmEncoder() override;
 
   // Initializes the encoder. Returns |kSuccess| upon success, or one of the
   // above status codes upon failure. Always returns |kInvalidArg| when
@@ -191,14 +191,14 @@ class WebmEncoder : public AudioSamplesCallbackInterface,
   WebmEncoderConfig config() const { return config_; }
 
   // |AudioSamplesCallbackInterface| methods
-  // Method used by |MediaSourceImpl| to push audio buffers into
-  // |EncoderThread()|.
-  virtual int OnSamplesReceived(AudioBuffer* ptr_buffer);
+  // Method used by |MediaSourceImpl| to push audio buffers into encoding
+  // threads.
+  bool OnSamplesReceived(AudioBuffer* ptr_buffer) override;
 
   // |VideoFrameCallbackInterface| methods
-  // Method used by |MediaSourceImpl| to push video frames into
-  // |EncoderThread()|.
-  virtual int OnVideoFrameReceived(VideoFrame* ptr_frame);
+  // Method used by |MediaSourceImpl| to push video frames into encoding
+  // threads.
+  int OnVideoFrameReceived(VideoFrame* ptr_frame) override;
 
  private:
   // Function pointer type used for indirect access to the encoder loop

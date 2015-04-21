@@ -296,9 +296,8 @@ HRESULT AudioSinkFilter::OnSamplesReceived(IMediaSample* ptr_sample) {
       << "   duration= "      << duration << "\n"
       << "   size=" << sample_buffer_.buffer_length();
 
-  status = ptr_samples_callback_->OnSamplesReceived(&sample_buffer_);
-  if (status) {
-    LOG(ERROR) << "OnSamplesReceived failed, status=" << status;
+  if (!ptr_samples_callback_->OnSamplesReceived(&sample_buffer_)) {
+    LOG(ERROR) << "OnSamplesReceived failed.";
   }
   return S_OK;
 }

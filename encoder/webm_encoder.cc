@@ -269,14 +269,14 @@ int64 WebmEncoder::encoded_duration() const {
 }
 
 // AudioSamplesCallbackInterface
-int WebmEncoder::OnSamplesReceived(AudioBuffer* ptr_buffer) {
+bool WebmEncoder::OnSamplesReceived(AudioBuffer* ptr_buffer) {
   const int status = audio_pool_.Commit(ptr_buffer);
   if (status) {
     LOG(ERROR) << "AudioBuffer pool Commit failed! " << status;
-    return AudioSamplesCallbackInterface::kNoMemory;
+    return false;
   }
   LOG(INFO) << "OnSamplesReceived committed an audio buffer.";
-  return kSuccess;
+  return true;
 }
 
 // VideoFrameCallbackInterface

@@ -96,20 +96,13 @@ class AudioBuffer {
 // implementor class to receive |AudioBuffer| pointers.
 class AudioSamplesCallbackInterface {
  public:
-  enum {
-    // |OnSamplesReceived()| failed because a buffer could not be allocated.
-    kNoMemory = -3,
-    // Returned by |OnSamplesReceived| when |ptr_sample_buffer| is NULL or
-    // empty.
-    kInvalidArg = -2,
-    kSuccess = 0,
-  };
   virtual ~AudioSamplesCallbackInterface() {}
 
   // Passes an |AudioBuffer| pointer to the |AudioSamplesCallbackInterface|
   // implementation, allowing it to take ownership of the contents. Argument
   // is non-const to allow for use of |AudioBuffer::Swap| by the implementor.
-  virtual int OnSamplesReceived(AudioBuffer* ptr_sample_buffer) = 0;
+  // Return true to signal success. Returning false terminates sample delivery.
+  virtual bool OnSamplesReceived(AudioBuffer* ptr_sample_buffer) = 0;
 };
 
 struct VorbisConfig {
