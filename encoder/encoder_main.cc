@@ -25,7 +25,7 @@ namespace {
 enum {
   kBadFormat = -3,
   kNoMemory = -2,
-  kInvalidArg = - 1,
+  kInvalidArg = -1,
   kSuccess = 0,
 };
 
@@ -44,7 +44,7 @@ struct WebmEncoderConfig {
 }  // anonymous namespace
 
 // Prints usage.
-void usage(const char** argv) {
+void Usage(const char** argv) {
   printf("%s v%s\n", webmlive::kEncoderName, webmlive::kEncoderVersion);
   printf("Usage: %s <args>\n", argv[0]);
   printf("  Notes:\n");
@@ -159,8 +159,8 @@ void usage(const char** argv) {
 
 // Parses name value pairs in the format name:value from |unparsed_entries|,
 // and stores results in |out_map|.
-int store_string_map_entries(const StringVector& unparsed_entries,
-                             std::map<std::string, std::string>& out_map) {
+int StoreStringMapEntries(const StringVector& unparsed_entries,
+                          std::map<std::string, std::string>* out_map) {
   using std::string;
   using std::vector;
   StringVector::const_iterator entry_iter = unparsed_entries.begin();
@@ -175,7 +175,7 @@ int store_string_map_entries(const StringVector& unparsed_entries,
       return kBadFormat;
     }
 
-    out_map[entry.substr(0, sep).c_str()] = entry.substr(sep + 1);
+    (*out_map)[entry.substr(0, sep).c_str()] = entry.substr(sep + 1);
     ++entry_iter;
   }
   return kSuccess;
@@ -183,7 +183,7 @@ int store_string_map_entries(const StringVector& unparsed_entries,
 
 // Returns true when |arg_index| + 1 is <= |argc|, and |argv[arg_index+1]| is
 // non-null. Command line parser helper function.
-bool arg_has_value(int arg_index, int argc, const char** argv) {
+bool ArgHasValue(int arg_index, int argc, const char** argv) {
   const int val_index = arg_index + 1;
   const bool has_value = ((val_index < argc) && (argv[val_index] != NULL));
   if (!has_value) {
@@ -193,17 +193,16 @@ bool arg_has_value(int arg_index, int argc, const char** argv) {
 }
 
 // Parses command line and stores user settings.
-void parse_command_line(int argc, const char** argv,
-                        WebmEncoderConfig& config) {
+void ParseCommandLine(int argc, const char** argv, WebmEncoderConfig* config) {
   StringVector unparsed_headers;
   StringVector unparsed_vars;
-  webmlive::HttpUploaderSettings& uploader_settings = config.uploader_settings;
-  webmlive::WebmEncoderConfig& enc_config = config.enc_config;
-  config.uploader_settings.post_mode = webmlive::HTTP_POST;
+  webmlive::HttpUploaderSettings& uploader_settings = config->uploader_settings;
+  webmlive::WebmEncoderConfig& enc_config = config->enc_config;
+  config->uploader_settings.post_mode = webmlive::HTTP_POST;
   for (int i = 1; i < argc; ++i) {
     if (!strcmp("-h", argv[i]) || !strcmp("-?", argv[i]) ||
         !strcmp("--help", argv[i])) {
-      usage(argv);
+      Usage(argv);
       exit(EXIT_SUCCESS);
     }
 
@@ -212,53 +211,50 @@ void parse_command_line(int argc, const char** argv,
     //
     else if (!strcmp("--dash", argv[i])) {
       enc_config.dash_encode = true;
-    } else if (!strcmp("--dash_dir", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--dash_dir", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.dash_dir = argv[++i];
       const char last_char = enc_config.dash_dir[enc_config.dash_dir.length()];
       if (last_char != '/' && last_char != '\\') {
         enc_config.dash_dir.append("/");
       }
-    } else if (!strcmp("--dash_name", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--dash_name", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.dash_name = argv[++i];
     } else if (!strcmp("--dash_start_number", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.dash_start_number = argv[++i];
     }
 
     //
     // HTTP uploader options.
     //
-    else if (!strcmp("--url", argv[i]) && arg_has_value(i, argc, argv)) {
+    else if (!strcmp("--url", argv[i]) && ArgHasValue(i, argc, argv)) {
       uploader_settings.target_url = argv[++i];
-    } else if (!strcmp("--header", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--header", argv[i]) && ArgHasValue(i, argc, argv)) {
       unparsed_headers.push_back(argv[++i]);
-    } else if (!strcmp("--form_post", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--form_post", argv[i]) && ArgHasValue(i, argc, argv)) {
       uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
-    } else if (!strcmp("--var", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--var", argv[i]) && ArgHasValue(i, argc, argv)) {
       unparsed_vars.push_back(argv[++i]);
     }
 
     //
     // Audio source configuration options.
     //
-    else if (!strcmp("--adev", argv[i]) && arg_has_value(i, argc, argv)) {
+    else if (!strcmp("--adev", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.audio_device_name = argv[++i];
-    } else if (!strcmp("--adevidx", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--adevidx", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.audio_device_index = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--achannels", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--achannels", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.requested_audio_config.channels =
           static_cast<uint16>(strtol(argv[++i], NULL, 10));
     } else if (!strcmp("--adisable", argv[i])) {
       enc_config.disable_audio = true;
     } else if (!strcmp("--amanual", argv[i])) {
       enc_config.ui_opts.manual_audio_config = true;
-    } else if (!strcmp("--arate", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--arate", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.requested_audio_config.sample_rate =
           strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--asize", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--asize", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.requested_audio_config.bits_per_sample =
           static_cast<uint16>(strtol(argv[++i], NULL, 10));
     }
@@ -268,18 +264,18 @@ void parse_command_line(int argc, const char** argv,
     //
     else if (!strcmp("--vdisable", argv[i])) {
       enc_config.disable_video = true;
-    } else if (!strcmp("--vdev", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--vdev", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.video_device_name = argv[++i];
-    } else if (!strcmp("--vdevidx", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--vdevidx", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.video_device_index = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vmanual", argv[i])) {
       enc_config.ui_opts.manual_video_config = true;
-    } else if (!strcmp("--vwidth", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--vwidth", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.requested_video_config.width = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vheight", argv[i]) && arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--vheight", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.requested_video_config.height = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vframe_rate", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.requested_video_config.frame_rate = strtod(argv[++i], NULL);
     }
 
@@ -287,34 +283,33 @@ void parse_command_line(int argc, const char** argv,
     // Vorbis encoder options.
     //
     else if (!strcmp("--vorbis_bitrate", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+             ArgHasValue(i, argc, argv)) {
       enc_config.vorbis_config.average_bitrate = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vorbis_minimum_bitrate", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vorbis_config.minimum_bitrate = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vorbis_maximum_bitrate", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vorbis_config.maximum_bitrate = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vorbis_disable_vbr", argv[i])) {
       enc_config.vorbis_config.bitrate_based_quality = false;
     } else if (!strcmp("--vorbis_iblock_bias", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vorbis_config.impulse_block_bias = strtod(argv[++i], NULL);
     } else if (!strcmp("--vorbis_lowpass_frequency", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vorbis_config.lowpass_frequency = strtod(argv[++i], NULL);
     }
 
     //
     // VPx encoder options.
     else if (!strcmp("--vpx_keyframe_interval", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+             ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.keyframe_interval = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_bitrate", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.bitrate = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_codec", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--vpx_codec", argv[i]) && ArgHasValue(i, argc, argv)) {
       std::string vpx_codec_value = argv[++i];
       if (vpx_codec_value == kCodecVp8)
         enc_config.vpx_config.codec = webmlive::kVideoFormatVP8;
@@ -323,46 +318,43 @@ void parse_command_line(int argc, const char** argv,
       else
         LOG(ERROR) << "Invalid --vpx_codec value: " << vpx_codec_value;
     } else if (!strcmp("--vpx_decimate", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.decimate = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_min_q", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--vpx_min_q", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.min_quantizer = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_max_q", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--vpx_max_q", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.max_quantizer = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_noise_sensitivity", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.noise_sensitivity = strtol(argv[++i], NULL, 10);
-    } else if (!strcmp("--vpx_speed", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+    } else if (!strcmp("--vpx_speed", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.speed = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_static_threshold", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.static_threshold = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_threads", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.thread_count = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_overshoot", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.overshoot = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_undershoot", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.undershoot = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_max_buffer", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.total_buffer_time = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_init_buffer", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.initial_buffer_time = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_opt_buffer", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.optimal_buffer_time = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_max_kf_bitrate", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.max_keyframe_bitrate = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_sharpness", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.sharpness = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vpx_error_resilience", argv[i])) {
       enc_config.vpx_config.error_resilient = true;
@@ -372,25 +364,24 @@ void parse_command_line(int argc, const char** argv,
     // VP8 specific encoder options.
     //
     else if (!strcmp("--vp8_token_partitions", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+             ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.token_partitions = strtol(argv[++i], NULL, 10);
     }
 
     //
     // VP9 specific encoder options.
     //
-    else if (!strcmp("--vp9_aq_mode", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+    else if (!strcmp("--vp9_aq_mode", argv[i]) && ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.adaptive_quantization_mode =
           strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vp9_gf_cbr_boost", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.goldenframe_cbr_boost = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vp9_tile_cols", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.tile_columns = strtol(argv[++i], NULL, 10);
     } else if (!strcmp("--vp9_disable_fpd", argv[i]) &&
-               arg_has_value(i, argc, argv)) {
+               ArgHasValue(i, argc, argv)) {
       enc_config.vpx_config.frame_parallel_mode = false;
     } else {
       LOG(WARNING) << "argument unknown or unparseable: " << argv[i];
@@ -398,10 +389,10 @@ void parse_command_line(int argc, const char** argv,
   }
 
   // Store user HTTP headers.
-  store_string_map_entries(unparsed_headers, uploader_settings.headers);
+  StoreStringMapEntries(unparsed_headers, &uploader_settings.headers);
 
   // Store user form variables.
-  store_string_map_entries(unparsed_vars, uploader_settings.form_variables);
+  StoreStringMapEntries(unparsed_vars, &uploader_settings.form_variables);
 }
 
 // Calls |Init| and |Run| on |ptr_writer| to start the file writer thread, which
@@ -439,7 +430,7 @@ bool StartUploader(WebmEncoderConfig* ptr_config,
   return true;
 }
 
-int encoder_main(WebmEncoderConfig* ptr_config) {
+int EncoderMain(WebmEncoderConfig* ptr_config) {
   webmlive::WebmEncoderConfig& enc_config = ptr_config->enc_config;
   webmlive::FileWriter file_writer;
   webmlive::HttpUploader uploader;
@@ -504,8 +495,8 @@ int encoder_main(WebmEncoderConfig* ptr_config) {
 int main(int argc, const char** argv) {
   google::InitGoogleLogging(argv[0]);
   WebmEncoderConfig config;
-  parse_command_line(argc, argv, config);
-  int exit_code = encoder_main(&config);
+  ParseCommandLine(argc, argv, &config);
+  const int exit_code = EncoderMain(&config);
   google::ShutdownGoogleLogging();
   return exit_code;
 }
