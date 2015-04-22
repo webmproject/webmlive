@@ -19,29 +19,13 @@
 
 #include "glog/logging.h"
 
+#include "encoder/time_util.h"
+
 namespace webmlive {
 
 bool FileWriter::Init(bool dash_mode, const std::string& directory) {
   if (!dash_mode) {
-    char file_name[30] = {0};
-    // %Y - year
-    // %m - month, zero padded (01-12)
-    // %d - day of month, zero padded (01-31).
-    // %H - hour, zero padded, 24 hour clock (00-23)
-    // %M - minute, zero padded (00-59)
-    // %S - second, zero padded (00-61)
-    const char format_string[] = "%Y%m%d%H%M%S";
-    const time_t raw_time_now = time(NULL);
-    const struct tm* time_now = localtime(&raw_time_now);
-
-    if (strftime(&file_name[0], sizeof(file_name), format_string,
-                 time_now) == 0) {
-      LOG(ERROR) << "FileWriter cannot generate file name.";
-      return false;
-    }
-
-    file_name_ = file_name;
-    file_name_ += ".webm";
+    file_name_ = LocalDateString() + LocalTimeString() + ".webm";
   }
   directory_ = directory;
   return true;
