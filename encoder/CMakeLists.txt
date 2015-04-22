@@ -125,6 +125,8 @@ add_executable(encoder
                file_writer.h
                http_uploader.cc
                http_uploader.h
+               time_util.cc
+               time_util.h
                video_encoder.cc
                video_encoder.h
                vorbis_encoder.cc
