@@ -489,12 +489,12 @@ bool HttpUploaderImpl::Upload(BufferQueue::Buffer* buffer) {
     return false;
   }
   if (settings_.post_mode == webmlive::HTTP_FORM_POST) {
-    if (SetupFormPost(&buffer->data[0], buffer->data.size())) {
+    if (!SetupFormPost(&buffer->data[0], buffer->data.size())) {
       LOG(ERROR) << "SetupFormPost failed!";
       return false;
     }
   } else {
-    if (SetupPost(&buffer->data[0], buffer->data.size())) {
+    if (!SetupPost(&buffer->data[0], buffer->data.size())) {
       LOG(ERROR) << "SetupPost failed!";
       return false;
     }
@@ -526,7 +526,7 @@ bool HttpUploaderImpl::Upload(BufferQueue::Buffer* buffer) {
     stats_.total_bytes_uploaded += static_cast<int64>(bytes_uploaded);
   }
   VLOG(1) << "upload complete.";
-  return false;
+  return true;
 }
 
 // Idle the upload thread while awaiting user data.
