@@ -7,10 +7,13 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "encoder/dash_writer.h"
 
+#include <ctime>
 #include <ios>
 #include <sstream>
 
 #include "glog/logging.h"
+
+#include "encoder/time_util.h"
 
 namespace webmlive {
 const char kIndentStep[] = "  ";
@@ -53,6 +56,14 @@ const char kInitializationPattern[] = "_$RepresentationID$.hdr";
 
 const char kAudioSchemeUri[] =
   "urn:mpeg:dash:23003:3:audio_channel_configuration:2011";
+
+// %Y - year
+// %m - month, zero padded (01-12)
+// %d - day of month, zero padded (01-31).
+// %H - hour, zero padded, 24 hour clock (00-23)
+// %M - minute, zero padded (00-59)
+// %S - second, zero padded (00-61)
+const char kAvailabilityStartTimeFormat[] = "%Y-%m-%dT%H:%M:%SZ";
 
 //
 // AdaptationSet
@@ -175,10 +186,15 @@ bool DashWriter::WriteManifest(std::string* out_manifest) {
 
   manifest << "<?xml version=\"1.0\"?>\n";
 
+  time_t raw_time = time(NULL);
+
   // Open the MPD element.
   manifest << "<MPD "
            << "xmlns=\"" << kDefaultSchema << "\" "
            << "type=\"" << config_.type << "\" "
+           << "availabilityStartTime=\""
+           << StrFTime(gmtime(&raw_time), kAvailabilityStartTimeFormat)
+           << "\" "
            << "minBufferTime=\"PT" << config_.min_buffer_time << "S\" "
            << "mediaPresentationDuration=\"PT"
            << config_.media_presentation_duration << "S\" "
