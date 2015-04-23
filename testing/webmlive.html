@@ -1,0 +1,27 @@
+<!--
+Copyright (c) 2015 The WebM project authors. All Rights Reserved.
+
+Use of this source code is governed by a BSD-style license
+that can be found in the LICENSE file in the root of the source
+tree. An additional intellectual property rights grant can be found
+in the file PATENTS.  All contributing project authors may
+be found in the AUTHORS file in the root of the source tree.
+-->
+<html>
+  <script src="dash.webm.debug.js"></script>
+  <script>
+    function startVideo(mpd) {
+      var video, context, player;
+      video = document.querySelector('video');
+      context = new Webm.di.WebmContext();
+      player = new MediaPlayer(context);
+      player.startup();
+      player.attachView(video);
+      player.setAutoPlay(false);
+      player.attachSource(mpd);
+    }
+  </script>
+  <body onload="startVideo('/DASH_NAME_HERE.mpd');">
+    <video controls></video>
+  </body>
+</html>
