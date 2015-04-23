@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d0d43e30_16afb196",
+        "filename": "encoder/time_util.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-23T23:18:04Z",
+      "side": 1,
+      "message": "these are OK to leave off given they\u0027re in the same module\u0027s .h",
+      "revId": "9df914b267a6e7997846e4a266ca4b6f221a67db",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "309d9a70_aef945fd",
+        "filename": "encoder/time_util.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-23T23:18:04Z",
+      "side": 1,
+      "message": "extra space before \u0027}\u0027",
+      "revId": "9df914b267a6e7997846e4a266ca4b6f221a67db",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d0d43e30_1644517a",
+        "filename": "encoder/time_util.h",
+        "patchSetId": 2
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-23T23:18:04Z",
+      "side": 1,
+      "message": "format",
+      "revId": "9df914b267a6e7997846e4a266ca4b6f221a67db",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
