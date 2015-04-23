@@ -18,6 +18,7 @@
 #include "encoder/buffer_util.h"
 #include "encoder/file_writer.h"
 #include "encoder/http_uploader.h"
+#include "encoder/time_util.h"
 #include "encoder/webm_encoder.h"
 #include "glog/logging.h"
 
@@ -90,6 +91,8 @@ void Usage(const char** argv) {
   printf("                                   in a form (a la RFC 1867).\n");
   printf("    --var <name:value>             Adds form variable and value.\n");
   printf("                                   Sent with all POSTs.\n");
+  printf("    --session-id                   Session identifier. Generated\n");
+  printf("                                   for you if not specified.\n");
   printf("  Audio source configuration options:\n");
   printf("    --adisable                     Disable audio capture.\n");
   printf("    --amanual                      Attempt manual configuration.\n");
@@ -243,6 +246,8 @@ void ParseCommandLine(int argc, const char** argv, WebmEncoderConfig* config) {
       uploader_settings.post_mode = webmlive::HTTP_FORM_POST;
     } else if (!strcmp("--var", argv[i]) && ArgHasValue(i, argc, argv)) {
       unparsed_vars.push_back(argv[++i]);
+    } else if (!strcmp("--session_id", argv[i]) && ArgHasValue(i, argc, argv)) {
+      uploader_settings.session_id = argv[++i];
     }
 
     //
@@ -428,6 +433,10 @@ bool StartWriter(WebmEncoderConfig* ptr_config,
 bool StartUploader(WebmEncoderConfig* ptr_config,
                    webmlive::HttpUploader* ptr_uploader,
                    webmlive::DataSink* ptr_data_sink) {
+  if (ptr_config->uploader_settings.session_id.empty()) {
+    ptr_config->uploader_settings.session_id =
+        webmlive::LocalDateString() + webmlive::LocalTimeString();
+  }
   if (!ptr_uploader->Init(ptr_config->uploader_settings)) {
     LOG(ERROR) << "uploader Init failed.";
     return false;
