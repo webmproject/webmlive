@@ -37,6 +37,7 @@ static const char kContentTypeHeader[] = "Content-Type: video/webm";
 static const char kFormName[] = "webm_file";
 static const char kWebmMimeType[] = "video/webm";
 static const char kContentIdHeader[] = "X-Content-Id: ";
+static const char kSessionIdHeader[] = "X-Session-Id: ";
 
 class HttpUploaderImpl {
  public:
@@ -399,6 +400,9 @@ CURLcode HttpUploaderImpl::SetHeaders(const std::string& content_id) {
     header << header_iter->first.c_str() << ":" << header_iter->second.c_str();
     ptr_headers_ = curl_slist_append(ptr_headers_, header.str().c_str());
   }
+  // add session ID.
+  const std::string session_id_header = kSessionIdHeader + settings_.session_id;
+  ptr_headers_ = curl_slist_append(ptr_headers_, session_id_header.c_str());
   // add |content_id|.
   const std::string content_id_header = kContentIdHeader + content_id;
   ptr_headers_ = curl_slist_append(ptr_headers_, content_id_header.c_str());

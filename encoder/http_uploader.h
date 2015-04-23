@@ -45,6 +45,9 @@ struct HttpUploaderSettings {
 
   // Target URL.
   std::string target_url;
+
+  // Session ID.
+  std::string session_id;
 };
 
 struct HttpUploaderStats {

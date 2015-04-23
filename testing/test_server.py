@@ -18,10 +18,6 @@ import SimpleHTTPServer
 import SocketServer
 import sys
 
-
-FILENAME = 'test.webm'
-
-
 class ThreadedHTTPServer(BaseHTTPServer.HTTPServer,
                          SocketServer.ThreadingMixIn):
     """
@@ -55,16 +51,19 @@ class TestServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 self.headers['content-type'])
 
             # Strip everything but the last component when the client sent a
-            # POST w/an x-content-id header that could be a full path.
-            file_name = os.path.basename(self.headers['x-content-id'])
-            if not file_name:
+            # POST w/an x-session-id or x-content-id header that could be a full
+            # path.
+            session_id = os.path.basename(self.headers['x-session-id'])
+            content_id = os.path.basename(self.headers['x-content-id'])
+            if not session_id or not content_id:
                 response_code = 400
-                message = 'Bad request: sanitized x-content-id value empty.'
+                message = 'Bad request: invalid session or content id.'
                 self.send_response_and_end_headers(response_code, message)
                 print message
                 return
 
             if self.path.startswith('/dash'):
+                file_name = content_id
                 post_file = open(file_name, 'wb')
                 post_file.write(self.rfile.read(
                     int(self.headers['content-length'])))
@@ -72,10 +71,9 @@ class TestServer(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 message = 'wrote {}'.format(file_name)
                 response_code = 200
             else:
-                # TODO(tomfinegan): read x-session-id and use that for the file
-                # name here, and then get rid of |FILENAME|, because yuck.
                 print self.path
-                self.file = file(FILENAME, 'ab')
+                file_name = session_id + '.webm'
+                self.file = file(file_name, 'ab')
                 if content_type == 'multipart/form-data':
                     query = cgi.parse_multipart(
                         self.rfile, param_dictionary)
@@ -115,10 +113,6 @@ def main():
             port = int(sys.argv[1])
         else:
             port = 8000
-
-        if os.path.exists(FILENAME):
-            print 'removed ' + FILENAME
-            os.remove(FILENAME)
 
         httpd = ThreadedHTTPServer(('', port), TestServer)
         print 'Started TestServer on port {}.'.format(port)
