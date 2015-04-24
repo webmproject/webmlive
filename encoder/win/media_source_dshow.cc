@@ -21,6 +21,7 @@
 #include "encoder/win/audio_sink_filter.h"
 #include "encoder/win/dshow_util.h"
 #include "encoder/win/media_type_dshow.h"
+#include "encoder/win/string_util_win.h"
 #include "encoder/win/video_sink_filter.h"
 #include "encoder/win/webm_guids.h"
 #include "glog/logging.h"
@@ -33,32 +34,6 @@ const wchar_t* const kAudioSourceName = L"AudioSource";
 const wchar_t* const kAudioSinkName = L"AudioSink";
 const wchar_t* const kVideoSourceName = L"VideoSource";
 const wchar_t* const kVideoSinkName = L"VideoSink";
-
-
-// Converts a std::string to std::wstring.
-std::wstring string_to_wstring(const std::string& str) {
-  std::wostringstream wstr;
-  wstr << str.c_str();
-  return wstr.str();
-}
-
-// Converts |wstr| to a multi-byte string and returns result std::string.
-std::string wstring_to_string(const std::wstring& wstr) {
-  // Conversion buffer for |wcstombs| calls.
-  const size_t buf_size = wstr.length() + 1;
-  std::unique_ptr<char[]> temp_str(
-      new (std::nothrow) char[buf_size]);  // NOLINT
-  if (!temp_str) {
-    LOG(ERROR) << "can't convert wstring of length=" << wstr.length();
-    return std::string("<empty>");
-  }
-  memset(temp_str.get(), 0, buf_size);
-  size_t num_converted = 0;
-  wcstombs_s(&num_converted, temp_str.get(), buf_size, wstr.c_str(),
-             wstr.length()*sizeof(wchar_t));
-  std::string str = temp_str.get();
-  return str;
-}
 
 // Attempts to show configuration dialogs for |filter| and |pin|. Stores
 // resulting media type in |ptr_type| and returns |kSuccess| when everything
@@ -176,7 +151,7 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
   }
   if (config.disable_video == false) {
     if (!config.video_device_name.empty()) {
-      video_device_name_ = string_to_wstring(config.video_device_name);
+      video_device_name_ = StringToWString(config.video_device_name);
     }
     if (config.video_device_index != kUseDefaultDevice) {
       video_device_index_ = config.video_device_index;
@@ -199,7 +174,7 @@ int MediaSourceImpl::Init(const WebmEncoderConfig& config,
   }
   if (config.disable_audio == false) {
     if (!config.audio_device_name.empty()) {
-      audio_device_name_ = string_to_wstring(config.audio_device_name);
+      audio_device_name_ = StringToWString(config.audio_device_name);
     }
     if (config.audio_device_index != kUseDefaultDevice) {
       audio_device_index_ = config.audio_device_index;
@@ -300,13 +275,13 @@ int MediaSourceImpl::CreateVideoSource() {
   }
   for (int i = 0; i < loader.GetNumSources(); ++i) {
     LOG(INFO) << "vdev" << i << ": "
-              << wstring_to_string(loader.GetSourceName(i).c_str());
+              << WStringToString(loader.GetSourceName(i).c_str());
   }
   if (video_device_name_.empty()) {
     video_device_name_ = loader.GetSourceName(video_device_index_);
   }
   video_source_ = loader.GetSource(video_device_name_);
-  LOG(INFO) << "Using vdev: " << wstring_to_string(video_device_name_);
+  LOG(INFO) << "Using vdev: " << WStringToString(video_device_name_);
   if (!video_source_) {
     LOG(ERROR) << "cannot create video source!";
     return WebmEncoder::kNoVideoSource;
@@ -323,7 +298,7 @@ int MediaSourceImpl::CreateVideoSource() {
 
 int MediaSourceImpl::CreateVideoSink() {
   HRESULT status = E_FAIL;
-  const std::string filter_name = wstring_to_string(kVideoSinkName);
+  const std::string filter_name = WStringToString(kVideoSinkName);
   VideoSinkFilter* const ptr_filter =
       new (std::nothrow) VideoSinkFilter(filter_name.c_str(),  // NOLINT
                                          NULL,
@@ -552,13 +527,13 @@ int MediaSourceImpl::CreateAudioSource() {
   }
   for (int i = 0; i < loader.GetNumSources(); ++i) {
     LOG(INFO) << "adev" << i << ": "
-              << wstring_to_string(loader.GetSourceName(i).c_str());
+              << WStringToString(loader.GetSourceName(i).c_str());
   }
   if (audio_device_name_.empty()) {
     audio_device_name_ = loader.GetSourceName(audio_device_index_);
   }
   audio_source_ = loader.GetSource(audio_device_name_);
-  LOG(INFO) << "Using adev: " << wstring_to_string(audio_device_name_);
+  LOG(INFO) << "Using adev: " << WStringToString(audio_device_name_);
   if (!audio_source_) {
     LOG(ERROR) << "cannot create audio source!";
     return WebmEncoder::kNoAudioSource;
@@ -639,7 +614,7 @@ int MediaSourceImpl::ConfigureAudioSource(const IPinPtr& pin,
 
 int MediaSourceImpl::CreateAudioSink() {
   HRESULT status = E_FAIL;
-  const std::string filter_name = wstring_to_string(kAudioSinkName);
+  const std::string filter_name = WStringToString(kAudioSinkName);
   AudioSinkFilter* const ptr_filter =
       new (std::nothrow) AudioSinkFilter(filter_name.c_str(),  // NOLINT
                                          NULL,
@@ -840,7 +815,7 @@ int CaptureSourceLoader::FindAllSources() {
       continue;
     }
     VLOG(4) << "source=" << source_index << " name="
-            << wstring_to_string(name.c_str());
+            << WStringToString(name.c_str());
     sources_[source_index] = name;
     ++source_index;
   }
