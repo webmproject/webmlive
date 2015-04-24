@@ -115,6 +115,7 @@ add_executable(encoder
                buffer_pool.h
                buffer_util.cc
                buffer_util.h
+               capture_source_list.h
                dash_writer.cc
                dash_writer.h
                data_sink.cc
@@ -153,6 +154,7 @@ if(WIN32)
   add_library(encoder_win STATIC
               win/audio_sink_filter.cc
               win/audio_sink_filter.h
+              win/capture_source_list_dshow.cc
               win/dshow_util.cc
               win/dshow_util.h
               win/media_source_dshow.cc

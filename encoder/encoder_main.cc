@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "encoder/buffer_util.h"
+#include "encoder/capture_source_list.h"
 #include "encoder/file_writer.h"
 #include "encoder/http_uploader.h"
 #include "encoder/time_util.h"
@@ -44,6 +45,7 @@ struct WebmEncoderConfig {
 
   bool enable_file_output;
   bool enable_http_upload;
+  bool list_devices;
 };
 
 }  // anonymous namespace
@@ -54,6 +56,7 @@ void Usage(const char** argv) {
   printf("Usage: %s <args>\n", argv[0]);
   printf("  General options:\n");
   printf("    -h | -? | --help               Show this message and exit.\n");
+  printf("    --ls_devices                   List capture devices and exit.\n");
   printf("    --disable_file_output          Disables local file output.\n");
   printf("    --disable_http_upload          Disables upload of output to\n");
   printf("                                   HTTP servers.\n");
@@ -164,6 +167,13 @@ void Usage(const char** argv) {
   printf("                                       decoding.\n");
 }
 
+void ListCaptureDevices() {
+  const std::string audio_sources = webmlive::GetAudioSourceList();
+  const std::string video_sources = webmlive::GetVideoSourceList();
+  printf("Audio devices:\n%s\nVideo devices:\n%s\n",
+         audio_sources.c_str(), video_sources.c_str());
+}
+
 // Parses name value pairs in the format name:value from |unparsed_entries|,
 // and stores results in |out_map|.
 int StoreStringMapEntries(const StringVector& unparsed_entries,
@@ -210,6 +220,9 @@ void ParseCommandLine(int argc, const char** argv, WebmEncoderConfig* config) {
     if (!strcmp("-h", argv[i]) || !strcmp("-?", argv[i]) ||
         !strcmp("--help", argv[i])) {
       Usage(argv);
+      exit(EXIT_SUCCESS);
+    } else if (!strcmp("--ls_devices", argv[i])) {
+      ListCaptureDevices();
       exit(EXIT_SUCCESS);
     } else if (!strcmp("--disable_file_output", argv[i])) {
       config->enable_file_output = false;
