@@ -159,6 +159,8 @@ if(WIN32)
               win/media_source_dshow.h
               win/media_type_dshow.cc
               win/media_type_dshow.h
+              win/string_util_win.cc
+              win/string_util_win.h
               win/video_sink_filter.cc
               win/video_sink_filter.h
               win/webm_guids.cc
