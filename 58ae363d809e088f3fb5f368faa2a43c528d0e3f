@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f0f222e5_550c1cef",
+        "filename": "encoder/win/string_util_win.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-25T02:53:58Z",
+      "side": 1,
+      "message": "check the return value",
+      "revId": "58ae363d809e088f3fb5f368faa2a43c528d0e3f",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d0d99e70_97304e18",
+        "filename": "encoder/win/string_util_win.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-25T02:53:58Z",
+      "side": 1,
+      "message": "whitespace around \u0027*\u0027",
+      "revId": "58ae363d809e088f3fb5f368faa2a43c528d0e3f",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f0f222e5_b5246866",
+        "filename": "encoder/win/string_util_win.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2015-04-25T02:53:58Z",
+      "side": 1,
+      "message": "//  namespace webmlive",
+      "revId": "58ae363d809e088f3fb5f368faa2a43c528d0e3f",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    }
+  ]
+}
