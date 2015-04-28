@@ -94,14 +94,8 @@ class HttpUploader : public DataSinkInterface {
   // Stops the uploader thread.
   bool Stop();
 
-  // Sends a buffer to the uploader thread.
-  bool UploadBuffer(const std::string& id,
-                    const uint8* ptr_buffer, int length);
-
   // DataSinkInterface methods.
-  bool WriteData(DataSinkInterface::SharedDataSinkBuffer buffer) override {
-    return UploadBuffer(buffer->id, &buffer->data[0], buffer->data.size());
-  }
+  bool WriteData(const SharedDataSinkBuffer& buffer) override;
   std::string Name() const override { return "HttpUploader"; }
 
  private:

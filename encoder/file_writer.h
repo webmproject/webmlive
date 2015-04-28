@@ -40,13 +40,13 @@ class FileWriter : public DataSinkInterface {
   bool Stop();
 
   // DataSinkInferface methods.
-  bool WriteData(SharedDataSinkBuffer buffer) override;
+  bool WriteData(const SharedDataSinkBuffer& buffer) override;
   std::string Name() const override { return "FileWriter"; }
 
  private:
   bool StopRequested();
   void WaitForUserData();
-  bool WriteFile(const BufferQueue::Buffer& data) const;
+  bool WriteFile(const SharedDataSinkBuffer& buffer) const;
   void WriterThread();
 
   bool dash_mode_;
@@ -56,7 +56,7 @@ class FileWriter : public DataSinkInterface {
   std::mutex mutex_;
   std::condition_variable wake_condition_;
   std::shared_ptr<std::thread> thread_;
-  BufferQueue buffer_q_;
+  SharedBufferQueue buffer_q_;
 };
 
 }  // namespace webmlive

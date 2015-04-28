@@ -58,13 +58,9 @@ bool FileWriter::Stop() {
   return true;
 }
 
-// Copies data into |buffer_q_| and returns true.
-bool FileWriter::WriteData(DataSinkInterface::SharedDataSinkBuffer buffer) {
-  // TODO(tomfinegan): Copying data is not necessary; SharedDataBufferQueue or
-  // something should be provided by data_sink.h. Abusing BufferQueue
-  // temporarily since it just works and incoming buffers aren't that large.
-  if (!buffer_q_.EnqueueBuffer(buffer->id,
-                               &buffer->data[0], buffer->data.size())) {
+// Stores data in |buffer_q_| and returns true.
+bool FileWriter::WriteData(const SharedDataSinkBuffer& buffer) {
+  if (!buffer_q_.EnqueueBuffer(buffer)) {
     LOG(ERROR) << "Write buffer enqueue failed.";
     return false;
   }
@@ -75,7 +71,7 @@ bool FileWriter::WriteData(DataSinkInterface::SharedDataSinkBuffer buffer) {
 }
 
 // Try to obtain lock on |mutex_|, and return the value of |stop_| if lock is
-// obtained.  Returns false if unable to obtain the lock.
+// obtained. Returns false if unable to obtain the lock.
 bool FileWriter::StopRequested() {
   bool stop_requested = false;
   std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
@@ -93,10 +89,10 @@ void FileWriter::WaitForUserData() {
 }
 
 // Writes |data| contents to file and returns true upon success.
-bool FileWriter::WriteFile(const BufferQueue::Buffer& data) const {
+bool FileWriter::WriteFile(const SharedDataSinkBuffer& buffer) const {
   std::string file_name;
   if (dash_mode_) {
-    file_name = directory_ + data.id;
+    file_name = directory_ + buffer->id;
   } else {
     file_name = directory_ + file_name_;
   }
@@ -106,22 +102,22 @@ bool FileWriter::WriteFile(const BufferQueue::Buffer& data) const {
     return false;
   }
   const size_t bytes_written =
-      fwrite(reinterpret_cast<const void*>(&data.data[0]),
-             1, data.data.size(), file);
+      fwrite(reinterpret_cast<const void*>(&buffer->data[0]),
+             1, buffer->data.size(), file);
   fclose(file);
-  return (bytes_written == data.data.size());
+  return (bytes_written == buffer->data.size());
 }
 
 // Runs until StopRequested() returns true.
 void FileWriter::WriterThread() {
   while (!StopRequested() || buffer_q_.GetNumBuffers() > 0) {
-    const BufferQueue::Buffer* buffer = buffer_q_.DequeueBuffer();
-    if (!buffer) {
+    SharedDataSinkBuffer buffer = buffer_q_.DequeueBuffer();
+    if (buffer.get() == NULL) {
       // Wait for a buffer.
       WaitForUserData();
       continue;
     }
-    if (!WriteFile(*buffer)) {
+    if (!WriteFile(buffer)) {
       LOG(ERROR) << "Write failed for id: " << buffer->id;
     }
   }

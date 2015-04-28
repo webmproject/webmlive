@@ -53,9 +53,8 @@ class HttpUploaderImpl {
   // Runs |UploadThread|, and starts waiting for user data.
   bool Run();
 
-  // Uploads user data.
-  bool UploadBuffer(const std::string& id,
-                    const uint8* ptr_buffer, int32 length);
+  // Enqueues user data for upload.
+  bool EnqueueBuffer(const SharedDataSinkBuffer& buffer);
 
   // Stops the uploader.
   bool Stop();
@@ -78,7 +77,7 @@ class HttpUploaderImpl {
   bool SetupPost(const uint8* const ptr_buffer, int32 length);
 
   // Upload user data with libcurl.
-  bool Upload(BufferQueue::Buffer* buffer);
+  bool Upload(const SharedDataSinkBuffer& buffer);
 
   // Wakes up |UploadThread| when users pass data through |UploadBuffer|.
   void WaitForUserData();
@@ -150,7 +149,7 @@ class HttpUploaderImpl {
   // |Upload|.  This second locking mechanism is in place to allow |mutex_| to
   // be unlocked while uploads are in progress (which prevents public methods
   // from blocking).
-  BufferQueue upload_buffer_;
+  SharedBufferQueue buffer_q_;
 
   // The name of the file on the local system.  Note that it is not being read,
   // it's information included within the form data contained within the HTTP
@@ -201,9 +200,8 @@ bool HttpUploader::Stop() {
 }
 
 // Return result of |UploadBuffer| on |ptr_uploader_|.
-bool HttpUploader::UploadBuffer(const std::string& id,
-                                const uint8* ptr_buffer, int length) {
-  return ptr_uploader_->UploadBuffer(id, ptr_buffer, length);
+bool HttpUploader::WriteData(const SharedDataSinkBuffer& buffer) {
+  return ptr_uploader_->EnqueueBuffer(buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -303,14 +301,13 @@ bool HttpUploaderImpl::Run() {
 
 // Enqueue the user buffer. Does not lock |mutex_|; relies on
 // |upload_buffer_|'s internal lock.
-bool HttpUploaderImpl::UploadBuffer(const std::string& id,
-                                    const uint8* ptr_buf, int length) {
-  if (!upload_buffer_.EnqueueBuffer(id, ptr_buf, length)) {
+bool HttpUploaderImpl::EnqueueBuffer(const SharedDataSinkBuffer& buffer) {
+  if (!buffer_q_.EnqueueBuffer(buffer)) {
     LOG(ERROR) << "Upload buffer enqueue failed.";
     return false;
   }
   // Wake |UploadThread|.
-  LOG(INFO) << "waking uploader with " << length << " bytes";
+  LOG(INFO) << "waking uploader with " << buffer->data.size() << " bytes";
   wake_condition_.notify_one();
   return true;
 }
@@ -484,7 +481,7 @@ bool HttpUploaderImpl::SetupPost(const uint8* const ptr_buffer, int length) {
 }
 
 // Upload data using libcurl.
-bool HttpUploaderImpl::Upload(BufferQueue::Buffer* buffer) {
+bool HttpUploaderImpl::Upload(const SharedDataSinkBuffer& buffer) {
   LOG(INFO) << "upload buffer size=" << buffer->data.size();
   CURLcode err = curl_easy_setopt(ptr_curl_, CURLOPT_URL,
                                   settings_.target_url.c_str());
@@ -596,9 +593,9 @@ void HttpUploaderImpl::ResetStats() {
 // Upload thread.  Wakes when user provides a buffer via call to
 // |UploadBuffer|.
 void HttpUploaderImpl::UploadThread() {
-  while (!StopRequested() || upload_buffer_.GetNumBuffers() > 0) {
-    BufferQueue::Buffer* buffer = upload_buffer_.DequeueBuffer();
-    if (!buffer) {
+  while (!StopRequested() || buffer_q_.GetNumBuffers() > 0) {
+    SharedDataSinkBuffer buffer = buffer_q_.DequeueBuffer();
+    if (buffer.get() == NULL) {
       VLOG(1) << "upload thread waiting for buffer...";
       WaitForUserData();
       continue;

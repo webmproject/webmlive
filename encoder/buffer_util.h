@@ -42,7 +42,6 @@ class BufferQueue {
   size_t GetNumBuffers();
 
  private:
-  bool locked_;
   std::mutex mutex_;
   std::queue<Buffer*> buffer_q_;
 };

@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -21,12 +22,33 @@ struct DataSinkBuffer {
   std::string id;
   std::vector<uint8> data;
 };
+typedef std::shared_ptr<DataSinkBuffer> SharedDataSinkBuffer;
+
+class SharedBufferQueue {
+ public:
+  SharedBufferQueue() {}
+  ~SharedBufferQueue() {}
+
+  // Enqueues |buffer| and returns true. Returns false upon failure. Blocks on
+  // |mutex_|.
+  bool EnqueueBuffer(const SharedDataSinkBuffer& buffer);
+
+  // Returns a buffer if one is available. Does not block waiting on |mutex_|;
+  // gives up and returns empty |std::shared_ptr| when unable to obtain lock.
+  SharedDataSinkBuffer DequeueBuffer();
+
+  // Returns number of buffers queued. Blocks on |mutex_| acquisition.
+  size_t GetNumBuffers();
+
+ private:
+  std::mutex mutex_;
+  std::queue<const SharedDataSinkBuffer> buffer_q_;
+};
 
 class DataSinkInterface {
  public:
-  typedef std::shared_ptr<DataSinkBuffer> SharedDataSinkBuffer;
   virtual ~DataSinkInterface() {}
-  virtual bool WriteData(SharedDataSinkBuffer buffer) = 0;
+  virtual bool WriteData(const SharedDataSinkBuffer& buffer) = 0;
   virtual std::string Name() const = 0;
 };
 

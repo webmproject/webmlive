@@ -14,6 +14,37 @@
 
 namespace webmlive {
 
+//
+// SharedBufferQueue
+//
+bool SharedBufferQueue::EnqueueBuffer(const SharedDataSinkBuffer& buffer) {
+  if (buffer.get() == NULL) {
+    LOG(ERROR) << "Empty SharedDataSinkBuffer.";
+    return false;
+  }
+  std::lock_guard<std::mutex> lock(mutex_);
+  buffer_q_.push(buffer);
+  return true;
+}
+
+SharedDataSinkBuffer SharedBufferQueue::DequeueBuffer() {
+  SharedDataSinkBuffer buffer;
+  std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
+  if (lock.owns_lock() && !buffer_q_.empty()) {
+    buffer = buffer_q_.front();
+    buffer_q_.pop();
+  }
+  return buffer;
+}
+
+size_t SharedBufferQueue::GetNumBuffers() {
+  std::lock_guard<std::mutex> lock(mutex_);
+  return buffer_q_.size();
+}
+
+//
+// DataSink
+//
 void DataSink::AddDataSink(DataSinkInterface* data_sink) {
   std::lock_guard<std::mutex> lock(mutex_);
   data_sinks_.push_back(data_sink);
@@ -22,7 +53,7 @@ void DataSink::AddDataSink(DataSinkInterface* data_sink) {
 bool DataSink::WriteData(const std::string& id,
                          const uint8* ptr_data, int data_length) {
   std::lock_guard<std::mutex> lock(mutex_);
-  DataSinkInterface::SharedDataSinkBuffer buffer;
+  SharedDataSinkBuffer buffer;
   buffer.reset(new (std::nothrow) DataSinkBuffer);
 
   if (!buffer.get()) {
