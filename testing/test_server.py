@@ -112,7 +112,7 @@ def main():
         if len(sys.argv) > 1:
             port = int(sys.argv[1])
         else:
-            port = 8000
+            port = 8001
 
         httpd = ThreadedHTTPServer(('', port), TestServer)
         print 'Started TestServer on port {}.'.format(port)
