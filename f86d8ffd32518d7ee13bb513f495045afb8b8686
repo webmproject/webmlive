@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "b0734a93_de0a59a7",
+        "filename": "README.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-05-05T20:19:07Z",
+      "side": 1,
+      "message": "hard to find the correct version for this: went with 2.8 to be safe",
+      "parentUuid": "d0d99e70_b872fd09",
+      "revId": "f86d8ffd32518d7ee13bb513f495045afb8b8686",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f0f222e5_60f189ad",
         "filename": "README.txt",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2015-04-29T01:09:13Z",
       "side": 1,
       "message": "ENCODER.sln is the actual name?",
+      "revId": "f86d8ffd32518d7ee13bb513f495045afb8b8686",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "504a0e43_1c5dba7b",
+        "filename": "README.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-05-05T20:19:07Z",
+      "side": 1,
+      "message": "yeah. it\u0027s just what cmake does.",
+      "parentUuid": "f0f222e5_60f189ad",
       "revId": "f86d8ffd32518d7ee13bb513f495045afb8b8686",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "504a0e43_8f1dea91",
+        "filename": "README.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-05-05T20:19:07Z",
+      "side": 1,
+      "message": "went w/2.7: not sure it matters, but I know absolutely nothing about the internals of RangeHTTPServer.",
+      "parentUuid": "f0f222e5_80234da1",
+      "revId": "f86d8ffd32518d7ee13bb513f495045afb8b8686",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d0d99e70_bb1d5791",
         "filename": "README.txt",
         "patchSetId": 1
@@ -64,6 +118,24 @@
       "writtenOn": "2015-04-29T01:09:13Z",
       "side": 1,
       "message": "specific port is required?",
+      "revId": "f86d8ffd32518d7ee13bb513f495045afb8b8686",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "504a0e43_6f09a65e",
+        "filename": "README.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1002431
+      },
+      "writtenOn": "2015-05-05T20:19:07Z",
+      "side": 1,
+      "message": "not anymore: was just to avoid a collision with the test_server.py default.",
+      "parentUuid": "d0d99e70_bb1d5791",
       "revId": "f86d8ffd32518d7ee13bb513f495045afb8b8686",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba",
       "unresolved": false
